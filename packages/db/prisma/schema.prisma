@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Locale {
+  mn
+  en
+}
+
+enum SiteStatus {
+  draft
+  published
+  archived
+}
+
+enum TonePreset {
+  formal
+  friendly
+  premium
+  sales
+}
+
+enum PaymentProvider {
+  qpay
+  socialpay
+  khanbank
+  golomt
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+  refunded
+  cancelled
+}
+
+enum Plan {
+  free
+  starter
+  pro
+}
+
+enum AiJobType {
+  content
+  translate
+  image
+}
+
+enum AiJobStatus {
+  queued
+  running
+  done
+  failed
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String?
+  passwordHash  String?
+  preferredLocale Locale       @default(mn)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  sites         Site[]
+  subscription  Subscription?
+  payments      Payment[]
+}
+
+model Site {
+  id            String         @id @default(cuid())
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateId    String
+  name          String
+  subdomain     String         @unique
+  customDomain  String?        @unique
+  customDomainVerified Boolean @default(false)
+  status        SiteStatus     @default(draft)
+  defaultLocale Locale         @default(mn)
+  enabledLocales Locale[]      @default([mn])
+  tone          TonePreset     @default(friendly)
+  business      Json           // business info (name, industry, services, contact, etc.)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  content       SiteContent[]
+  theme         SiteTheme?
+  assets        SiteAsset[]
+  aiJobs        AiJob[]
+
+  @@index([userId])
+}
+
+model SiteContent {
+  id        String   @id @default(cuid())
+  siteId    String
+  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  locale    Locale
+  sections  Json     // { hero: {...}, about: {...}, services: [...], ... }
+  version   Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([siteId, locale])
+}
+
+model SiteTheme {
+  id         String   @id @default(cuid())
+  siteId     String   @unique
+  site       Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  primary    String   @default("#0f172a")
+  accent     String   @default("#f59e0b")
+  background String   @default("#ffffff")
+  foreground String   @default("#0f172a")
+  fontHeading String  @default("Inter")
+  fontBody   String   @default("Inter")
+  radius     String   @default("md")
+  updatedAt  DateTime @updatedAt
+}
+
+model SiteAsset {
+  id        String   @id @default(cuid())
+  siteId    String
+  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  kind      String   // hero, gallery, logo, favicon
+  url       String
+  prompt    String?
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  @@index([siteId])
+}
+
+model AiJob {
+  id        String      @id @default(cuid())
+  siteId    String
+  site      Site        @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  type      AiJobType
+  status    AiJobStatus @default(queued)
+  input     Json
+  output    Json?
+  error     String?
+  costCents Int         @default(0)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([siteId, status])
+}
+
+model Subscription {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan       Plan     @default(free)
+  startedAt  DateTime @default(now())
+  expiresAt  DateTime?
+  autoRenew  Boolean  @default(false)
+  updatedAt  DateTime @updatedAt
+}
+
+model Payment {
+  id              String          @id @default(cuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider        PaymentProvider
+  providerInvoiceId String?
+  providerTxnId   String?
+  amount          Int             // MNT, бүхэл утгаар
+  currency        String          @default("MNT")
+  status          PaymentStatus   @default(pending)
+  description     String?
+  meta            Json?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([userId, status])
+  @@index([provider, providerInvoiceId])
+}

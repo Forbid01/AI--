@@ -1,0 +1,12 @@
+{
+  "name": "@aiweb/i18n",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./mn": "./locales/mn.js",
+    "./en": "./locales/en.js"
+  }
+}

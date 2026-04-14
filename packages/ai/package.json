@@ -1,0 +1,17 @@
+{
+  "name": "@aiweb/ai",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./tones": "./lib/tones.js",
+    "./prompts": "./lib/prompts.js",
+    "./gemini": "./lib/gemini.js",
+    "./image": "./lib/image.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0"
+  }
+}

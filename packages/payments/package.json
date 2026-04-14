@@ -1,0 +1,14 @@
+{
+  "name": "@aiweb/payments",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./qpay": "./lib/qpay.js",
+    "./socialpay": "./lib/socialpay.js",
+    "./khanbank": "./lib/khanbank.js",
+    "./golomt": "./lib/golomt.js"
+  }
+}
