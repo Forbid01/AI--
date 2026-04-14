@@ -48,16 +48,16 @@ pnpm dev
 
 ### Credentials
 
-| Service | Үнэгүй tier? | Хаанаас |
-|---------|--------------|---------|
-| Gemini 2.0 Flash | ✅ Generous | aistudio.google.com |
-| fal.ai Flux schnell | ~$0.003/img | fal.ai |
-| Neon Postgres | ✅ 0.5GB | neon.tech |
-| Qdrant Cloud | ✅ 1GB | cloud.qdrant.io |
-| QPay | Merchant гэрээ | developer.qpay.mn |
-| SocialPay | Merchant гэрээ | golomtbank.com → SocialPay |
-| Khan Bank | Merchant гэрээ | khanbank.com → e-commerce |
-| Golomt Bank | Merchant гэрээ | golomtbank.com → e-gateway |
+| Service             | Үнэгүй         | Хаанаас                    |
+| ------------------- | -------------- | -------------------------- |
+| Gemini 2.0 Flash    | ✅ Generous    | aistudio.google.com        |
+| fal.ai Flux schnell | ~$0.003/img    | fal.ai                     |
+| Neon Postgres       | 0.5GB          | neon.tech                  |
+| Qdrant Cloud        | 1GB            | cloud.qdrant.io            |
+| QPay                | Merchant гэрээ | developer.qpay.mn          |
+| SocialPay           | Merchant гэрээ | golomtbank.com → SocialPay |
+| Khan Bank           | Merchant гэрээ | khanbank.com → e-commerce  |
+| Golomt Bank         | Merchant гэрээ | golomtbank.com → e-gateway |
 
 ### Renderer-ийг локал дээр турших
 
@@ -73,6 +73,7 @@ Custom subdomain-уудыг локал дээр турших:
 ## Roadmap
 
 ### MVP (одоо)
+
 - [x] Monorepo scaffold
 - [x] Prisma schema
 - [x] Template remix engine + 1 minimal template
@@ -84,6 +85,7 @@ Custom subdomain-уудыг локал дээр турших:
 - [ ] Custom domain DNS verification flow
 
 ### V2
+
 - [ ] AI from scratch (template-гүй)
 - [ ] Section-level remix
 - [ ] Blog / contact form capture
@@ -92,6 +94,6 @@ Custom subdomain-уудыг локал дээр турших:
 
 ## Notes
 
-- Код JavaScript (TypeScript биш) — тохиргоо хялбар байлгах үүднээс
+- Код JavaScript — тохиргоо хялбар байлгах үүднээс
 - AI output-ийн default хэл монгол, `translate` action-ээр англи хувилбар үүсгэнэ
 - Payment adapter-ууд нэгдсэн интерфэйстэй: `createInvoice`, `checkInvoice`, `verifyCallback`
