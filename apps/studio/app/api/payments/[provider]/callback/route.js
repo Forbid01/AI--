@@ -29,7 +29,7 @@ async function resolve(request, params) {
 
   if (paymentId) {
     const existing = await prisma.payment.findUnique({ where: { id: paymentId } });
-    if (existing) {
+    if (existing && existing.status === 'pending') {
       const mapped =
         result.status === 'paid' ? 'paid'
         : result.status === 'failed' ? 'failed'

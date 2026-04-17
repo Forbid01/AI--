@@ -2,7 +2,9 @@
 export default {
   content: [
     './app/**/*.{js,jsx}',
-    '../../packages/templates/**/*.{js,jsx}',
+    './components/**/*.{js,jsx}',
+    '../../packages/templates/*/**/*.{js,jsx}',
+    '!../../packages/templates/**/node_modules/**',
   ],
   theme: { extend: {} },
   plugins: [],

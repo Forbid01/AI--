@@ -1,13 +1,21 @@
-export default function Footer({ data, business }) {
+export default function Footer({ data, business, locale = 'mn' }) {
+  const L = (mn, en) => (locale === 'mn' ? mn : en);
   const year = new Date().getFullYear();
   return (
-    <footer className="py-10 border-t border-[var(--foreground)]/10 text-sm">
-      <div className="mx-auto max-w-6xl px-6 flex flex-col md:flex-row justify-between gap-4">
+    <footer className="py-10 border-t border-[var(--hairline)] text-sm">
+      <div className="mx-auto max-w-6xl px-6 flex flex-col sm:flex-row justify-between gap-4">
         <div>
-          <div className="font-semibold">{business?.businessName}</div>
-          <div className="opacity-60">{data.tagline}</div>
+          <div className="font-semibold tracking-tight">{business?.businessName}</div>
+          {data?.tagline && (
+            <div className="mt-1 text-[var(--muted)]">{data.tagline}</div>
+          )}
         </div>
-        <div className="opacity-60">© {year} {business?.businessName}. Made with AiWeb.</div>
+        <div className="text-[var(--muted)] tabular-nums">
+          © {year} {business?.businessName} ·{' '}
+          <span className="text-[11px] uppercase tracking-[0.22em]">
+            {L('AiWeb-ээр бүтээв', 'Built with AiWeb')}
+          </span>
+        </div>
       </div>
     </footer>
   );

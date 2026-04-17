@@ -1,6 +1,12 @@
 import { templateList } from '@aiweb/templates';
-import Wizard from './Wizard.jsx';
+import AiBuilder from './AiBuilder.jsx';
 
-export default function NewSitePage({ params }) {
-  return <Wizard locale={params.locale} templates={templateList} />;
+export default function NewSitePage({ params, searchParams }) {
+  return (
+    <AiBuilder
+      locale={params.locale}
+      templates={templateList}
+      initialPrompt={searchParams?.prompt ?? ''}
+    />
+  );
 }

@@ -18,13 +18,25 @@ apps/
   renderer/     # Нийтэлсэн сайтууд — *.platform.mn + custom domains
 packages/
   db/           # Prisma schema + client
-  ai/           # Gemini 2.0 Flash + tone presets + fal.ai зураг
+  ai/           # Gemini + tone presets + image generation (HF / fal.ai)
   templates/    # Template schema + React section components
   payments/     # QPay / SocialPay / KhanBank / Golomt adapters
   i18n/         # mn/en орчуулгууд
 ```
 
-Stack: **Next.js 14 App Router · Tailwind · Prisma + Postgres (Neon) · Gemini 2.0 Flash · fal.ai Flux schnell · JavaScript**.
+Stack: **Next.js 14 App Router · Tailwind · Prisma + Postgres (Neon) · Gemini 2.5 Flash · HuggingFace FLUX.1-schnell (үнэгүй) · JavaScript**.
+
+### Image generation providers
+
+Зураг үүсгэхдээ олон providerйг дэмждэг — `IMAGE_PROVIDER` env-ээр солино (default: `huggingface`).
+
+| Provider      | Env keys                         | Үнэ            | Тайлбар                                          |
+| ------------- | -------------------------------- | -------------- | ------------------------------------------------ |
+| `huggingface` | `HF_TOKEN`                       | Үнэгүй (rate-limited) | FLUX.1-schnell / SDXL. huggingface.co/settings/tokens |
+| `fal`         | `FAL_KEY`                        | ~$0.003/img    | fal.ai Flux schnell                              |
+| `placeholder` | —                                | Үнэгүй         | Градиент SVG fallback, гадны API-гүй            |
+
+Нэг provider алдаа буцаавал `IMAGE_FAILOVER` (default `true`) дарааллаар дараагийнхыг туршина — зураг үүсэхгүйгээс болж сайт үүсгэх ажил унах ёсгүй.
 
 ## Setup
 
@@ -50,8 +62,9 @@ pnpm dev
 
 | Service             | Үнэгүй         | Хаанаас                    |
 | ------------------- | -------------- | -------------------------- |
-| Gemini 2.0 Flash    | ✅ Generous    | aistudio.google.com        |
-| fal.ai Flux schnell | ~$0.003/img    | fal.ai                     |
+| Gemini 2.5 Flash    | ✅ Generous    | aistudio.google.com        |
+| HuggingFace         | ✅ Rate-limited| huggingface.co/settings/tokens |
+| fal.ai Flux schnell | ~$0.003/img    | fal.ai (optional fallback) |
 | Neon Postgres       | 0.5GB          | neon.tech                  |
 | Qdrant Cloud        | 1GB            | cloud.qdrant.io            |
 | QPay                | Merchant гэрээ | developer.qpay.mn          |

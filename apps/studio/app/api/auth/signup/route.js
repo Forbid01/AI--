@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@aiweb/db';
-import { hashPassword, createSession } from '@/lib/auth.js';
+import { hashPassword } from '@/lib/auth.js';
 
 export async function POST(request) {
   try {
@@ -15,7 +15,6 @@ export async function POST(request) {
     const user = await prisma.user.create({
       data: { email, passwordHash, name, preferredLocale: locale === 'en' ? 'en' : 'mn' },
     });
-    await createSession(user.id);
     return NextResponse.json({ user: { id: user.id, email: user.email, name: user.name } });
   } catch (e) {
     return NextResponse.json({ error: String(e.message || e) }, { status: 500 });

@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 
 /**
  * Host-ыг шалган rewrite хийнэ:
- *   <sub>.platform.mn         -> /_sites/sub/<sub>[path]
- *   custom.example.com         -> /_sites/domain/<host>[path]
+ *   <sub>.platform.mn         -> /sites/sub/<sub>[path]
+ *   custom.example.com         -> /sites/domain/<host>[path]
  *   platform.mn эсвэл localhost -> /_landing (эсвэл эхний хуудас)
  */
 
@@ -17,7 +17,7 @@ export function middleware(request) {
   const host = (request.headers.get('host') || '').toLowerCase();
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith('/_sites') || pathname.startsWith('/_next') || pathname.startsWith('/api')) {
+  if (pathname.startsWith('/sites') || pathname.startsWith('/_next') || pathname.startsWith('/api')) {
     return NextResponse.next();
   }
 
@@ -33,12 +33,12 @@ export function middleware(request) {
 
   if (hostWithoutPort.endsWith(`.${rootDomain}`)) {
     const sub = hostWithoutPort.replace(`.${rootDomain}`, '');
-    url.pathname = `/_sites/sub/${sub}${pathname}`;
+    url.pathname = `/sites/sub/${sub}${pathname}`;
     return NextResponse.rewrite(url);
   }
 
   // Custom domain
-  url.pathname = `/_sites/domain/${hostWithoutPort}${pathname}`;
+  url.pathname = `/sites/domain/${hostWithoutPort}${pathname}`;
   return NextResponse.rewrite(url);
 }
 

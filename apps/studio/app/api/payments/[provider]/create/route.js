@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@aiweb/db';
 import { getProvider } from '@aiweb/payments';
-import { getCurrentUser } from '@/lib/auth.js';
+import { requireUser } from '@/lib/auth.js';
 
 const ALLOWED = new Set(['qpay', 'socialpay', 'khanbank', 'golomt']);
 
@@ -16,7 +16,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: 'Дүн хэтэрхий бага' }, { status: 400 });
     }
 
-    const user = await getCurrentUser();
+    const user = await requireUser();
     const payment = await prisma.payment.create({
       data: {
         userId: user.id,
@@ -52,6 +52,7 @@ export async function POST(request, { params }) {
       deeplinks: invoice.deeplinks,
     });
   } catch (e) {
+    if (e.message === 'UNAUTHORIZED') return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 });
     console.error(`payment create (${params?.provider}):`, e);
     return NextResponse.json({ error: String(e.message || e) }, { status: 500 });
   }

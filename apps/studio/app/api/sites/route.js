@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@aiweb/db';
 import { getTemplate } from '@aiweb/templates';
-import { generateSiteContent, translateContent, generateHeroImage } from '@aiweb/ai';
-import { getCurrentUser } from '@/lib/auth.js';
+import { generateSiteContent, generateHeroImage, generateGalleryImages } from '@aiweb/ai';
+import { requireUser } from '@/lib/auth.js';
 
 export async function POST(request) {
   try {
+    const user = await requireUser();
     const body = await request.json();
     const { templateId, tone, defaultLocale = 'mn', subdomain, business } = body;
 
@@ -14,8 +15,6 @@ export async function POST(request) {
     }
     const tpl = getTemplate(templateId);
     if (!tpl) return NextResponse.json({ error: 'Тохирох template олдсонгүй' }, { status: 400 });
-
-    const user = await getCurrentUser();
 
     const exists = await prisma.site.findUnique({ where: { subdomain } });
     if (exists) return NextResponse.json({ error: 'Subdomain аль хэдийн ашиглагдсан' }, { status: 409 });
@@ -30,7 +29,7 @@ export async function POST(request) {
         defaultLocale,
         enabledLocales: [defaultLocale],
         business,
-        theme: { create: {} },
+        theme: { create: tpl.defaultTheme ?? {} },
       },
       include: { theme: true },
     });
@@ -46,12 +45,8 @@ export async function POST(request) {
         data: { siteId: site.id, locale: defaultLocale, sections },
       });
 
-      // Hero image (background-аар — alдаa гарвал үгүйсгэхгүй)
-      generateHeroImage({ business })
-        .then(({ url, prompt, meta }) =>
-          prisma.siteAsset.create({ data: { siteId: site.id, kind: 'hero', url, prompt, meta } })
-        )
-        .catch((e) => console.error('hero image error:', e.message));
+      // Hero image + gallery (background — алдаа гарвал контент үүсгэхийг үгүйсгэхгүй)
+      runImagePipelineInBackground({ siteId: site.id, business, sections });
 
       await prisma.aiJob.update({
         where: { id: aiJob.id },
@@ -67,16 +62,48 @@ export async function POST(request) {
 
     return NextResponse.json({ site });
   } catch (e) {
+    if (e.message === 'UNAUTHORIZED') return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 });
     console.error(e);
     return NextResponse.json({ error: String(e.message || e) }, { status: 500 });
   }
 }
 
+/** Fire-and-forget: hero + gallery images after site creation */
+async function runImagePipelineInBackground({ siteId, business, sections }) {
+  // Hero image
+  try {
+    const { url, prompt, meta } = await generateHeroImage({ business });
+    await prisma.siteAsset.create({ data: { siteId, kind: 'hero', url, prompt, meta } });
+  } catch (e) {
+    console.error('[image:hero] error:', e.message);
+  }
+
+  // Gallery images — normalizeContent нь galleryPrompts гэдэг top-level array буцаана
+  const galleryPrompts = sections?.galleryPrompts;
+  if (Array.isArray(galleryPrompts) && galleryPrompts.length > 0) {
+    try {
+      const images = await generateGalleryImages({ business, prompts: galleryPrompts });
+      for (const img of images) {
+        await prisma.siteAsset.create({
+          data: { siteId, kind: 'gallery', url: img.url, prompt: img.prompt, meta: img.meta },
+        });
+      }
+    } catch (e) {
+      console.error('[image:gallery] error:', e.message);
+    }
+  }
+}
+
 export async function GET() {
-  const user = await getCurrentUser();
-  const sites = await prisma.site.findMany({
-    where: { userId: user.id },
-    orderBy: { updatedAt: 'desc' },
-  });
-  return NextResponse.json({ sites });
+  try {
+    const user = await requireUser();
+    const sites = await prisma.site.findMany({
+      where: { userId: user.id },
+      orderBy: { updatedAt: 'desc' },
+    });
+    return NextResponse.json({ sites });
+  } catch (e) {
+    if (e.message === 'UNAUTHORIZED') return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 });
+    return NextResponse.json({ error: String(e.message || e) }, { status: 500 });
+  }
 }

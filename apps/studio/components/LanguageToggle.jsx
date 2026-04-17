@@ -17,17 +17,29 @@ export default function LanguageToggle({ current }) {
   }
 
   return (
-    <div className="inline-flex border border-black/10 rounded-md overflow-hidden text-xs">
-      {LOCALES.map((l) => (
-        <button
-          key={l}
-          type="button"
-          onClick={() => switchTo(l)}
-          className={`px-3 py-1.5 uppercase ${l === current ? 'bg-black text-white' : 'hover:bg-black/5'}`}
-        >
-          {l}
-        </button>
-      ))}
+    <div
+      role="group"
+      aria-label="Language"
+      className="inline-flex rounded-full border border-[var(--surface-border)] bg-[var(--surface)] p-0.5 text-[11px] font-mono tabular"
+    >
+      {LOCALES.map((l) => {
+        const active = l === current;
+        return (
+          <button
+            key={l}
+            type="button"
+            onClick={() => switchTo(l)}
+            aria-pressed={active}
+            className={`px-2.5 py-1 rounded-full uppercase tracking-[0.15em] transition-colors ${
+              active
+                ? 'bg-[var(--accent)] text-white'
+                : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            {l}
+          </button>
+        );
+      })}
     </div>
   );
 }

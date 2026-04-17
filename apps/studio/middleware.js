@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
 const LOCALES = ['mn', 'en'];
 const DEFAULT_LOCALE = 'mn';
@@ -11,7 +12,7 @@ function detectLocale(request) {
   return DEFAULT_LOCALE;
 }
 
-export function middleware(request) {
+export async function middleware(request) {
   const { pathname } = request.nextUrl;
   if (
     pathname.startsWith('/_next') ||
@@ -24,12 +25,27 @@ export function middleware(request) {
   }
 
   const first = pathname.split('/')[1];
-  if (LOCALES.includes(first)) return NextResponse.next();
+  const hasLocale = LOCALES.includes(first);
 
-  const locale = detectLocale(request);
-  const url = request.nextUrl.clone();
-  url.pathname = `/${locale}${pathname === '/' ? '' : pathname}`;
-  return NextResponse.redirect(url);
+  if (!hasLocale) {
+    const locale = detectLocale(request);
+    const url = request.nextUrl.clone();
+    url.pathname = `/${locale}${pathname === '/' ? '' : pathname}`;
+    return NextResponse.redirect(url);
+  }
+
+  const afterLocale = pathname.replace(/^\/(mn|en)/, '');
+  if (afterLocale.startsWith('/dashboard')) {
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    if (!token) {
+      const url = request.nextUrl.clone();
+      url.pathname = `/${first}/signin`;
+      url.searchParams.set('callbackUrl', pathname);
+      return NextResponse.redirect(url);
+    }
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {

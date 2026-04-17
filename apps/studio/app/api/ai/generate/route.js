@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@aiweb/db';
 import { generateSiteContent, translateContent, generateHeroImage } from '@aiweb/ai';
+import { requireUser } from '@/lib/auth.js';
 
 export async function POST(request) {
   try {
+    const user = await requireUser();
     const { siteId, action } = await request.json();
-    const site = await prisma.site.findUnique({ where: { id: siteId }, include: { content: true } });
+    const site = await prisma.site.findFirst({
+      where: { id: siteId, userId: user.id },
+      include: { content: true },
+    });
     if (!site) return NextResponse.json({ error: 'Site not found' }, { status: 404 });
 
     if (action === 'regenerate') {
@@ -37,6 +42,12 @@ export async function POST(request) {
         update: { sections: translated, version: { increment: 1 } },
         create: { siteId: site.id, locale: target, sections: translated },
       });
+      if (!site.enabledLocales.includes(target)) {
+        await prisma.site.update({
+          where: { id: site.id },
+          data: { enabledLocales: { push: target } },
+        });
+      }
       return NextResponse.json({ ok: true, sections: translated });
     }
 
@@ -48,6 +59,7 @@ export async function POST(request) {
 
     return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
   } catch (e) {
+    if (e.message === 'UNAUTHORIZED') return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 });
     console.error(e);
     return NextResponse.json({ error: String(e.message || e) }, { status: 500 });
   }

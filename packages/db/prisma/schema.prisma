@@ -81,6 +81,7 @@ model Site {
   subdomain     String         @unique
   customDomain  String?        @unique
   customDomainVerified Boolean @default(false)
+  domainVerificationToken String?
   status        SiteStatus     @default(draft)
   defaultLocale Locale         @default(mn)
   enabledLocales Locale[]      @default([mn])
