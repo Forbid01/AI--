@@ -83,6 +83,7 @@ function Icon({ name, size = 16, ...props }) {
     ext:     <><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></>,
     cmd:     <><path d="M18 3a3 3 0 00-3 3v12a3 3 0 003 3 3 3 0 003-3 3 3 0 00-3-3H6a3 3 0 00-3 3 3 3 0 003 3 3 3 0 003-3V6a3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3h12a3 3 0 003-3 3 3 0 00-3-3z"/></>,
     sparkle: <><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></>,
+    image:   <><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></>,
   };
   return <svg {...base} {...props}>{paths[name]}</svg>;
 }
@@ -313,6 +314,8 @@ function StatusBadge({ status, locale }) {
 
 function SiteCard({ site, locale, root }) {
   const [copied, setCopied] = useState(false);
+  const [genImg, setGenImg] = useState(false);
+  const router = useRouter();
   const L = (mn, en) => (locale === 'mn' ? mn : en);
   const [g1, g2] = siteGradient(site.name);
 
@@ -327,6 +330,23 @@ function SiteCard({ site, locale, root }) {
     await navigator.clipboard.writeText(displayDomain).catch(() => null);
     setCopied(true);
     setTimeout(() => setCopied(false), 1800);
+  }
+
+  async function generateImage(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (genImg) return;
+    setGenImg(true);
+    try {
+      const res = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ siteId: site.id, action: 'hero-image' }),
+      });
+      if (res.ok) router.refresh();
+    } finally {
+      setGenImg(false);
+    }
   }
 
   return (
@@ -376,6 +396,24 @@ function SiteCard({ site, locale, root }) {
             <Icon name="ext" size={12} stroke="white" strokeWidth={2} />
             {L('Харах', 'View')}
           </a>
+          {/* Image generate/regenerate button — z-20 */}
+          <button
+            type="button"
+            onClick={generateImage}
+            disabled={genImg}
+            title={site.heroImage ? L('Зураг дахин үүсгэх', 'Regenerate image') : L('Зураг үүсгэх', 'Generate image')}
+            className="relative z-20 flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm hover:bg-white/20 disabled:opacity-50 transition-colors"
+          >
+            {genImg ? (
+              <span className="flex gap-0.5">
+                <span className="typing-dot h-1 w-1 rounded-full bg-white" />
+                <span className="typing-dot h-1 w-1 rounded-full bg-white" />
+                <span className="typing-dot h-1 w-1 rounded-full bg-white" />
+              </span>
+            ) : (
+              <Icon name="image" size={12} stroke="white" strokeWidth={2} />
+            )}
+          </button>
         </div>
       </div>
 
