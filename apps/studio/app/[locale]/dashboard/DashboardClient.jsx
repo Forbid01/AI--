@@ -409,7 +409,7 @@ function SiteCard({ site, locale, root }) {
         </div>
 
         <div className="mt-2 text-[11px] text-[var(--text-muted)] tabular">
-          {new Date(site.updatedAt).toLocaleDateString(locale === 'mn' ? 'mn-MN' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          {site.updatedAtLabel}
         </div>
       </div>
     </div>

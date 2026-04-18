@@ -28,6 +28,16 @@ export default async function DashboardPage({ params }) {
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const thisMonth = sites.filter((s) => new Date(s.createdAt) >= monthStart).length;
 
+  // Format date server-side to avoid client/server locale mismatch
+  // (Node.js ICU may not have 'mn-MN' data, producing different output than the browser)
+  function fmtDate(date) {
+    if (locale === 'mn') {
+      const d = new Date(date);
+      return `${d.getFullYear()} оны ${d.getMonth() + 1}-р сарын ${d.getDate()}`;
+    }
+    return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
   // Serialize Dates → strings before passing to Client Component
   const serialized = sites.map((s) => ({
     id: s.id,
@@ -38,6 +48,7 @@ export default async function DashboardPage({ params }) {
     status: s.status,
     templateId: s.templateId,
     heroImage: s.assets[0]?.url ?? null,
+    updatedAtLabel: fmtDate(s.updatedAt),
     updatedAt: s.updatedAt.toISOString(),
     createdAt: s.createdAt.toISOString(),
   }));
