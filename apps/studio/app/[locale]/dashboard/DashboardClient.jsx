@@ -345,11 +345,20 @@ function SiteCard({ site, locale, root }) {
       {/* Thumbnail */}
       <div
         className="relative h-32 w-full flex items-center justify-center overflow-hidden"
-        style={{ background: `linear-gradient(135deg, ${g1} 0%, ${g2} 100%)` }}
+        style={site.heroImage ? {} : { background: `linear-gradient(135deg, ${g1} 0%, ${g2} 100%)` }}
       >
-        <span className="font-display text-6xl font-bold text-white/20 select-none">
-          {(site.name || '?')[0].toUpperCase()}
-        </span>
+        {site.heroImage ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={site.heroImage}
+            alt={site.name}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
+          <span className="font-display text-6xl font-bold text-white/20 select-none">
+            {(site.name || '?')[0].toUpperCase()}
+          </span>
+        )}
 
         {/* Hover overlay — z-10 so it sits above cover link */}
         <div className="absolute inset-0 z-10 bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3">

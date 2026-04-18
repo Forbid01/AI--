@@ -11,6 +11,13 @@ export default async function DashboardPage({ params }) {
   const sites = await prisma.site.findMany({
     where: { userId: user.id },
     orderBy: { updatedAt: 'desc' },
+    include: {
+      assets: {
+        where: { kind: 'hero' },
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+      },
+    },
   });
 
   const root = process.env.PLATFORM_ROOT_DOMAIN || 'platform.mn';
@@ -30,6 +37,7 @@ export default async function DashboardPage({ params }) {
     customDomainVerified: s.customDomainVerified,
     status: s.status,
     templateId: s.templateId,
+    heroImage: s.assets[0]?.url ?? null,
     updatedAt: s.updatedAt.toISOString(),
     createdAt: s.createdAt.toISOString(),
   }));
