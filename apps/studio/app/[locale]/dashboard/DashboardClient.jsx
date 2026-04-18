@@ -349,19 +349,23 @@ function SiteCard({ site, locale, root }) {
     }
   }
 
+  const editHref = `/${locale}/dashboard/sites/${site.id}`;
+
+  function handleCardClick(e) {
+    // Let native interactive elements (a, button) handle their own clicks
+    if (e.target.closest('a, button')) return;
+    router.push(editHref);
+  }
+
   return (
-    // Cover-link pattern: outer div + absolute Link at z-0.
-    // Avoids nested <a> (invalid HTML → hydration mismatch).
-    // Interactive elements (View Live, copy) sit at z-10+ above the cover link.
-    <div className="group relative rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] hover:border-[var(--surface-border-strong)] transition-all duration-200 overflow-hidden">
-
-      {/* Cover link — fills card, navigates to edit page */}
-      <Link
-        href={`/${locale}/dashboard/sites/${site.id}`}
-        className="absolute inset-0 z-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-inset"
-        aria-label={site.name}
-      />
-
+    <div
+      className="group relative rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] hover:border-[var(--surface-border-strong)] transition-all duration-200 overflow-hidden cursor-pointer"
+      onClick={handleCardClick}
+      role="link"
+      tabIndex={0}
+      aria-label={site.name}
+      onKeyDown={(e) => { if (e.key === 'Enter') router.push(editHref); }}
+    >
       {/* Thumbnail */}
       <div
         className="relative h-32 w-full flex items-center justify-center overflow-hidden"
@@ -380,30 +384,28 @@ function SiteCard({ site, locale, root }) {
           </span>
         )}
 
-        {/* Hover overlay — pointer-events-none so cover Link still handles "Edit" clicks.
-            Interactive children opt back in with pointer-events-auto. */}
-        <div className="absolute inset-0 z-10 bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3 pointer-events-none">
-          <span className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm">
+        {/* Hover overlay */}
+        <div className="absolute inset-0 bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3">
+          <span className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm pointer-events-none">
             <Icon name="edit" size={12} stroke="white" strokeWidth={2} />
             {L('Засах', 'Edit')}
           </span>
-          {/* pointer-events-auto: this <a> needs to be clickable independently */}
           <a
             href={publicUrl}
             target="_blank"
             rel="noreferrer"
-            className="pointer-events-auto flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm hover:bg-white/20 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm hover:bg-white/20 transition-colors"
           >
             <Icon name="ext" size={12} stroke="white" strokeWidth={2} />
             {L('Харах', 'View')}
           </a>
-          {/* pointer-events-auto: camera button needs independent click */}
           <button
             type="button"
             onClick={generateImage}
             disabled={genImg}
             title={site.heroImage ? L('Зураг дахин үүсгэх', 'Regenerate image') : L('Зураг үүсгэх', 'Generate image')}
-            className="pointer-events-auto flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm hover:bg-white/20 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm hover:bg-white/20 disabled:opacity-50 transition-colors"
           >
             {genImg ? (
               <span className="flex gap-0.5">
@@ -418,8 +420,8 @@ function SiteCard({ site, locale, root }) {
         </div>
       </div>
 
-      {/* Card body — z-10 so copy button is clickable above cover link */}
-      <div className="relative z-10 p-4">
+      {/* Card body */}
+      <div className="p-4">
         <div className="flex items-start justify-between gap-2">
           <span className="font-semibold text-sm truncate">{site.name}</span>
           <StatusBadge status={site.status} locale={locale} />
