@@ -1,0 +1,323 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { getDictionary } from '@aiweb/i18n';
+import TonePicker from '@/components/TonePicker.jsx';
+
+export default function Wizard({ locale, templates }) {
+  const dict = getDictionary(locale);
+  const router = useRouter();
+  const [step, setStep] = useState(1);
+  const [templateId, setTemplateId] = useState(templates[0]?.id ?? 'minimal');
+  const [business, setBusiness] = useState({
+    businessName: '',
+    industry: '',
+    description: '',
+    services: '',
+    contactEmail: '',
+    contactPhone: '',
+    address: '',
+  });
+  const [tone, setTone] = useState('friendly');
+  const [subdomain, setSubdomain] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const L = (mn, en) => (locale === 'mn' ? mn : en);
+
+  const STEPS = [
+    { n: 1, label: dict.wizard.step1.title, hint: L('Загвар', 'Template') },
+    { n: 2, label: dict.wizard.step2.title, hint: L('Мэдээлэл', 'Details') },
+    { n: 3, label: dict.wizard.step3.title, hint: L('Өнгө аяс', 'Tone') },
+    { n: 4, label: dict.wizard.step4.title, hint: L('Үүсгэх', 'Generate') },
+  ];
+
+  function setField(k, v) {
+    setBusiness((b) => ({ ...b, [k]: v }));
+  }
+
+  const canNext =
+    (step === 1 && templateId) ||
+    (step === 2 && business.businessName && subdomain) ||
+    (step === 3 && tone) ||
+    step === 4;
+
+  async function submit() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/sites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          templateId,
+          tone,
+          defaultLocale: locale,
+          subdomain,
+          business: {
+            ...business,
+            services: business.services.split(',').map((s) => s.trim()).filter(Boolean),
+          },
+        }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error || L('Алдаа гарлаа', 'Something went wrong'));
+      const data = await res.json();
+      router.push(`/${locale}/dashboard/sites/${data.site.id}`);
+    } catch (e) {
+      setError(e.message);
+      setLoading(false);
+    }
+  }
+
+  const root = process.env.NEXT_PUBLIC_PLATFORM_ROOT_DOMAIN || 'platform.mn';
+  const selectedTemplate = templates.find((t) => t.id === templateId);
+
+  return (
+    <div className="border-t hairline">
+      <div className="mx-auto max-w-7xl px-6 py-12 md:py-16 grid lg:grid-cols-12 gap-12">
+        {/* Rail */}
+        <aside className="lg:col-span-4 xl:col-span-3">
+          <p className="eyebrow text-accent">{L('Шинэ сайт', 'New site')}</p>
+          <h1 className="mt-5 font-display text-4xl md:text-5xl tracking-tightest leading-[1.05]">
+            {L('Дөрвөн', 'Four')}<br />
+            <span className="italic">{L('алхам.', 'steps.')}</span>
+          </h1>
+          <ol className="mt-10 space-y-5 border-l hairline">
+            {STEPS.map((s) => {
+              const done = s.n < step;
+              const active = s.n === step;
+              return (
+                <li key={s.n} className="relative pl-6">
+                  <span
+                    className={`absolute left-0 top-1.5 -translate-x-1/2 h-2.5 w-2.5 rounded-full transition-colors
+                      ${active ? 'bg-accent ring-4 ring-accent-soft' : done ? 'bg-ink' : 'bg-ink-10'}`}
+                  />
+                  <div className="flex items-baseline gap-3">
+                    <span className={`font-mono text-xs tabular ${active ? 'text-ink' : 'text-ink-40'}`}>
+                      0{s.n}
+                    </span>
+                    <span className={`text-sm ${active ? 'font-medium text-ink' : done ? 'text-ink-60' : 'text-ink-40'}`}>
+                      {s.label}
+                    </span>
+                  </div>
+                  <div className="mt-0.5 pl-9 text-xs text-ink-40">{s.hint}</div>
+                </li>
+              );
+            })}
+          </ol>
+        </aside>
+
+        {/* Content */}
+        <section className="lg:col-span-8 xl:col-span-9">
+          <div className="flex items-baseline justify-between border-b hairline pb-5">
+            <div>
+              <p className="eyebrow text-ink-40">{L('Алхам', 'Step')} 0{step} / 04</p>
+              <h2 className="mt-2 font-display text-3xl md:text-4xl tracking-tightest">
+                {STEPS[step - 1].label}
+              </h2>
+            </div>
+            <span className="font-mono text-xs text-ink-40 tabular">{STEPS[step - 1].hint}</span>
+          </div>
+          <p className="mt-4 text-ink-60 max-w-2xl">{dict.wizard['step' + step].desc}</p>
+
+          <div className="mt-10">
+            {step === 1 && (
+              <div className="grid sm:grid-cols-2 gap-5">
+                {templates.map((t) => {
+                  const active = templateId === t.id;
+                  const theme = t.defaultTheme ?? {};
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setTemplateId(t.id)}
+                      aria-pressed={active}
+                      className={`relative text-left rounded-lg overflow-hidden border transition
+                        ${active ? 'border-ink shadow-[0_20px_40px_-20px_rgba(15,14,11,0.35)]' : 'border-ink-10 hover:border-ink-40'}`}
+                    >
+                      <div
+                        className="aspect-[5/3] relative"
+                        style={{
+                          background: `linear-gradient(135deg, ${theme.background ?? '#faf8f2'} 0%, ${theme.primary ?? '#0f0e0b'} 180%)`,
+                        }}
+                      >
+                        <div className="absolute inset-5 flex flex-col justify-between mix-blend-difference text-white">
+                          <span className="font-mono text-xs tabular opacity-80">{t.id}</span>
+                          <span className="font-display text-2xl tracking-tightest">
+                            {t.name[locale] ?? t.name.mn}
+                          </span>
+                        </div>
+                        {active && (
+                          <span className="absolute top-3 right-3 h-6 w-6 grid place-items-center rounded-full bg-accent text-accent-ink text-xs">✓</span>
+                        )}
+                      </div>
+                      <div className="p-4 bg-surface">
+                        <p className="text-sm text-ink-60 leading-relaxed">
+                          {t.description[locale] ?? t.description.mn}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="grid sm:grid-cols-2 gap-5">
+                <Field
+                  label={dict.wizard.fields.businessName}
+                  value={business.businessName}
+                  onChange={(v) => setField('businessName', v)}
+                  required
+                />
+                <Field
+                  label={dict.wizard.fields.industry}
+                  value={business.industry}
+                  onChange={(v) => setField('industry', v)}
+                  placeholder={L('Ресторан, Кафе, …', 'Restaurant, Café, …')}
+                />
+                <Field
+                  label={dict.wizard.fields.description}
+                  value={business.description}
+                  onChange={(v) => setField('description', v)}
+                  textarea
+                  span2
+                />
+                <Field
+                  label={dict.wizard.fields.services}
+                  value={business.services}
+                  onChange={(v) => setField('services', v)}
+                  placeholder={L('Кофе, Уух зүйл, Бялуу', 'Coffee, Drinks, Cakes')}
+                  span2
+                />
+                <Field
+                  label={dict.wizard.fields.contactEmail}
+                  value={business.contactEmail}
+                  onChange={(v) => setField('contactEmail', v)}
+                  type="email"
+                />
+                <Field
+                  label={dict.wizard.fields.contactPhone}
+                  value={business.contactPhone}
+                  onChange={(v) => setField('contactPhone', v)}
+                />
+                <Field
+                  label={dict.wizard.fields.address}
+                  value={business.address}
+                  onChange={(v) => setField('address', v)}
+                  span2
+                />
+                <div className="sm:col-span-2">
+                  <label className="eyebrow text-ink-60" htmlFor="subdomain">
+                    {L('Хаяг (subdomain)', 'Address (subdomain)')}
+                  </label>
+                  <div className="mt-2 flex items-stretch border hairline rounded-md bg-surface focus-within:border-ink transition-colors">
+                    <input
+                      id="subdomain"
+                      className="flex-1 bg-transparent px-3.5 py-2.5 text-ink placeholder:text-ink-40 focus:outline-none font-mono text-sm"
+                      value={subdomain}
+                      onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                      placeholder="mybiz"
+                      required
+                    />
+                    <div className="px-3.5 py-2.5 text-ink-40 text-sm font-mono border-l hairline bg-surface-raised">
+                      .{root}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {step === 3 && <TonePicker value={tone} onChange={setTone} locale={locale} />}
+
+            {step === 4 && (
+              <div className="border hairline rounded-lg bg-surface p-8">
+                <p className="eyebrow text-ink-40">{L('Хураангуй', 'Summary')}</p>
+                <dl className="mt-5 divide-y hairline">
+                  <Row label={L('Загвар', 'Template')} value={selectedTemplate?.name?.[locale] ?? templateId} />
+                  <Row label={L('Бизнес', 'Business')} value={business.businessName} />
+                  <Row label={L('Үйл ажиллагаа', 'Industry')} value={business.industry} />
+                  <Row label={L('Хаяг', 'Address')} value={`${subdomain || '—'}.${root}`} mono />
+                  <Row label={L('Өнгө аяс', 'Tone')} value={dict.tones[tone]} />
+                </dl>
+                {error && (
+                  <p className="mt-5 text-sm text-[var(--danger)] border border-[var(--danger)]/30 bg-[var(--danger)]/5 rounded-md px-3 py-2">
+                    {error}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="mt-10 flex items-center justify-between gap-3 border-t hairline pt-6">
+            <button
+              type="button"
+              onClick={() => setStep((s) => Math.max(1, s - 1))}
+              disabled={step === 1}
+              className="btn btn-ghost btn-md"
+            >
+              <span aria-hidden>←</span> {dict.common.back}
+            </button>
+            {step < 4 ? (
+              <button
+                type="button"
+                onClick={() => setStep((s) => s + 1)}
+                disabled={!canNext}
+                className="btn btn-primary btn-md"
+              >
+                {dict.common.next} <span aria-hidden>→</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={submit}
+                disabled={loading}
+                className="btn btn-accent btn-lg"
+              >
+                {loading ? dict.common.generating : L('Сайт үүсгэх', 'Generate site')}
+              </button>
+            )}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, value, onChange, textarea, type = 'text', span2, required, placeholder }) {
+  return (
+    <div className={span2 ? 'sm:col-span-2' : ''}>
+      <label className="eyebrow text-ink-60">
+        {label}{required && <span className="text-accent ml-1">*</span>}
+      </label>
+      {textarea ? (
+        <textarea
+          rows={3}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="field mt-2 resize-none"
+        />
+      ) : (
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          required={required}
+          className="field mt-2"
+        />
+      )}
+    </div>
+  );
+}
+
+function Row({ label, value, mono }) {
+  return (
+    <div className="flex justify-between gap-6 py-3 text-sm">
+      <dt className="text-ink-60">{label}</dt>
+      <dd className={`font-medium text-right ${mono ? 'font-mono' : ''}`}>{value || '—'}</dd>
+    </div>
+  );
+}
