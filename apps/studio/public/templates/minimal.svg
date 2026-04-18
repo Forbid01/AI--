@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <rect width="600" height="400" fill="#faf8f2"/>
+  <!-- Nav -->
+  <rect x="0" y="0" width="600" height="44" fill="#faf8f2"/>
+  <rect x="32" y="16" width="80" height="10" rx="2" fill="#0f0e0b" opacity="0.9"/>
+  <rect x="460" y="18" width="50" height="7" rx="2" fill="#0f0e0b" opacity="0.3"/>
+  <rect x="520" y="16" width="60" height="12" rx="2" fill="#d14e22"/>
+  <line x1="0" y1="44" x2="600" y2="44" stroke="#0f0e0b" stroke-width="0.5" opacity="0.15"/>
+  <!-- Hero: large headline blocks -->
+  <rect x="32" y="72" width="340" height="28" rx="2" fill="#0f0e0b" opacity="0.9"/>
+  <rect x="32" y="110" width="260" height="20" rx="2" fill="#0f0e0b" opacity="0.5"/>
+  <rect x="32" y="148" width="180" height="14" rx="2" fill="#0f0e0b" opacity="0.25"/>
+  <!-- CTA -->
+  <rect x="32" y="178" width="120" height="36" rx="4" fill="#d14e22"/>
+  <rect x="164" y="184" width="80" height="12" rx="2" fill="#0f0e0b" opacity="0.25"/>
+  <!-- Right: image placeholder -->
+  <rect x="420" y="56" width="152" height="200" rx="4" fill="#0f0e0b" opacity="0.08"/>
+  <rect x="436" y="80" width="120" height="8" rx="2" fill="#d14e22" opacity="0.4"/>
+  <rect x="436" y="100" width="100" height="6" rx="2" fill="#0f0e0b" opacity="0.2"/>
+  <rect x="436" y="116" width="110" height="6" rx="2" fill="#0f0e0b" opacity="0.15"/>
+  <!-- Stats strip -->
+  <rect x="0" y="280" width="600" height="60" fill="#0f0e0b" opacity="0.06"/>
+  <rect x="56" y="298" width="60" height="10" rx="2" fill="#d14e22" opacity="0.8"/>
+  <rect x="56" y="316" width="44" height="7" rx="2" fill="#0f0e0b" opacity="0.3"/>
+  <rect x="220" y="298" width="60" height="10" rx="2" fill="#d14e22" opacity="0.8"/>
+  <rect x="220" y="316" width="44" height="7" rx="2" fill="#0f0e0b" opacity="0.3"/>
+  <rect x="384" y="298" width="60" height="10" rx="2" fill="#d14e22" opacity="0.8"/>
+  <rect x="384" y="316" width="44" height="7" rx="2" fill="#0f0e0b" opacity="0.3"/>
+  <!-- Cards row -->
+  <rect x="32" y="356" width="160" height="28" rx="4" fill="#0f0e0b" opacity="0.06"/>
+  <rect x="212" y="356" width="160" height="28" rx="4" fill="#0f0e0b" opacity="0.06"/>
+  <rect x="392" y="356" width="160" height="28" rx="4" fill="#0f0e0b" opacity="0.06"/>
+</svg>

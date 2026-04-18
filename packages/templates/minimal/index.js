@@ -24,31 +24,13 @@ export default {
 
   // Загварын үндсэн тохиргоонууд
   defaultTheme: {
-    // Colors
-    primary: "#0f0e0b", // Үндсэн хар (текст)
-    accent: "#d14e22", // Тодотгол өнгө (улбар шар-хүрэн)
-    background: "#faf8f2", // Бага зэрэг шаргал туяатай цагаан (Warm white)
-    foreground: "#1a1915", // Туслах текст
-    surface: "#ffffff", // Картуудын өнгө
-
-    // UI Деталь
-    border: "rgba(15, 14, 11, 0.08)",
-    radius: "12px", // lg-г илүү тодорхой болгов
-
-    // Typography (Next.js font system-д холбоход хялбар)
-    fonts: {
-      heading: "Fraunces",
-      body: "Inter",
-      mono: "JetBrains Mono", // Код эсвэл дата-д зориулсан
-    },
-
-    // Layout & Spacing
-    config: {
-      containerWidth: "1200px",
-      sectionPadding: "clamp(4rem, 10vw, 8rem)",
-      navStyle: "transparent", // 'glass', 'solid', 'transparent'
-      buttonWeight: "600",
-    },
+    primary: "#0f0e0b",
+    accent: "#d14e22",
+    background: "#faf8f2",
+    foreground: "#1a1915",
+    fontHeading: "Fraunces",
+    fontBody: "Inter",
+    radius: "lg",
   },
 
   // Өөр өнгөний сонголтууд (Preset Palettes)

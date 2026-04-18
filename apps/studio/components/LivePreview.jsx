@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
+import Image from 'next/image';
 
 /* ═══════════════════════════════════════════════════════════
    Data
@@ -10,71 +11,143 @@ import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from
 const SAMPLES = {
   mn: [
     {
-      label: 'Кафе',
-      eyebrow: 'Улаанбаатар',
-      title: 'Нэг аяга — өдрийн яруу эхлэл.',
-      body: 'Мэргэшсэн бариста, орон нутгийн шарсан кофе, амттан.',
+      label: 'Фитнес',
+      slug: 'fitness',
+      eyebrow: 'Crossfit · Gym',
+      title: 'Хязгаарыг эвдэж, шинэ өндрийг эзэл.',
+      body: 'Мэргэшсэн тренер, орчин үеийн тоног төхөөрөмж, бодит үр дүн.',
+      cta: 'Эхлэх',
+      palette: ['#050505', '#0d1517', '#22d3ee'],
+      image: '/images/preview-fitness.jpg',
+      ai: 'Гүйцэтгэлийн layout тохируулж байна…',
+    },
+    {
+      label: 'Гоо сайхан',
+      slug: 'beauty',
+      eyebrow: 'Спа · Салон',
+      title: 'Жинхэнэ гоо сайхан гэрлийн эхнээс.',
+      body: 'Арьс засал, массаж, үсний засал — нэг дээвэр дор.',
+      cta: 'Цаг захиалах',
+      palette: ['#7f1d4b', '#be185d', '#f9a8d4'],
+      image: '/images/preview-beauty.jpg',
+      ai: 'Гоо сайхны туршлага бүтээж байна…',
+    },
+    {
+      label: 'Аялал',
+      slug: 'travel',
+      eyebrow: 'Дэлхийн 40+ улс',
+      title: 'Аялал бол нэг амьсгал, нэг шинэ өнцөг.',
+      body: 'Захиалгат тур, тусгай маршрут, туршлагатай хөтөч.',
+      cta: 'Аяллаа эхлэх',
+      palette: ['#080f16', '#0c4a6e', '#06b6d4'],
+      image: '/images/preview-travel.jpg',
+      ai: 'Аялалын маршрут зохиож байна…',
+    },
+    {
+      label: 'Органик',
+      slug: 'organik',
+      eyebrow: 'Фермерийн дэлгүүр',
+      title: 'Газраас шууд — хамгийн шинэхэн амт.',
+      body: 'Гэрийн тарилга, байгалийн бүтээгдэхүүн, эрүүл амьдрал.',
       cta: 'Захиалах',
-      palette: ['#d97706', '#f97316', '#fbbf24'],
-      image: '/images/preview-cafe.jpg',
-      ai: 'Брэнд өнгө тохируулж байна…',
+      palette: ['#052b13', '#14532d', '#3d7a0a'],
+      image: '/images/preview-organic.jpg',
+      ai: 'Байгалийн өнгө тохируулж байна…',
     },
     {
-      label: 'Студи',
-      eyebrow: 'Барилгын архитектур',
-      title: 'Газрын нарийн бүтцээс гэрэл санаанд.',
-      body: 'Сонгодог материал, орчин үеийн хэлбэр — байгальтай уялдсан.',
-      cta: 'Төсөл харах',
-      palette: ['#0f766e', '#14b8a6', '#22d3ee'],
-      image: '/images/preview-studio.jpg',
-      ai: 'Layout бүтэц зохиож байна…',
+      label: 'Сургалт',
+      slug: 'surgalt',
+      eyebrow: 'Онлайн · Танхим',
+      title: 'Мэдлэг бол хамгийн найдвартай хөрөнгө оруулалт.',
+      body: 'Мэргэшсэн багш, баталгаат хөтөлбөр, уян хатан цагийн хуваарь.',
+      cta: 'Элсэх',
+      palette: ['#0b1220', '#1e3a8a', '#3b82f6'],
+      image: '/images/preview-education.jpg',
+      ai: 'Сургалтын бүтэц боловсруулж байна…',
     },
     {
-      label: 'Портфолио',
-      eyebrow: 'Фото зураглаач',
-      title: 'Гэрэл бол түүхийн гарын үсэг.',
-      body: 'Хуримын, гэр бүлийн, брэнд агуулгын зураг авалт.',
-      cta: 'Уулзалт болзох',
-      palette: ['#a855f7', '#ec4899', '#f43f5e'],
-      image: '/images/preview-portfolio.jpg',
-      ai: 'Зураг боловсруулж байна…',
+      label: 'Фэшн',
+      slug: 'fashion',
+      eyebrow: 'SS 2025',
+      title: 'Загвар хэлэхгүй — мэдрүүлнэ.',
+      body: 'Орчин үеийн хувцас, минималист эстетик, цаг хугацааг даах чанар.',
+      cta: 'Коллекц харах',
+      palette: ['#09090b', '#18181b', '#52525b'],
+      image: '/images/preview-fashion.jpg',
+      ai: 'Загварын ойлголт оруулж байна…',
     },
   ],
   en: [
     {
-      label: 'Cafe',
-      eyebrow: 'Ulaanbaatar',
-      title: 'One cup — the morning\u2019s quiet prelude.',
-      body: 'Trained baristas, locally-roasted beans, pastries made in-house.',
-      cta: 'Reserve a table',
-      palette: ['#d97706', '#f97316', '#fbbf24'],
-      image: '/images/preview-cafe.jpg',
-      ai: 'Calibrating brand palette…',
+      label: 'Fitness',
+      slug: 'fitness',
+      eyebrow: 'Crossfit · Gym',
+      title: 'Break limits. Own the next peak.',
+      body: 'Expert trainers, modern equipment, and results that speak for themselves.',
+      cta: 'Start training',
+      palette: ['#050505', '#0d1517', '#22d3ee'],
+      image: '/images/preview-fitness.jpg',
+      ai: 'Optimizing performance layout…',
     },
     {
-      label: 'Studio',
-      eyebrow: 'Architecture',
-      title: 'From the grain of a site to a bright idea.',
-      body: 'Classic materials, modern geometry, always rooted in place.',
-      cta: 'View projects',
-      palette: ['#0f766e', '#14b8a6', '#22d3ee'],
-      image: '/images/preview-studio.jpg',
-      ai: 'Composing layout structure…',
-    },
-    {
-      label: 'Portfolio',
-      eyebrow: 'Photographer',
-      title: 'Light is the signature of memory.',
-      body: 'Weddings, families, brand stories — told in frames.',
+      label: 'Beauty',
+      slug: 'beauty',
+      eyebrow: 'Spa · Salon',
+      title: 'Real beauty starts in the light within.',
+      body: 'Skin care, massage, hair — all crafted under one roof.',
       cta: 'Book a session',
-      palette: ['#a855f7', '#ec4899', '#f43f5e'],
-      image: '/images/preview-portfolio.jpg',
-      ai: 'Generating hero imagery…',
+      palette: ['#7f1d4b', '#be185d', '#f9a8d4'],
+      image: '/images/preview-beauty.jpg',
+      ai: 'Crafting beauty experience…',
+    },
+    {
+      label: 'Travel',
+      slug: 'travel',
+      eyebrow: '40+ countries',
+      title: 'Every journey — a new lens on the world.',
+      body: 'Custom tours, curated routes, expert guides at every step.',
+      cta: 'Plan my trip',
+      palette: ['#080f16', '#0c4a6e', '#06b6d4'],
+      image: '/images/preview-travel.jpg',
+      ai: 'Composing travel itinerary…',
+    },
+    {
+      label: 'Organic',
+      slug: 'organic',
+      eyebrow: 'Farm store',
+      title: 'From the earth — freshness in every bite.',
+      body: 'Home-grown produce, naturally made goods, honest ingredients.',
+      cta: 'Shop fresh',
+      palette: ['#052b13', '#14532d', '#3d7a0a'],
+      image: '/images/preview-organic.jpg',
+      ai: 'Calibrating natural palette…',
+    },
+    {
+      label: 'Education',
+      slug: 'education',
+      eyebrow: 'Online · In-person',
+      title: 'Knowledge is the most reliable investment.',
+      body: 'Expert instructors, certified programs, flexible scheduling.',
+      cta: 'Enroll now',
+      palette: ['#0b1220', '#1e3a8a', '#3b82f6'],
+      image: '/images/preview-education.jpg',
+      ai: 'Structuring course curriculum…',
+    },
+    {
+      label: 'Fashion',
+      slug: 'fashion',
+      eyebrow: 'SS 2025',
+      title: 'Style doesn\u2019t speak — it arrives.',
+      body: 'Contemporary pieces, minimalist aesthetic, built to outlast seasons.',
+      cta: 'Explore collection',
+      palette: ['#09090b', '#18181b', '#52525b'],
+      image: '/images/preview-fashion.jpg',
+      ai: 'Defining editorial style…',
     },
   ],
 };
 
-const INTERVAL_MS = 5200;
+const INTERVAL_MS = 4800;
 const TICK_MS = 50;
 
 /* ═══════════════════════════════════════════════════════════
@@ -291,14 +364,14 @@ export default function LivePreview({ locale }) {
                 </svg>
                 <AnimatePresence mode="wait">
                   <motion.span
-                    key={sample.label}
+                    key={sample.slug}
                     initial={{ opacity: 0, filter: 'blur(4px)' }}
                     animate={{ opacity: 0.5, filter: 'blur(0px)' }}
                     exit={{ opacity: 0, filter: 'blur(4px)' }}
                     transition={{ duration: 0.25 }}
                     className="text-[10px] font-mono text-[var(--text-tertiary)] truncate"
                   >
-                    {sample.label.toLowerCase()}.aiweb.mn
+                    {sample.slug}.aiweb.mn
                   </motion.span>
                 </AnimatePresence>
               </div>
@@ -319,10 +392,12 @@ export default function LivePreview({ locale }) {
                 animate="animate"
                 exit="exit"
               >
-                <img
+                <Image
                   src={sample.image}
                   alt=""
-                  className="absolute inset-0 w-full h-full object-cover"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover"
                   draggable={false}
                 />
               </motion.div>

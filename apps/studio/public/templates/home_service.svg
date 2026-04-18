@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <rect width="600" height="400" fill="#f0fdf4"/>
+  <!-- White nav with shadow line -->
+  <rect x="0" y="0" width="600" height="52" fill="white"/>
+  <rect x="0" y="51" width="600" height="1" fill="#14532d" opacity="0.08"/>
+  <rect x="32" y="18" width="76" height="14" rx="2" fill="#14532d"/>
+  <rect x="196" y="21" width="40" height="8" rx="2" fill="#14532d" opacity="0.25"/>
+  <rect x="252" y="21" width="40" height="8" rx="2" fill="#14532d" opacity="0.25"/>
+  <rect x="308" y="21" width="40" height="8" rx="2" fill="#14532d" opacity="0.25"/>
+  <rect x="480" y="18" width="88" height="16" rx="3" fill="#22c55e"/>
+  <!-- Hero: primary bg left side -->
+  <rect x="0" y="52" width="280" height="180" fill="#14532d"/>
+  <!-- Hero badge -->
+  <rect x="32" y="76" width="60" height="16" rx="8" fill="#22c55e" opacity="0.8"/>
+  <rect x="32" y="104" width="220" height="22" rx="2" fill="white" opacity="0.95"/>
+  <rect x="32" y="136" width="180" height="14" rx="2" fill="white" opacity="0.45"/>
+  <rect x="32" y="158" width="140" height="12" rx="2" fill="white" opacity="0.3"/>
+  <rect x="32" y="186" width="110" height="30" rx="3" fill="#22c55e"/>
+  <!-- Hero right image -->
+  <rect x="280" y="52" width="320" height="180" fill="#22c55e" opacity="0.1"/>
+  <rect x="300" y="72" width="280" height="140" rx="4" fill="#14532d" opacity="0.07"/>
+  <!-- Stats on primary -->
+  <rect x="0" y="232" width="600" height="56" fill="#14532d"/>
+  <rect x="48" y="248" width="60" height="12" rx="2" fill="white" opacity="0.9"/>
+  <rect x="48" y="266" width="44" height="7" rx="2" fill="white" opacity="0.4"/>
+  <rect x="228" y="248" width="60" height="12" rx="2" fill="white" opacity="0.9"/>
+  <rect x="228" y="266" width="44" height="7" rx="2" fill="white" opacity="0.4"/>
+  <rect x="408" y="248" width="60" height="12" rx="2" fill="white" opacity="0.9"/>
+  <rect x="408" y="266" width="44" height="7" rx="2" fill="white" opacity="0.4"/>
+  <!-- Services grid 3 col -->
+  <rect x="24" y="306" width="176" height="78" rx="4" fill="#14532d" opacity="0.05"/>
+  <rect x="36" y="318" width="28" height="28" rx="2" fill="#22c55e" opacity="0.3"/>
+  <rect x="72" y="320" width="110" height="9" rx="2" fill="#14532d" opacity="0.55"/>
+  <rect x="72" y="336" width="120" height="6" rx="2" fill="#14532d" opacity="0.2"/>
+  <rect x="72" y="350" width="90" height="6" rx="2" fill="#14532d" opacity="0.15"/>
+  <rect x="212" y="306" width="176" height="78" rx="4" fill="#14532d" opacity="0.05"/>
+  <rect x="224" y="318" width="28" height="28" rx="2" fill="#22c55e" opacity="0.3"/>
+  <rect x="260" y="320" width="110" height="9" rx="2" fill="#14532d" opacity="0.55"/>
+  <rect x="260" y="336" width="120" height="6" rx="2" fill="#14532d" opacity="0.2"/>
+  <rect x="260" y="350" width="90" height="6" rx="2" fill="#14532d" opacity="0.15"/>
+  <rect x="400" y="306" width="176" height="78" rx="4" fill="#14532d" opacity="0.05"/>
+  <rect x="412" y="318" width="28" height="28" rx="2" fill="#22c55e" opacity="0.3"/>
+  <rect x="448" y="320" width="110" height="9" rx="2" fill="#14532d" opacity="0.55"/>
+  <rect x="448" y="336" width="120" height="6" rx="2" fill="#14532d" opacity="0.2"/>
+  <rect x="448" y="350" width="90" height="6" rx="2" fill="#14532d" opacity="0.15"/>
+</svg>

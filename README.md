@@ -4,39 +4,63 @@ AI-д суурилсан монгол жижиг бизнесийн вэбсай
 
 ## Features
 
-- **Template + AI remix**: Загвар сонгоод AI-аар контент, зураг, өнгө аясыг бизнест тохируулна
-- **Хэл**: Монгол UI/AI default, English UI/AI сонголт
-- **Tone presets**: Албан ёсны, найрсаг, премиум, борлуулалт төвтэй
-- **Нийтлэх**: Subdomain (`*.platform.mn`) + custom domain
+- **AI chat-driven builder**: Бизнесийн мэдээллийг chatbot-оор асуугаад template → tone → контент → hero зураг автоматаар үүснэ
+- **23 industry template**: Ресторан, гоо сайхан, фитнес, аялал, эрх зүй, сургалт гэх мэт 23 мэргэжлийн загвар
+- **Хоёр хэл**: Монгол UI + AI default, English UI + AI — нэг workspace-ээс sync
+- **Tone presets**: Албан ёсны, найрсаг, премиум, борлуулалт, соёлын, вирал гэх мэт
+- **Publish + domain**: Subdomain (`*.aiweb.mn`) + custom domain (DNS TXT verification)
 - **Монгол төлбөр**: QPay, SocialPay, Хаан банк, Голомт банк
+- **Image generation**: Cloudflare Workers AI (Flux schnell) + Pollinations fallback
 
 ## Архитектур
 
 ```
 apps/
-  studio/       # Builder dashboard — platform.mn
-  renderer/     # Нийтэлсэн сайтууд — *.platform.mn + custom domains
+  studio/       # Builder dashboard — platform / aiweb.mn
+  renderer/     # Нийтэлсэн сайтууд — *.aiweb.mn + custom domains
 packages/
-  db/           # Prisma schema + client
-  ai/           # Gemini + tone presets + image generation (HF / fal.ai)
-  templates/    # Template schema + React section components
+  db/           # Prisma schema + client (Neon Postgres)
+  ai/           # Gemini 2.5 Flash + image generation (Cloudflare / Pollinations)
+  templates/    # 23 template — schema, layout components, defaultTheme
   payments/     # QPay / SocialPay / KhanBank / Golomt adapters
   i18n/         # mn/en орчуулгууд
+scripts/
+  generate-preview-images.mjs   # Landing page preview зурагнуудыг Pollinations-аар үүсгэх
+  gen-covers.mjs                # Template cover зурагнуудыг үүсгэх
 ```
 
-Stack: **Next.js 14 App Router · Tailwind · Prisma + Postgres (Neon) · Gemini 2.5 Flash · HuggingFace FLUX.1-schnell (үнэгүй) · JavaScript**.
+Stack: **Next.js 14 App Router · Tailwind · Framer Motion · Prisma + Postgres (Neon) · Gemini 2.5 Flash · Cloudflare Workers AI (Flux) · NextAuth v4 · JavaScript**
 
-### Image generation providers
+## Template сан (23)
 
-Зураг үүсгэхдээ олон providerйг дэмждэг — `IMAGE_PROVIDER` env-ээр солино (default: `huggingface`).
+| Ангилал | Template-ууд |
+|---------|-------------|
+| Үндсэн | `minimal`, `business`, `portfolio` |
+| Хоол & Ундаа | `restaurant`, `restaurant_mongolian`, `organic_food` |
+| Эрүүл мэнд & Гоо сайхан | `beauty_salon`, `fitness`, `clinic` |
+| Мэргэжлийн үйлчилгээ | `education`, `legal`, `sales_rep`, `home_service`, `auto_repair`, `phone_repair` |
+| Бүтээлч & Худалдаа | `crafts`, `furniture`, `gifts`, `fashion_store`, `photography` |
+| Амьдралын хэв маяг | `travel`, `pet_shop`, `music_school` |
 
-| Provider      | Env keys                         | Үнэ            | Тайлбар                                          |
-| ------------- | -------------------------------- | -------------- | ------------------------------------------------ |
-| `huggingface` | `HF_TOKEN`                       | Үнэгүй (rate-limited) | FLUX.1-schnell / SDXL. huggingface.co/settings/tokens |
-| `fal`         | `FAL_KEY`                        | ~$0.003/img    | fal.ai Flux schnell                              |
-| `placeholder` | —                                | Үнэгүй         | Градиент SVG fallback, гадны API-гүй            |
+## Image generation
 
-Нэг provider алдаа буцаавал `IMAGE_FAILOVER` (default `true`) дарааллаар дараагийнхыг туршина — зураг үүсэхгүйгээс болж сайт үүсгэх ажил унах ёсгүй.
+Зураг үүсгэхдээ provider chain ашигладаг — `IMAGE_PROVIDER` env-ээр эхлэх provider-г тохируулна.
+
+| Provider | Env keys | Тайлбар |
+|----------|----------|---------|
+| `cloudflare` | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` | Flux-1-schnell, production-д санаачилагдсан |
+| `pollinations` | — | Credential-гүй fallback, rate-limited |
+| `placeholder` | — | Градиент SVG, API-гүй орчинд |
+
+`IMAGE_FAILOVER=true` (default) — нэг provider алдаа буцаавал автоматаар дараагийн provider-ийг туршина.
+
+## Auth
+
+NextAuth v4 + JWT strategy. Credentials provider (email + bcrypt password).
+
+- **Server**: `requireUser()` → 401 throw, `getCurrentUser()` → null-safe
+- **Client**: `signIn('credentials', { email, password })`, `signOut()`
+- **Middleware**: locale redirect (`/` → `/mn`) + dashboard auth gate
 
 ## Setup
 
@@ -58,55 +82,93 @@ pnpm dev
 # Renderer: http://localhost:3001
 ```
 
+### Шаардлагатай env variables
+
+```env
+# Auth
+NEXTAUTH_SECRET=...           # openssl rand -base64 32
+NEXTAUTH_URL=http://localhost:3000
+
+# Database
+DATABASE_URL=postgresql://...  # Neon эсвэл локал Postgres
+
+# AI
+GEMINI_API_KEY=...            # aistudio.google.com
+
+# Image generation (нэг нь хангалттай)
+CLOUDFLARE_ACCOUNT_ID=...     # Workers AI ашиглах бол
+CLOUDFLARE_API_TOKEN=...
+# IMAGE_PROVIDER=pollinations  # Cloudflare-гүй бол
+
+# Payments (optional)
+QPAY_USERNAME=...
+QPAY_PASSWORD=...
+QPAY_INVOICE_CODE=...
+```
+
 ### Credentials
 
-| Service             | Үнэгүй         | Хаанаас                    |
-| ------------------- | -------------- | -------------------------- |
-| Gemini 2.5 Flash    | ✅ Generous    | aistudio.google.com        |
-| HuggingFace         | ✅ Rate-limited| huggingface.co/settings/tokens |
-| fal.ai Flux schnell | ~$0.003/img    | fal.ai (optional fallback) |
-| Neon Postgres       | 0.5GB          | neon.tech                  |
-| Qdrant Cloud        | 1GB            | cloud.qdrant.io            |
-| QPay                | Merchant гэрээ | developer.qpay.mn          |
-| SocialPay           | Merchant гэрээ | golomtbank.com → SocialPay |
-| Khan Bank           | Merchant гэрээ | khanbank.com → e-commerce  |
-| Golomt Bank         | Merchant гэрээ | golomtbank.com → e-gateway |
+| Service | Үнэгүй | Хаанаас |
+|---------|--------|---------|
+| Gemini 2.5 Flash | ✅ Generous | aistudio.google.com |
+| Cloudflare Workers AI | ✅ 10k req/day | dash.cloudflare.com |
+| Pollinations (fallback) | ✅ Rate-limited | pollinations.ai |
+| Neon Postgres | 0.5GB | neon.tech |
+| QPay | Merchant гэрээ | developer.qpay.mn |
+| SocialPay | Merchant гэрээ | golomtbank.com |
+| Khan Bank | Merchant гэрээ | khanbank.com |
+| Golomt Bank | Merchant гэрээ | golomtbank.com |
+
+### Preview зурагнуудыг дахин үүсгэх
+
+```bash
+# Landing page slideshow зургууд (apps/studio/public/images/preview-*.jpg)
+node scripts/generate-preview-images.mjs
+
+# Template cover зургууд (apps/studio/public/templates/*/cover.jpg)
+node scripts/gen-covers.mjs
+```
 
 ### Renderer-ийг локал дээр турших
 
-Custom subdomain-уудыг локал дээр турших:
-
 ```bash
 # /etc/hosts
-127.0.0.1  platform.local mybiz.platform.local
-```
+127.0.0.1  aiweb.local mybiz.aiweb.local
 
-Дараа нь `.env` дотор `PLATFORM_ROOT_DOMAIN=platform.local` болгоод `http://mybiz.platform.local:3001` гэж нэвтрэх.
+# .env
+PLATFORM_ROOT_DOMAIN=aiweb.local
+
+# Нэвтрэх
+http://mybiz.aiweb.local:3001
+```
 
 ## Roadmap
 
-### MVP (одоо)
+### Дууссан
 
-- [x] Monorepo scaffold
-- [x] Prisma schema
-- [x] Template remix engine + 1 minimal template
-- [x] Gemini контент, fal.ai зураг
-- [x] 4 төлбөрийн adapter
+- [x] Monorepo scaffold (Next.js + Prisma + Tailwind)
+- [x] NextAuth v4 credentials auth
+- [x] AI chat builder (AiBuilder.jsx — prompt → template → tone → generate)
+- [x] 23 industry template + layout components
+- [x] Gemini 2.5 Flash контент + Cloudflare Flux зураг
 - [x] Subdomain + custom domain renderer
-- [ ] Auth (NextAuth) — одоогоор demo user
-- [ ] Нэмэлт 3-5 template
-- [ ] Custom domain DNS verification flow
+- [x] DNS TXT domain verification
+- [x] 4 Монгол төлбөрийн adapter (QPay, SocialPay, Хаан, Голомт)
+- [x] MN/EN bilingual support
+- [x] Landing page (LivePreview, BentoCapabilities, TemplateShowcase)
+- [x] Dashboard (sites list, site editor, domain panel, billing)
 
-### V2
+### Дараа
 
-- [ ] AI from scratch (template-гүй)
-- [ ] Section-level remix
-- [ ] Blog / contact form capture
+- [ ] Section-level AI remix (нэг хэсгийг дахин generate хийх)
+- [ ] Blog / contact form
 - [ ] Site analytics
 - [ ] Team collaboration
+- [ ] Custom template builder
 
 ## Notes
 
-- Код JavaScript — тохиргоо хялбар байлгах үүднээс
-- AI output-ийн default хэл монгол, `translate` action-ээр англи хувилбар үүсгэнэ
+- Код бүхэлдээ **JavaScript** (TypeScript биш) — onboarding хялбар байлгах
+- AI output-ийн default хэл монгол; `translate` action-ээр англи хувилбар үүснэ
 - Payment adapter-ууд нэгдсэн интерфэйстэй: `createInvoice`, `checkInvoice`, `verifyCallback`
+- Template `defaultTheme` flat schema: `primary`, `accent`, `background`, `foreground`, `fontHeading`, `fontBody`, `radius`

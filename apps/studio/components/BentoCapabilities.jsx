@@ -1,8 +1,90 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
+import { useEffect, useState, useRef, useCallback } from 'react';
 
-// ─── Sub-visuals ────────────────────────────────────────────────────────────
+// ─── Typewriter hook ─────────────────────────────────────────────────────────
+
+function useTypewriter(lines, startDelay = 600) {
+  const [state, setState] = useState({ lineIdx: 0, charIdx: 0, done: false });
+  const timersRef = useRef(new Set());
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    const CHAR_MS = 28;
+    const LINE_PAUSE = 420;
+    const timers = timersRef.current; // capture ref at effect start for safe cleanup
+
+    function schedule(fn, ms) {
+      const id = setTimeout(() => {
+        timers.delete(id);
+        if (mountedRef.current) fn();
+      }, ms);
+      timers.add(id);
+    }
+
+    function tick(lineIdx, charIdx) {
+      if (!mountedRef.current) return;
+      const line = lines[lineIdx];
+      if (!line) { setState((p) => ({ ...p, done: true })); return; }
+
+      if (charIdx < line.value.length) {
+        setState({ lineIdx, charIdx: charIdx + 1, done: false });
+        schedule(() => tick(lineIdx, charIdx + 1), CHAR_MS);
+      } else if (lineIdx + 1 < lines.length) {
+        setState({ lineIdx: lineIdx + 1, charIdx: 0, done: false });
+        schedule(() => tick(lineIdx + 1, 0), LINE_PAUSE);
+      } else {
+        setState((p) => ({ ...p, done: true }));
+      }
+    }
+
+    schedule(() => tick(0, 0), startDelay);
+
+    return () => {
+      mountedRef.current = false;
+      timers.forEach(clearTimeout);
+      timers.clear();
+    };
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
+
+  return { lineIdx: state.lineIdx, charIdx: state.charIdx, done: state.done };
+}
+
+// ─── 3D Tilt card ────────────────────────────────────────────────────────────
+
+function TiltCard({ children, className, style, onClick }) {
+  const rawX = useMotionValue(0);
+  const rawY = useMotionValue(0);
+  const rotateX = useSpring(useTransform(rawY, [-0.5, 0.5], [6, -6]), { stiffness: 280, damping: 22 });
+  const rotateY = useSpring(useTransform(rawX, [-0.5, 0.5], [-6, 6]), { stiffness: 280, damping: 22 });
+
+  const handleMove = useCallback((e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    rawX.set((e.clientX - rect.left) / rect.width - 0.5);
+    rawY.set((e.clientY - rect.top) / rect.height - 0.5);
+  }, [rawX, rawY]);
+
+  const handleLeave = useCallback(() => {
+    rawX.set(0);
+    rawY.set(0);
+  }, [rawX, rawY]);
+
+  return (
+    <motion.div
+      className={className}
+      style={{ rotateX, rotateY, transformPerspective: 900, ...style }}
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
+      onClick={onClick}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// ─── Sub-visuals ─────────────────────────────────────────────────────────────
 
 function GeminiTerminal() {
   const lines = [
@@ -12,44 +94,61 @@ function GeminiTerminal() {
     { key: 'about',    value: '"A cozy corner in the heart of UB…"', color: 'text-emerald-400' },
   ];
 
+  const { lineIdx, charIdx } = useTypewriter(lines, 700);
+
   return (
-    <div className="rounded-2xl overflow-hidden border border-[var(--surface-border)] bg-[#0d0d1a]">
+    <div className="rounded-2xl overflow-hidden border border-white/[0.07] bg-[#080812] shadow-inner shadow-black/40">
       {/* macOS chrome */}
-      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[var(--surface-border)] bg-[#09091a]">
+      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.06] bg-[#06060f]">
         <div className="flex gap-1.5">
           <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f56]" />
           <span className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]" />
           <span className="h-2.5 w-2.5 rounded-full bg-[#27c93f]" />
         </div>
-        <span className="font-mono text-[10px] text-[var(--text-muted)] mx-auto pr-14">gemini-2.5-flash</span>
+        <span className="font-mono text-[10px] text-white/20 mx-auto pr-14">gemini-2.5-flash</span>
       </div>
 
       <div className="p-4 font-mono text-[11px] space-y-2 min-h-[148px]">
-        <p className="text-[var(--text-muted)]">{'// Generating: Nomad Coffee ✦'}</p>
-        {lines.map((l, i) => (
-          <motion.div
-            key={l.key}
-            className="flex gap-2"
-            initial={{ opacity: 0, x: -10 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.4 + i * 0.22, duration: 0.4 }}
-          >
-            <span className="text-[var(--accent-light)]">{l.key}</span>
-            <span className="text-[var(--text-muted)]">:</span>
-            <span className={l.color}>{l.value}</span>
-          </motion.div>
-        ))}
-        <motion.span
-          className="inline-block w-[2px] h-[11px] bg-[var(--accent-light)] align-middle"
-          animate={{ opacity: [1, 1, 0, 0] }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear', times: [0, 0.45, 0.5, 0.95] }}
-        />
+        <p className="text-white/25">{'// Generating: Nomad Coffee ✦'}</p>
+
+        {lines.map((l, i) => {
+          const isActive = i === lineIdx;
+          const isPast = i < lineIdx;
+          const isFuture = i > lineIdx;
+          const visibleValue = isPast
+            ? l.value
+            : isActive
+            ? l.value.slice(0, charIdx)
+            : '';
+
+          if (isFuture) return null;
+
+          return (
+            <motion.div
+              key={l.key}
+              className="flex gap-2 flex-wrap"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.15 }}
+            >
+              <span className="text-[var(--accent-light)]">{l.key}</span>
+              <span className="text-white/25">:</span>
+              <span className={l.color}>{visibleValue}</span>
+              {isActive && (
+                <motion.span
+                  className="inline-block w-[2px] h-[11px] bg-[var(--accent-light)] align-middle"
+                  animate={{ opacity: [1, 1, 0, 0] }}
+                  transition={{ duration: 0.9, repeat: Infinity, ease: 'linear', times: [0, 0.45, 0.5, 0.95] }}
+                />
+              )}
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* Progress bar */}
       <div className="px-4 pb-3">
-        <div className="h-0.5 rounded-full bg-[var(--surface-border)] overflow-hidden">
+        <div className="h-px rounded-full bg-white/[0.06] overflow-hidden">
           <motion.div
             className="h-full bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-mid)]"
             initial={{ width: '0%' }}
@@ -63,39 +162,75 @@ function GeminiTerminal() {
   );
 }
 
-function FluxGrid() {
-  const swatches = [
-    { gradient: 'from-rose-600 via-orange-500 to-amber-400', label: 'Restaurant' },
-    { gradient: 'from-violet-600 via-purple-500 to-cyan-400', label: 'Yoga' },
-    { gradient: 'from-emerald-600 via-teal-500 to-indigo-400', label: 'Hotel' },
-  ];
+/* Photo cards for Yoga / Restaurant / Hotel */
+const FLUX_PHOTOS = [
+  {
+    label: 'Yoga',
+    labelMn: 'Йога',
+    src: '/images/bento-yoga.jpg',
+    palette: 'from-amber-900/60 to-amber-600/20',
+    accent: '#fbbf24',
+  },
+  {
+    label: 'Restaurant',
+    labelMn: 'Ресторан',
+    src: '/images/bento-restaurant.jpg',
+    palette: 'from-orange-900/60 to-rose-600/20',
+    accent: '#fb923c',
+  },
+  {
+    label: 'Hotel',
+    labelMn: 'Зочид буудал',
+    src: '/images/bento-hotel.jpg',
+    palette: 'from-slate-900/70 to-cyan-900/20',
+    accent: '#67e8f9',
+  },
+];
+
+function PhotoGrid({ locale }) {
+  const L = useCallback((mn, en) => (locale === 'mn' ? mn : en), [locale]);
 
   return (
     <div className="grid grid-cols-3 gap-2 h-[148px]">
-      {swatches.map((s, i) => (
+      {FLUX_PHOTOS.map((p, i) => (
         <motion.div
-          key={s.label}
-          className={`relative rounded-xl bg-gradient-to-br ${s.gradient} overflow-hidden cursor-default`}
-          initial={{ scale: 0.9, opacity: 0 }}
+          key={p.label}
+          className="relative rounded-xl overflow-hidden cursor-default"
+          initial={{ scale: 0.92, opacity: 0 }}
           whileInView={{ scale: 1, opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.15 + i * 0.12, duration: 0.5 }}
-          whileHover={{ scale: 1.06, zIndex: 10, transition: { duration: 0.25 } }}
+          transition={{ delay: 0.12 + i * 0.1, duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
+          style={{ transformStyle: 'preserve-3d' }}
         >
-          {/* Grain overlay */}
-          <div className="absolute inset-0 opacity-[0.04] mix-blend-overlay"
-            style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")" }}
+          {/* Photo with Ken Burns on hover */}
+          <motion.img
+            src={p.src}
+            alt={p.label}
+            className="absolute inset-0 w-full h-full object-cover"
+            initial={{ scale: 1.08 }}
+            whileHover={{ scale: 1.15 }}
+            transition={{ duration: 6, ease: 'easeOut' }}
+            draggable={false}
           />
-          {/* Shimmer */}
-          <motion.div
-            className="absolute inset-0"
-            style={{ background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%)' }}
-            animate={{ x: ['-200%', '300%'] }}
-            transition={{ duration: 2.2, delay: i * 0.9, repeat: Infinity, repeatDelay: 1.8 }}
-          />
-          <div className="absolute bottom-2 left-2">
-            <span className="text-[9px] font-mono text-white/60 uppercase tracking-wider">{s.label}</span>
+
+          {/* Gradient scrim */}
+          <div className={`absolute inset-0 bg-gradient-to-t ${p.palette}`} />
+
+          {/* Glass label */}
+          <div className="absolute bottom-0 left-0 right-0 p-2">
+            <div className="flex items-center gap-1.5">
+              <span
+                className="h-1 w-1 rounded-full"
+                style={{ backgroundColor: p.accent, boxShadow: `0 0 6px ${p.accent}` }}
+              />
+              <span className="text-[9px] font-mono text-white/70 uppercase tracking-widest">
+                {L(p.labelMn, p.label)}
+              </span>
+            </div>
           </div>
+
+          {/* Hairline border */}
+          <div className="absolute inset-0 rounded-xl border border-white/[0.08] pointer-events-none" />
         </motion.div>
       ))}
     </div>
@@ -103,94 +238,200 @@ function FluxGrid() {
 }
 
 function DomainVisual() {
+  const [copied, setCopied] = useState(false);
+  const domain = 'yourdomain.mn';
+
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(`_aiweb.${domain}`).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, []);
+
   return (
-    <div className="h-[120px] flex items-center justify-center">
-      <motion.div
-        className="font-mono text-xs bg-[var(--bg-tertiary)]/70 border border-[var(--surface-border)] rounded-xl px-4 py-3 flex items-center gap-2.5"
-        initial={{ scale: 0.88, opacity: 0 }}
-        whileInView={{ scale: 1, opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5 }}
-        whileHover={{ borderColor: 'rgba(166,153,255,0.4)', scale: 1.03, transition: { duration: 0.2 } }}
+    <div className="h-[120px] flex flex-col items-center justify-center gap-3">
+      <TiltCard
+        className="font-mono text-xs bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] rounded-xl px-4 py-3 flex items-center gap-2.5 cursor-pointer select-none shadow-lg shadow-black/20 hover:border-white/[0.14] transition-colors duration-200"
+        onClick={handleCopy}
       >
-        <motion.span
-          className="h-2 w-2 rounded-full bg-[var(--success)]"
-          animate={{ scale: [1, 1.4, 1], opacity: [0.7, 1, 0.7] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-        <span className="text-[var(--text-muted)]">_aiweb.</span>
-        <span className="text-[var(--accent-light)]">yourdomain.mn</span>
-        <span className="ml-1 text-[9px] bg-[var(--success)]/20 text-[var(--success)] px-1.5 py-0.5 rounded-full border border-[var(--success)]/20">
+        {/* Pulsing green dot */}
+        <span className="relative flex h-2 w-2 shrink-0">
+          <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-50" />
+          <span className="relative rounded-full h-2 w-2 bg-emerald-400" />
+        </span>
+
+        <span className="text-white/30">_aiweb.</span>
+        <span className="text-[var(--accent-light)]">{domain}</span>
+
+        <span className="ml-1 text-[9px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded-full border border-emerald-500/20">
           LIVE
         </span>
-      </motion.div>
+
+        {/* Copy feedback */}
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={copied ? 'copied' : 'copy'}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.15 }}
+            className="ml-auto text-[9px] font-mono text-white/30"
+          >
+            {copied ? '✓ copied' : '⌘C'}
+          </motion.span>
+        </AnimatePresence>
+      </TiltCard>
+
+      <p className="text-[9px] font-mono text-white/20 tracking-widest">
+        HTTPS · AUTO-RENEW · CDN
+      </p>
     </div>
   );
 }
 
+/* Monochrome white SVG wordmarks */
+function QPayLogo() {
+  return (
+    <svg width="52" height="22" viewBox="0 0 52 22" fill="none">
+      <circle cx="11" cy="11" r="9.5" stroke="white" strokeWidth="1.4" />
+      <text x="11" y="15.5" textAnchor="middle" fill="white" fontSize="10" fontWeight="800" fontFamily="system-ui, sans-serif">Q</text>
+      <text x="35" y="15" textAnchor="middle" fill="white" fontSize="10" fontWeight="600" fontFamily="system-ui, sans-serif">Pay</text>
+    </svg>
+  );
+}
+
+function SocialPayLogo() {
+  return (
+    <svg width="68" height="22" viewBox="0 0 68 22" fill="none">
+      <path d="M2 7C2 4.79 3.79 3 6 3h10c2.21 0 4 1.79 4 4v6c0 2.21-1.79 4-4 4H9l-4 4V17H6c-2.21 0-4-1.79-4-4V7Z" stroke="white" strokeWidth="1.3" fill="none" />
+      <text x="25" y="15" fill="white" fontSize="9" fontWeight="700" fontFamily="system-ui, sans-serif">Social</text>
+      <text x="52" y="15" fill="white" fontSize="9" fontWeight="400" fontFamily="system-ui, sans-serif">Pay</text>
+    </svg>
+  );
+}
+
+function KhanLogo() {
+  return (
+    <svg width="48" height="22" viewBox="0 0 48 22" fill="none">
+      {/* Crown */}
+      <path d="M12 8 L15 4 L18 7 L21 3 L24 7 L27 4 L30 8" stroke="white" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <text x="21" y="18" textAnchor="middle" fill="white" fontSize="9" fontWeight="700" fontFamily="system-ui, sans-serif" letterSpacing="1">KHAN</text>
+    </svg>
+  );
+}
+
+function GolomtLogo() {
+  return (
+    <svg width="58" height="22" viewBox="0 0 58 22" fill="none">
+      {/* Flame */}
+      <path d="M9 19 C9 19 4 15 6 10 C7 7 10 8 10 8 C10 8 8 5 11 3 C11 3 11 7 13 8 C15 9 14 12 14 12 C16 10 15 7 16 6 C18 9 18 15 13 19 Z" stroke="white" strokeWidth="1.2" fill="none" strokeLinejoin="round" />
+      <text x="36" y="15" textAnchor="middle" fill="white" fontSize="8.5" fontWeight="700" fontFamily="system-ui, sans-serif" letterSpacing="0.5">GOLOMT</text>
+    </svg>
+  );
+}
+
 function PaymentsVisual() {
-  const providers = ['QPay', 'SocialPay', 'Khan', 'Golomt'];
+  const providers = [
+    { key: 'qpay', logo: <QPayLogo /> },
+    { key: 'social', logo: <SocialPayLogo /> },
+    { key: 'khan', logo: <KhanLogo /> },
+    { key: 'golomt', logo: <GolomtLogo /> },
+  ];
 
   return (
-    <div className="h-[120px] flex flex-wrap items-center justify-center gap-2">
+    <div className="h-[120px] grid grid-cols-2 gap-2">
       {providers.map((p, i) => (
-        <motion.span
-          key={p}
-          className="text-[11px] font-mono px-3 py-1.5 rounded-lg border border-[var(--surface-border)] bg-[var(--bg-tertiary)]/60 text-[var(--text-secondary)] cursor-default"
+        <motion.div
+          key={p.key}
+          className="flex items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.03] backdrop-blur-sm hover:bg-white/[0.06] hover:border-white/[0.13] transition-colors duration-200 cursor-default"
           initial={{ opacity: 0, y: 8 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.1 + i * 0.08, duration: 0.4 }}
-          whileHover={{ y: -2, borderColor: 'rgba(166,153,255,0.4)', color: 'var(--text-primary)', transition: { duration: 0.15 } }}
+          transition={{ delay: 0.08 + i * 0.07, duration: 0.4 }}
+          whileHover={{ y: -2, transition: { duration: 0.15 } }}
         >
-          {p}
-        </motion.span>
+          {p.logo}
+        </motion.div>
       ))}
     </div>
   );
 }
 
-function BilingualVisual() {
+/* MN flag: red-blue-red + soyombo | EN flag: Union Jack simplified */
+function MNFlag() {
   return (
-    <div className="h-[120px] flex items-center justify-center gap-5">
+    <svg width="36" height="24" viewBox="0 0 36 24" rx="3" fill="none">
+      <rect width="36" height="24" rx="3" fill="#C4272E" />
+      <rect x="10" width="16" height="24" fill="#015197" />
+      {/* Soyombo simplified */}
+      <circle cx="18" cy="12" r="3.5" fill="#F5A623" opacity="0.9" />
+      <path d="M18 7 L19 10 L18 9.5 L17 10 Z" fill="#F5A623" opacity="0.9" />
+    </svg>
+  );
+}
+
+function ENFlag() {
+  return (
+    <svg width="36" height="24" viewBox="0 0 36 24" fill="none">
+      <rect width="36" height="24" rx="3" fill="#012169" />
+      {/* Union Jack diagonals */}
+      <path d="M0 0 L36 24 M36 0 L0 24" stroke="white" strokeWidth="5" />
+      <path d="M0 0 L36 24 M36 0 L0 24" stroke="#C8102E" strokeWidth="3" />
+      {/* Cross */}
+      <rect x="14" y="0" width="8" height="24" fill="white" />
+      <rect x="0" y="8" width="36" height="8" fill="white" />
+      <rect x="15.5" y="0" width="5" height="24" fill="#C8102E" />
+      <rect x="0" y="9.5" width="36" height="5" fill="#C8102E" />
+    </svg>
+  );
+}
+
+function BilingualVisual() {
+  const [active, setActive] = useState('mn');
+
+  useEffect(() => {
+    const id = setInterval(() => setActive((a) => (a === 'mn' ? 'en' : 'mn')), 2600);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="h-[120px] flex items-center justify-center gap-4">
+      {/* MN side */}
       <motion.div
-        className="text-center"
-        initial={{ opacity: 0, x: -20 }}
-        whileInView={{ opacity: 1, x: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.55 }}
+        className="flex flex-col items-center gap-2"
+        animate={{ opacity: active === 'mn' ? 1 : 0.3, scale: active === 'mn' ? 1.05 : 0.95 }}
+        transition={{ duration: 0.5 }}
       >
-        <div className="text-3xl font-display font-black text-[var(--accent-light)]">МН</div>
-        <div className="text-[9px] font-mono text-[var(--text-muted)] mt-1 tracking-widest">MONGOLIAN</div>
+        <MNFlag />
+        <div className="text-center">
+          <div className="text-[18px] font-display font-black text-[var(--accent-light)] leading-none">МН</div>
+          <div className="text-[8px] font-mono text-white/25 mt-0.5 tracking-widest">MONGOLIAN</div>
+        </div>
       </motion.div>
 
-      <motion.div
-        className="flex flex-col items-center gap-1"
-        initial={{ opacity: 0, scaleY: 0 }}
-        whileInView={{ opacity: 1, scaleY: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.4, delay: 0.3 }}
-      >
-        <div className="h-7 w-px bg-gradient-to-b from-transparent via-[var(--surface-border-strong)] to-transparent" />
-        <motion.span
-          className="text-[9px] font-mono text-[var(--text-muted)] bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded-full border border-[var(--surface-border)]"
-          animate={{ opacity: [0.4, 1, 0.4] }}
-          transition={{ duration: 2.4, repeat: Infinity }}
+      {/* Centre divider */}
+      <div className="flex flex-col items-center gap-1.5">
+        <div className="h-6 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+        <motion.div
+          className="text-[8px] font-mono text-white/25 bg-white/[0.04] border border-white/[0.07] px-1.5 py-0.5 rounded-full"
+          animate={{ opacity: [0.3, 0.8, 0.3] }}
+          transition={{ duration: 2.6, repeat: Infinity }}
         >
           sync
-        </motion.span>
-        <div className="h-7 w-px bg-gradient-to-b from-transparent via-[var(--surface-border-strong)] to-transparent" />
-      </motion.div>
+        </motion.div>
+        <div className="h-6 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+      </div>
 
+      {/* EN side */}
       <motion.div
-        className="text-center"
-        initial={{ opacity: 0, x: 20 }}
-        whileInView={{ opacity: 1, x: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.55 }}
+        className="flex flex-col items-center gap-2"
+        animate={{ opacity: active === 'en' ? 1 : 0.3, scale: active === 'en' ? 1.05 : 0.95 }}
+        transition={{ duration: 0.5 }}
       >
-        <div className="text-3xl font-display font-black text-[var(--accent-light)]">EN</div>
-        <div className="text-[9px] font-mono text-[var(--text-muted)] mt-1 tracking-widest">ENGLISH</div>
+        <ENFlag />
+        <div className="text-center">
+          <div className="text-[18px] font-display font-black text-[var(--accent-light)] leading-none">EN</div>
+          <div className="text-[8px] font-mono text-white/25 mt-0.5 tracking-widest">ENGLISH</div>
+        </div>
       </motion.div>
     </div>
   );
@@ -232,26 +473,13 @@ function MongoliaShowcase({ locale }) {
       {/* Mountain silhouettes */}
       <div className="absolute bottom-0 left-0 right-0">
         <svg viewBox="0 0 1440 160" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full" preserveAspectRatio="none">
-          {/* Far range */}
-          <path
-            d="M0,105 L70,58 L130,82 L210,32 L290,68 L370,22 L450,60 L530,40 L615,78 L700,30 L785,65 L865,44 L950,80 L1030,40 L1115,72 L1200,28 L1285,62 L1380,46 L1440,58 L1440,160 L0,160 Z"
-            fill="#1a1a38"
-            opacity="0.92"
-          />
-          {/* Mid range */}
-          <path
-            d="M0,128 L90,80 L190,108 L310,60 L430,96 L555,50 L670,90 L790,58 L910,100 L1040,65 L1155,108 L1280,75 L1440,92 L1440,160 L0,160 Z"
-            fill="#0f0f28"
-          />
-          {/* Ground / steppe */}
-          <path
-            d="M0,150 Q360,142 720,148 Q1080,154 1440,144 L1440,160 L0,160 Z"
-            fill="#09091e"
-          />
+          <path d="M0,105 L70,58 L130,82 L210,32 L290,68 L370,22 L450,60 L530,40 L615,78 L700,30 L785,65 L865,44 L950,80 L1030,40 L1115,72 L1200,28 L1285,62 L1380,46 L1440,58 L1440,160 L0,160 Z" fill="#1a1a38" opacity="0.92" />
+          <path d="M0,128 L90,80 L190,108 L310,60 L430,96 L555,50 L670,90 L790,58 L910,100 L1040,65 L1155,108 L1280,75 L1440,92 L1440,160 L0,160 Z" fill="#0f0f28" />
+          <path d="M0,150 Q360,142 720,148 Q1080,154 1440,144 L1440,160 L0,160 Z" fill="#09091e" />
         </svg>
       </div>
 
-      {/* Ger (yurt) silhouette */}
+      {/* Ger silhouette */}
       <div className="absolute bottom-[26px] left-[8%]">
         <svg width="44" height="26" viewBox="0 0 44 26" fill="#09091e">
           <path d="M2,26 L6,14 Q22,2 38,14 L42,26 Z" />
@@ -261,7 +489,6 @@ function MongoliaShowcase({ locale }) {
         </svg>
       </div>
 
-      {/* Second ger — far */}
       <div className="absolute bottom-[22px] right-[12%]">
         <svg width="28" height="17" viewBox="0 0 28 17" fill="#09091e" opacity="0.7">
           <path d="M1,17 L4,9 Q14,1 24,9 L27,17 Z" />
@@ -269,7 +496,7 @@ function MongoliaShowcase({ locale }) {
         </svg>
       </div>
 
-      {/* Text content */}
+      {/* Text */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-10 pb-8">
         <motion.span
           className="eyebrow mb-3"
@@ -306,7 +533,6 @@ function MongoliaShowcase({ locale }) {
         </motion.p>
       </div>
 
-      {/* Hover shimmer */}
       <div
         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
         style={{ background: 'radial-gradient(ellipse at center, rgba(52,211,153,0.07) 0%, transparent 65%)' }}
@@ -315,7 +541,7 @@ function MongoliaShowcase({ locale }) {
   );
 }
 
-// ─── BentoCard wrapper ───────────────────────────────────────────────────────
+// ─── BentoCard ───────────────────────────────────────────────────────────────
 
 function BentoCard({ children, span = 'md:col-span-3', delay = 0, noPad = false }) {
   return (
@@ -383,7 +609,7 @@ export default function BentoCapabilities({ locale }) {
           </BentoCard>
 
           <BentoCard span="md:col-span-2" delay={0.15}>
-            <FluxGrid />
+            <PhotoGrid locale={locale} />
             <div className="mt-5">
               <h3 className="font-display text-lg font-bold tracking-tight">{L('Flux зургийн генератор', 'Flux image generator')}</h3>
               <p className="mt-2 text-sm text-[var(--text-secondary)] leading-relaxed">

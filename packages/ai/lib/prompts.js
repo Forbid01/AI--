@@ -37,6 +37,189 @@ const TEMPLATE_HINTS = {
     statsHint:
       "Craft-focused numbers: projects shipped, clients worked with, industries, years practising.",
   },
+
+  // ── Beauty & Wellness ──────────────────────────────────────────────────────
+  beauty_salon: {
+    personality:
+      "elegant, soft, reassuring. Write like a luxury spa — elevated but approachable. Sensory language about transformation, confidence, care.",
+    servicesLabel: "Үйлчилгээ / Treatments",
+    servicesHint:
+      'Each service is a beauty treatment (2–4 words title, 1-sentence sensory description). Include "price" field like "₮35,000".',
+    statsHint:
+      "Client-focused numbers: happy clients, years in business, treatments per month, satisfaction rate.",
+  },
+  pet_shop: {
+    personality:
+      "warm, playful, caring. Speak as passionate animal lovers. Friendly tone, never corporate.",
+    servicesLabel: "Үйлчилгээ / Services",
+    servicesHint:
+      'Each service is a pet care offering (grooming, vet, food, supplies). 2–4 word title, 1–2 sentence description. Include "price" if applicable.',
+    statsHint:
+      "Happy numbers: animals served, years caring, breeds supported, client pets.",
+  },
+
+  // ── Fitness ────────────────────────────────────────────────────────────────
+  fitness: {
+    personality:
+      "bold, energising, motivational. Short punchy sentences. Speak to transformation and discipline. No fluff.",
+    servicesLabel: "Хөтөлбөрүүд / Programs",
+    servicesHint:
+      "Each service is a training program (2–4 words UPPERCASE-style title, 1–2 sentence description of intensity and result). No prices.",
+    statsHint:
+      "Impressive fitness numbers: members, kg lost, classes per week, coaches, years operating.",
+  },
+
+  // ── Food & Organic ─────────────────────────────────────────────────────────
+  restaurant_mongolian: {
+    personality:
+      "proud, cultural, storytelling. Speak about Mongolian heritage, nomadic traditions, and authentic flavors. Evocative, slightly cinematic.",
+    servicesLabel: "Меню / Menu items",
+    servicesHint:
+      'Each "service" is a Mongolian dish: traditional name, 1-sentence description of origin and flavor. Include "price" like "₮18,000".',
+    statsHint:
+      "Cultural numbers: years of tradition, recipes preserved, kg of meat per day, families fed.",
+  },
+  organic_food: {
+    personality:
+      "honest, wholesome, nature-forward. Speak about soil, seasons, farmers. Avoid greenwashing buzzwords. Real and grounded.",
+    servicesLabel: "Бүтээгдэхүүн / Products",
+    servicesHint:
+      'Each "service" is a product category (fresh produce, dairy, grains, etc). 2–4 word title, 1–2 sentence description of origin or benefit. Include "price" if relevant.',
+    statsHint:
+      "Farm-to-table numbers: partner farms, km from farm to shelf, kg delivered weekly, certifications.",
+  },
+
+  // ── Artisan & Creative Retail ──────────────────────────────────────────────
+  crafts: {
+    personality:
+      "artisan, storytelling, hands-on. Speak as a maker. Describe the process, the materials, the intention behind each piece.",
+    servicesLabel: "Бүтээгдэхүүн / Collections",
+    servicesHint:
+      'Each "service" is a product category or craft type (2–4 words). 1–2 sentence description of material, technique, or use. Include "price" if applicable.',
+    statsHint:
+      "Maker numbers: pieces crafted, years practising, raw materials sourced, exhibitions shown.",
+  },
+  furniture: {
+    personality:
+      "refined, understated, tactile. Write about craft, materials, longevity. Scandinavian minimalism meets Mongolian warmth.",
+    servicesLabel: "Цуглуулга / Collections",
+    servicesHint:
+      'Each "service" is a furniture line or product type (2–4 words). 1–2 sentence description of material and design language. Include "price" range if helpful.',
+    statsHint:
+      "Craft numbers: pieces made, wood types used, years in woodworking, satisfied homes.",
+  },
+  gifts: {
+    personality:
+      "joyful, thoughtful, celebratory. Make it feel like unwrapping something special. Speak to gifting occasions and emotional moments.",
+    servicesLabel: "Бэлгийн цуглуулга / Gift Collections",
+    servicesHint:
+      'Each "service" is a gift category (2–4 words). 1–2 sentence description of occasion or emotional fit. Include "price" range.',
+    statsHint:
+      "Gifting numbers: happy recipients, occasions served, gift boxes sent, partner brands.",
+  },
+
+  // ── Professional Services ──────────────────────────────────────────────────
+  education: {
+    personality:
+      "encouraging, knowledgeable, structured. Speak to student outcomes and transformation. Avoid academic jargon.",
+    servicesLabel: "Хөтөлбөрүүд / Programs",
+    servicesHint:
+      "Each service is a course or program (2–5 words title, 1–2 sentence description of what the student gains). No prices.",
+    statsHint:
+      "Learning outcomes: graduates, pass rates, years teaching, courses offered.",
+  },
+  clinic: {
+    personality:
+      "calm, reassuring, professional. Speak with clinical precision but human warmth. Focus on patient wellbeing and trust.",
+    servicesLabel: "Үйлчилгээ / Medical services",
+    servicesHint:
+      "Each service is a medical or health offering (2–4 words title, 1–2 sentence description of the condition treated or benefit). No prices.",
+    statsHint:
+      "Care numbers: patients served, years operating, specialists on staff, treatments per month.",
+  },
+  auto_repair: {
+    personality:
+      "direct, no-nonsense, reliable. Speak like an experienced mechanic — honest, practical, and confident. No marketing fluff.",
+    servicesLabel: "Үйлчилгээ / Repair services",
+    servicesHint:
+      "Each service is a vehicle repair or maintenance type (2–4 words title, 1-sentence description of what's fixed or maintained). Include 'price' if standard.",
+    statsHint:
+      "Workshop numbers: vehicles repaired per month, years in business, brands served, mechanics on team.",
+  },
+  home_service: {
+    personality:
+      "dependable, neighbourly, practical. Speak like a trusted professional who shows up on time and does the job right.",
+    servicesLabel: "Үйлчилгээ / Services",
+    servicesHint:
+      "Each service is a home service type (2–4 words title, 1–2 sentence description of what's done and the outcome). No prices.",
+    statsHint:
+      "Service numbers: jobs completed, happy homeowners, years in business, response time.",
+  },
+  sales_rep: {
+    personality:
+      "confident, results-driven, persuasive without being pushy. Focus on value, ROI, and partnership.",
+    servicesLabel: "Үйлчилгээ / Offerings",
+    servicesHint:
+      "Each service is a sales or distribution offering (2–5 words title, 1–2 sentence description of value delivered). No prices.",
+    statsHint:
+      "Commerce numbers: products sold, partner brands, years in trade, distribution reach.",
+  },
+  legal: {
+    personality:
+      "authoritative, precise, composed. Write with measured confidence. Every word earns its place. No promises that can't be kept.",
+    servicesLabel: "Үйлчилгээ / Legal services",
+    servicesHint:
+      "Each service is a legal practice area (2–4 words title, 1–2 sentence description of what cases are handled or clients served). No prices.",
+    statsHint:
+      "Practice numbers: cases handled, years in practice, clients represented, success rate.",
+  },
+  phone_repair: {
+    personality:
+      "fast, technically capable, trustworthy. Speak to speed, precision, and warranty. Tech-savvy but approachable.",
+    servicesLabel: "Засварын үйлчилгээ / Repair services",
+    servicesHint:
+      "Each service is a device repair type (2–4 words title, 1-sentence description of what's fixed and turnaround time). Include 'price' if standard.",
+    statsHint:
+      "Repair numbers: devices fixed, brands supported, satisfaction rate, years in business.",
+  },
+
+  // ── Creative ───────────────────────────────────────────────────────────────
+  fashion_store: {
+    personality:
+      "editorial, minimal, image-conscious. Write like a fashion editor — precise, aspirational, no clichés. Let the product speak.",
+    servicesLabel: "Цуглуулга / Collections",
+    servicesHint:
+      'Each "service" is a product line or clothing category (2–4 words title, 1-sentence editorial description of aesthetic or occasion). Include "price" range.',
+    statsHint:
+      "Fashion numbers: styles available, seasons launched, satisfied customers, years in fashion.",
+  },
+  photography: {
+    personality:
+      "minimal, first-person, image-led. Speak as the photographer. Short sentences. Let work do the talking. No corporate language.",
+    servicesLabel: "Бүтээлүүд / Services",
+    servicesHint:
+      'Each "service" is a photography type (portrait, wedding, commercial etc). 2–4 word title, 1-sentence description of style and what the client gets. Include "price" starting from.',
+    statsHint:
+      "Portfolio numbers: shoots completed, years shooting, cities covered, happy clients.",
+  },
+  travel: {
+    personality:
+      "adventurous, vivid, inspiring. Paint a picture of the destination. Make the reader feel they're already there.",
+    servicesLabel: "Аяллын пакет / Tour packages",
+    servicesHint:
+      'Each "service" is a tour or package (2–4 words title, 1–2 sentence description of destination, duration, and highlight). Include "price" per person.',
+    statsHint:
+      "Adventure numbers: destinations covered, travelers sent, years operating, 5-star reviews.",
+  },
+  music_school: {
+    personality:
+      "passionate, expressive, encouraging. Speak to the joy of music and personal growth. Creative but professional.",
+    servicesLabel: "Хөтөлбөрүүд / Programs",
+    servicesHint:
+      "Each service is a music program or instrument class (2–4 words title, 1–2 sentence description of level, style, and outcome). Include 'price' per month.",
+    statsHint:
+      "Musical numbers: students enrolled, instruments taught, performances staged, years teaching.",
+  },
 };
 
 const ALLOWED_ICONS = [
@@ -61,6 +244,24 @@ const ALLOWED_ICONS = [
   "wand",
   "infinity",
 ];
+
+// Templates that require a price field in services
+const SERVICES_WITH_PRICE = new Set([
+  "restaurant",
+  "restaurant_mongolian",
+  "beauty_salon",
+  "pet_shop",
+  "crafts",
+  "furniture",
+  "gifts",
+  "organic_food",
+  "fashion_store",
+  "phone_repair",
+  "auto_repair",
+  "photography",
+  "travel",
+  "music_school",
+]);
 
 function sectionSpec(hints, servicesHasPrice) {
   return `Сайт дараах section-уудтай / The site has these sections:
@@ -87,7 +288,7 @@ export function buildContentPrompt({ business, tone, locale, templateId }) {
     : "Write all visible copy in natural, native English. (`galleryPrompts` is an image-generation prompt list and must stay in English regardless of locale.) `icon` values must come from the allowed list only.";
 
   const hints = TEMPLATE_HINTS[templateId] ?? TEMPLATE_HINTS.minimal;
-  const servicesHasPrice = templateId === "restaurant";
+  const servicesHasPrice = SERVICES_WITH_PRICE.has(templateId);
 
   return `Чи бол "${templateId}" загварт суурилсан бизнесийн вэбсайтын контентын зохиогч. / You are writing website copy for a "${templateId}" layout.
 

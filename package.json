@@ -10,7 +10,8 @@
     "lint": "turbo run lint",
     "db:generate": "pnpm --filter @aiweb/db prisma generate",
     "db:migrate": "pnpm --filter @aiweb/db prisma migrate dev",
-    "db:studio": "pnpm --filter @aiweb/db prisma studio"
+    "db:studio": "pnpm --filter @aiweb/db prisma studio",
+    "gen:covers": "node scripts/gen-covers.mjs"
   },
   "devDependencies": {
     "turbo": "^2.1.3",
