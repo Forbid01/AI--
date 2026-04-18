@@ -380,29 +380,30 @@ function SiteCard({ site, locale, root }) {
           </span>
         )}
 
-        {/* Hover overlay — z-10 so it sits above cover link */}
-        <div className="absolute inset-0 z-10 bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3">
-          <span className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm pointer-events-none">
+        {/* Hover overlay — pointer-events-none so cover Link still handles "Edit" clicks.
+            Interactive children opt back in with pointer-events-auto. */}
+        <div className="absolute inset-0 z-10 bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3 pointer-events-none">
+          <span className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm">
             <Icon name="edit" size={12} stroke="white" strokeWidth={2} />
             {L('Засах', 'Edit')}
           </span>
-          {/* z-20: proper <a> tag above the cover Link — no nesting */}
+          {/* pointer-events-auto: this <a> needs to be clickable independently */}
           <a
             href={publicUrl}
             target="_blank"
             rel="noreferrer"
-            className="relative z-20 flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm hover:bg-white/20 transition-colors"
+            className="pointer-events-auto flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm hover:bg-white/20 transition-colors"
           >
             <Icon name="ext" size={12} stroke="white" strokeWidth={2} />
             {L('Харах', 'View')}
           </a>
-          {/* Image generate/regenerate button — z-20 */}
+          {/* pointer-events-auto: camera button needs independent click */}
           <button
             type="button"
             onClick={generateImage}
             disabled={genImg}
             title={site.heroImage ? L('Зураг дахин үүсгэх', 'Regenerate image') : L('Зураг үүсгэх', 'Generate image')}
-            className="relative z-20 flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm hover:bg-white/20 disabled:opacity-50 transition-colors"
+            className="pointer-events-auto flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm hover:bg-white/20 disabled:opacity-50 transition-colors"
           >
             {genImg ? (
               <span className="flex gap-0.5">
