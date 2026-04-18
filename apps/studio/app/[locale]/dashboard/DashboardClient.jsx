@@ -403,7 +403,7 @@ function SiteCard({ site, locale, root }) {
           {new Date(site.updatedAt).toLocaleDateString(locale === 'mn' ? 'mn-MN' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
 
