@@ -50,6 +50,12 @@ enum AiJobType {
   content
   translate
   image
+  layout
+}
+
+enum SiteMode {
+  template
+  ai_composed
 }
 
 enum AiJobStatus {
@@ -77,6 +83,7 @@ model Site {
   userId        String
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   templateId    String
+  mode          SiteMode       @default(template)
   name          String
   subdomain     String         @unique
   customDomain  String?        @unique
@@ -87,6 +94,8 @@ model Site {
   enabledLocales Locale[]      @default([mn])
   tone          TonePreset     @default(friendly)
   business      Json           // business info (name, industry, services, contact, etc.)
+  screenshot    String?        // public URL of rendered site thumbnail (set on publish)
+  deletedAt     DateTime?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   content       SiteContent[]
@@ -95,6 +104,7 @@ model Site {
   aiJobs        AiJob[]
 
   @@index([userId])
+  @@index([status, deletedAt])
 }
 
 model SiteContent {
@@ -103,6 +113,7 @@ model SiteContent {
   site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
   locale    Locale
   sections  Json     // { hero: {...}, about: {...}, services: [...], ... }
+  layout    Json?    // [{ type, variant }, ...] — only set when mode = ai_composed
   version   Int      @default(1)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

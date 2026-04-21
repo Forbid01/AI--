@@ -1,74 +1,178 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@aiweb/db';
 import { getTemplate } from '@aiweb/templates';
-import { generateSiteContent, generateHeroImage, generateGalleryImages } from '@aiweb/ai';
+import {
+  generateSiteContent,
+  generateHeroImage,
+  generateGalleryImages,
+  generateLayout,
+  VIBES,
+} from '@aiweb/ai';
 import { requireUser } from '@/lib/auth.js';
+
+const VALID_TONES = ['formal', 'friendly', 'premium', 'sales'];
 
 export async function POST(request) {
   try {
     const user = await requireUser();
     const body = await request.json();
-    const { templateId, tone, defaultLocale = 'mn', subdomain, business } = body;
+    const {
+      mode = 'template',
+      templateId,
+      tone,
+      vibe = 'minimal',
+      defaultLocale = 'mn',
+      subdomain,
+      business,
+    } = body;
 
-    if (!templateId || !business?.businessName || !subdomain) {
-      return NextResponse.json({ error: 'templateId, businessName, subdomain шаардлагатай' }, { status: 400 });
+    if (!business?.businessName || !subdomain) {
+      return NextResponse.json({ error: 'businessName, subdomain шаардлагатай' }, { status: 400 });
     }
 
-    const VALID_TONES = ['formal', 'friendly', 'premium', 'sales'];
+    if (mode === 'template' && !templateId) {
+      return NextResponse.json({ error: 'Template mode-д templateId шаардлагатай' }, { status: 400 });
+    }
+
+    if (mode === 'ai_composed' && !VIBES[vibe]) {
+      return NextResponse.json({ error: 'Буруу vibe' }, { status: 400 });
+    }
+
     const resolvedTone = VALID_TONES.includes(tone) ? tone : 'friendly';
-    const tpl = getTemplate(templateId);
-    if (!tpl) return NextResponse.json({ error: 'Тохирох template олдсонгүй' }, { status: 400 });
 
     const exists = await prisma.site.findUnique({ where: { subdomain } });
     if (exists) return NextResponse.json({ error: 'Subdomain аль хэдийн ашиглагдсан' }, { status: 409 });
 
-    const site = await prisma.site.create({
-      data: {
-        userId: user.id,
-        templateId,
-        name: business.businessName,
+    if (mode === 'ai_composed') {
+      return await createAiComposedSite({
+        user,
+        business,
         subdomain,
         tone: resolvedTone,
+        vibe,
         defaultLocale,
-        enabledLocales: [defaultLocale],
-        business,
-        theme: { create: tpl.defaultTheme ?? {} },
-      },
-      include: { theme: true },
-    });
-
-    const aiJob = await prisma.aiJob.create({
-      data: { siteId: site.id, type: 'content', status: 'running', input: { tone: resolvedTone, locale: defaultLocale } },
-    });
-
-    try {
-      const sections = await generateSiteContent({ business, tone: resolvedTone, locale: defaultLocale, templateId });
-
-      await prisma.siteContent.create({
-        data: { siteId: site.id, locale: defaultLocale, sections },
       });
-
-      // Hero image + gallery (background — алдаа гарвал контент үүсгэхийг үгүйсгэхгүй)
-      runImagePipelineInBackground({ siteId: site.id, business, sections });
-
-      await prisma.aiJob.update({
-        where: { id: aiJob.id },
-        data: { status: 'done', output: sections },
-      });
-    } catch (e) {
-      await prisma.aiJob.update({
-        where: { id: aiJob.id },
-        data: { status: 'failed', error: String(e.message || e) },
-      });
-      return NextResponse.json({ error: `AI контент үүсгэхэд алдаа: ${e.message}`, siteId: site.id }, { status: 502 });
     }
 
-    return NextResponse.json({ site });
+    return await createTemplateSite({
+      user,
+      business,
+      subdomain,
+      templateId,
+      tone: resolvedTone,
+      defaultLocale,
+    });
   } catch (e) {
     if (e.message === 'UNAUTHORIZED') return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 });
     console.error(e);
     return NextResponse.json({ error: String(e.message || e) }, { status: 500 });
   }
+}
+
+async function createTemplateSite({ user, business, subdomain, templateId, tone, defaultLocale }) {
+  const tpl = getTemplate(templateId);
+  if (!tpl) return NextResponse.json({ error: 'Тохирох template олдсонгүй' }, { status: 400 });
+
+  const site = await prisma.site.create({
+    data: {
+      userId: user.id,
+      mode: 'template',
+      templateId,
+      name: business.businessName,
+      subdomain,
+      tone,
+      defaultLocale,
+      enabledLocales: [defaultLocale],
+      business,
+      theme: { create: tpl.defaultTheme ?? {} },
+    },
+    include: { theme: true },
+  });
+
+  const aiJob = await prisma.aiJob.create({
+    data: { siteId: site.id, type: 'content', status: 'running', input: { tone, locale: defaultLocale } },
+  });
+
+  try {
+    const sections = await generateSiteContent({ business, tone, locale: defaultLocale, templateId });
+    await prisma.siteContent.create({ data: { siteId: site.id, locale: defaultLocale, sections } });
+    runImagePipelineInBackground({ siteId: site.id, business, sections });
+    await prisma.aiJob.update({ where: { id: aiJob.id }, data: { status: 'done', output: sections } });
+  } catch (e) {
+    await prisma.aiJob.update({ where: { id: aiJob.id }, data: { status: 'failed', error: String(e.message || e) } });
+    return NextResponse.json({ error: `AI контент үүсгэхэд алдаа: ${e.message}`, siteId: site.id }, { status: 502 });
+  }
+
+  return NextResponse.json({ site });
+}
+
+async function createAiComposedSite({ user, business, subdomain, tone, vibe, defaultLocale }) {
+  // Phase 3.4 — AI-composed pipeline
+  // 1) generate layout + theme (cheap call — ~1s)
+  // 2) persist Site + SiteTheme (from AI theme)
+  // 3) generate content (reusing existing prompt, scoped to chosen sections)
+  // 4) persist SiteContent with layout JSON
+  // 5) background image pipeline
+
+  let layoutResult;
+  try {
+    layoutResult = await generateLayout({ business, tone, locale: defaultLocale, vibe });
+  } catch (e) {
+    return NextResponse.json({ error: `Layout үүсгэхэд алдаа: ${e.message}` }, { status: 502 });
+  }
+
+  const { layout, theme } = layoutResult;
+
+  const site = await prisma.site.create({
+    data: {
+      userId: user.id,
+      mode: 'ai_composed',
+      templateId: `ai-${vibe}`, // synthetic id for trace
+      name: business.businessName,
+      subdomain,
+      tone,
+      defaultLocale,
+      enabledLocales: [defaultLocale],
+      business,
+      theme: { create: theme },
+    },
+    include: { theme: true },
+  });
+
+  await prisma.aiJob.create({
+    data: {
+      siteId: site.id,
+      type: 'layout',
+      status: 'done',
+      input: { tone, locale: defaultLocale, vibe },
+      output: { layout, theme },
+    },
+  }).catch(() => null);
+
+  const contentJob = await prisma.aiJob.create({
+    data: { siteId: site.id, type: 'content', status: 'running', input: { tone, locale: defaultLocale, vibe } },
+  });
+
+  try {
+    const sections = await generateSiteContent({
+      business,
+      tone,
+      locale: defaultLocale,
+      templateId: `ai-${vibe}`,
+    });
+
+    await prisma.siteContent.create({
+      data: { siteId: site.id, locale: defaultLocale, sections, layout },
+    });
+
+    runImagePipelineInBackground({ siteId: site.id, business, sections });
+    await prisma.aiJob.update({ where: { id: contentJob.id }, data: { status: 'done', output: sections } });
+  } catch (e) {
+    await prisma.aiJob.update({ where: { id: contentJob.id }, data: { status: 'failed', error: String(e.message || e) } });
+    return NextResponse.json({ error: `AI контент үүсгэхэд алдаа: ${e.message}`, siteId: site.id }, { status: 502 });
+  }
+
+  return NextResponse.json({ site, layout, theme });
 }
 
 /** Fire-and-forget: hero + gallery images after site creation */

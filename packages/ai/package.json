@@ -9,7 +9,8 @@
     "./tones": "./lib/tones.js",
     "./prompts": "./lib/prompts.js",
     "./gemini": "./lib/gemini.js",
-    "./image": "./lib/image.js"
+    "./image": "./lib/image.js",
+    "./layout": "./lib/layout.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0"

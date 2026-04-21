@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import HeroPlaceholder from '@/components/ui/HeroPlaceholder.jsx';
 
 /* ─── Rotating placeholder examples ─── */
 const HERO_EXAMPLES = {
@@ -356,9 +357,7 @@ function SiteCard({ site, locale, root }) {
     setTimeout(() => setCopied(false), 1800);
   }
 
-  async function generateImage(e) {
-    e.preventDefault();
-    e.stopPropagation();
+  async function triggerHeroGen() {
     if (genImg) return;
     setGenImg(true);
     try {
@@ -371,6 +370,12 @@ function SiteCard({ site, locale, root }) {
     } finally {
       setGenImg(false);
     }
+  }
+
+  async function generateImage(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    await triggerHeroGen();
   }
 
   const editHref = `/${locale}/dashboard/sites/${site.id}`;
@@ -414,44 +419,15 @@ function SiteCard({ site, locale, root }) {
       />
 
       {/* Thumbnail */}
-      <div
-        className="relative h-36 w-full flex items-center justify-center overflow-hidden"
-        style={site.heroImage ? {} : { background: `linear-gradient(135deg, ${g1} 0%, ${g2} 100%)` }}
-      >
-        {site.heroImage ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
-            src={site.heroImage}
-            alt={site.name}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        ) : (
-          <>
-            {/* Noise texture overlay */}
-            <div className="absolute inset-0 opacity-20"
-              style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.75\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\' opacity=\'0.4\'/%3E%3C/svg%3E")', backgroundSize: '120px' }}
-            />
-            {/* Shiny letter monogram */}
-            <span
-              className="font-display text-7xl font-black select-none"
-              style={{
-                color: 'transparent',
-                backgroundImage: `linear-gradient(145deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.35) 100%)`,
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))',
-              }}
-            >
-              {(site.name || '?')[0].toUpperCase()}
-            </span>
-            {/* Glassmorphism card floating over gradient */}
-            <div className="absolute bottom-3 left-3 right-3 h-8 rounded-lg backdrop-blur-md bg-white/[0.08] border border-white/[0.12] flex items-center px-3 gap-2">
-              <div className="h-1.5 w-1.5 rounded-full bg-white/60" />
-              <div className="h-1.5 flex-1 rounded-full bg-white/20" />
-              <div className="h-1.5 w-8 rounded-full bg-white/30" />
-            </div>
-          </>
-        )}
+      <div className="relative h-36 w-full overflow-hidden">
+        <HeroPlaceholder
+          name={site.name}
+          heroUrl={site.heroImage}
+          generating={genImg}
+          onRequestGenerate={() => triggerHeroGen(site.id)}
+        />
+        {/* eslint-disable-next-line @next/next/no-unused-vars */}
+        {false && g1 && g2 && null /* preserve destructured vars for tilt */}
 
         {/* Hover action overlay */}
         <motion.div

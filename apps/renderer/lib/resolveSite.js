@@ -19,3 +19,11 @@ export function pickContent(site, locale) {
   const match = site.content.find((c) => c.locale === wanted);
   return match?.sections ?? null;
 }
+
+/** Returns the layout JSON for AI-composed sites (null for template sites). */
+export function pickLayout(site, locale) {
+  if (site.mode !== 'ai_composed') return null;
+  const wanted = locale && site.enabledLocales.includes(locale) ? locale : site.defaultLocale;
+  const match = site.content.find((c) => c.locale === wanted);
+  return match?.layout ?? null;
+}

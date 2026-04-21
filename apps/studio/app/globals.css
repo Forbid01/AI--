@@ -33,6 +33,67 @@
   --warn: #f59e0b;
   --danger: #ef4444;
 
+  /* Motion — consistent easing + duration across components */
+  --ease-smooth: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-instant: 80ms;
+  --duration-fast: 160ms;
+  --duration-normal: 240ms;
+  --duration-slow: 380ms;
+  --duration-slower: 560ms;
+
+  /* Elevation — shadow system */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 32px -8px rgba(0, 0, 0, 0.45);
+  --shadow-xl: 0 24px 48px -12px rgba(0, 0, 0, 0.55);
+  --shadow-2xl: 0 40px 80px -20px rgba(0, 0, 0, 0.65);
+  --shadow-glow-accent: 0 0 32px rgba(124, 92, 255, 0.35);
+  --shadow-glow-accent-strong: 0 0 48px rgba(124, 92, 255, 0.5);
+
+  /* Radius scale */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+  --radius-3xl: 32px;
+  --radius-full: 9999px;
+
+  /* Glass effects */
+  --glass-subtle: rgba(255, 255, 255, 0.04);
+  --glass-medium: rgba(255, 255, 255, 0.08);
+  --glass-strong: rgba(255, 255, 255, 0.14);
+  --glass-blur-sm: blur(6px);
+  --glass-blur-md: blur(12px);
+  --glass-blur-lg: blur(20px);
+
+  /* Typography scale */
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-md: 17px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+  --text-2xl: 30px;
+  --text-3xl: 36px;
+  --text-4xl: 44px;
+  --text-5xl: 56px;
+  --text-6xl: 72px;
+
+  /* Z-index scale */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-dropdown: 30;
+  --z-sticky: 40;
+  --z-overlay: 50;
+  --z-dialog: 60;
+  --z-toast: 80;
+  --z-tooltip: 100;
+
   /* Legacy mappings */
   --paper: var(--bg-primary);
   --paper-deep: var(--bg-secondary);
@@ -45,6 +106,22 @@
   --ink-05: rgba(255, 255, 255, 0.03);
   --accent-deep: #5a48d5;
   --accent-ink: #ffffff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 0ms;
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+    --duration-slow: 0ms;
+    --duration-slower: 0ms;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 html, body {
