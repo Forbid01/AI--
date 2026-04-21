@@ -103,7 +103,7 @@ export default function FitnessSite({ content, theme, assets, business, locale =
                     className="group px-8 py-4 rounded-lg font-bold uppercase tracking-widest text-sm transition-all inline-flex items-center gap-2"
                     style={{ background: 'var(--accent)', color: 'var(--background)' }}>
                     {content.hero.ctaPrimary}
-                    <span className="transition-transform group-hover:translate-x-1" aria-hidden>→</span>
+                    <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                   </a>
                 )}
                 {content.hero.ctaSecondary && (
@@ -165,8 +165,7 @@ export default function FitnessSite({ content, theme, assets, business, locale =
                       style={{ fontFamily: 'var(--font-display)' }}>
                       {String(i + 1).padStart(2, '0')}
                     </span>
-                    <span className="text-xs uppercase tracking-widest font-semibold opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{ color: 'var(--accent)' }}>→</span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-100 transition-opacity"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                   </div>
                   <h3 style={{ fontFamily: 'var(--font-display)' }}
                     className="text-2xl font-black uppercase tracking-tight mb-3">
@@ -376,7 +375,7 @@ export default function FitnessSite({ content, theme, assets, business, locale =
                 className="group reveal reveal-delay-2 mt-10 inline-flex items-center gap-2 px-8 py-4 rounded-lg font-bold uppercase tracking-widest text-sm transition-all"
                 style={{ background: 'var(--background)', color: 'var(--accent)' }}>
                 {content.contact.ctaLabel}
-                <span className="transition-transform group-hover:translate-x-1" aria-hidden>→</span>
+                <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
               </a>
             )}
             <div className="reveal reveal-delay-3 mt-12 flex flex-wrap justify-center gap-10 text-sm opacity-80">

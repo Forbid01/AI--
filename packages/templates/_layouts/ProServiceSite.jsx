@@ -84,7 +84,7 @@ export default function ProServiceSite({ content, theme, assets, business, local
                   <a href="#contact"
                     className="group px-7 py-3.5 rounded-full bg-[var(--primary)] text-white font-semibold shadow-lg shadow-[var(--primary)]/25 hover:shadow-xl hover:shadow-[var(--primary)]/30 transition-all inline-flex items-center gap-2">
                     {content.hero.ctaPrimary}
-                    <span className="transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
+                    <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-0.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                   </a>
                 )}
                 {content.hero.ctaSecondary && (
@@ -366,7 +366,7 @@ export default function ProServiceSite({ content, theme, assets, business, local
                   href={business?.contactPhone ? `tel:${business.contactPhone}` : `mailto:${business.contactEmail}`}
                   className="group mt-10 inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-[var(--primary)] font-semibold hover:bg-white/90 transition-colors">
                   {content.contact.ctaLabel}
-                  <span className="transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
+                  <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-0.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </a>
               )}
             </div>

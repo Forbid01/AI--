@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
 
 /* ─── Rotating placeholder examples ─── */
 const HERO_EXAMPLES = {
@@ -16,22 +16,19 @@ const QUICK_CHIPS = {
 };
 const TEMPLATE_STARTERS = [
   {
-    icon: '🍜',
+    color: '#f59e0b',
     mn: { title: 'Ресторан', prompt: 'Монгол хоолны ресторан, халуун хоол гэрт хүргэж өгдөг' },
     en: { title: 'Restaurant', prompt: 'Mongolian food restaurant with home delivery service' },
-    color: '#f59e0b',
   },
   {
-    icon: '💼',
+    color: '#7c5cff',
     mn: { title: 'Портфолио', prompt: 'Чөлөөт дизайнер, брэнд айдентити, логотип' },
     en: { title: 'Portfolio', prompt: 'Freelance designer specializing in brand identity and logos' },
-    color: '#7c5cff',
   },
   {
-    icon: '🛍️',
+    color: '#10b981',
     mn: { title: 'Дэлгүүр', prompt: 'Монгол гар урлалын бүтээгдэхүүн онлайн дэлгүүр' },
     en: { title: 'Shop', prompt: 'Mongolian handcraft products online store' },
-    color: '#10b981',
   },
 ];
 
@@ -231,8 +228,8 @@ function StatsRow({ stats, locale }) {
               <div className="h-9 w-9 rounded-lg grid place-items-center" style={{ background: meta.bg }}>
                 <Icon name={meta.icon} size={16} stroke={meta.color} strokeWidth={2} />
               </div>
-              <span className="text-[10px] font-medium tabular" style={{ color: meta.color }}>
-                {value > 0 ? `+${value}` : '—'}
+              <span className="text-[10px] font-medium tabular opacity-0 select-none" aria-hidden>
+                &nbsp;
               </span>
             </div>
             <div className="mt-3 font-display text-3xl font-bold tabular tracking-tight" style={{ color: meta.color }}>
@@ -315,9 +312,36 @@ function StatusBadge({ status, locale }) {
 function SiteCard({ site, locale, root }) {
   const [copied, setCopied] = useState(false);
   const [genImg, setGenImg] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const cardRef = useRef(null);
   const router = useRouter();
   const L = (mn, en) => (locale === 'mn' ? mn : en);
   const [g1, g2] = siteGradient(site.name);
+
+  /* ── 3D tilt via spring physics ── */
+  const rawX = useMotionValue(0);
+  const rawY = useMotionValue(0);
+  const springCfg = { stiffness: 220, damping: 22 };
+  const rotateX  = useSpring(useTransform(rawY, [-1, 1], [8, -8]),  springCfg);
+  const rotateY  = useSpring(useTransform(rawX, [-1, 1], [-8,  8]), springCfg);
+  const glowX    = useTransform(rawX, [-1, 1], [0, 100]);
+  const glowY    = useTransform(rawY, [-1, 1], [0, 100]);
+  const specular = useTransform(
+    [glowX, glowY],
+    ([x, y]) => `radial-gradient(circle at ${x}% ${y}%, rgba(255,255,255,0.07) 0%, transparent 55%)`
+  );
+
+  function handleMouseMove(e) {
+    const el = cardRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    rawX.set(((e.clientX - r.left) / r.width  - 0.5) * 2);
+    rawY.set(((e.clientY - r.top)  / r.height - 0.5) * 2);
+  }
+  function handleMouseLeave() {
+    rawX.set(0); rawY.set(0);
+    setHovered(false);
+  }
 
   const displayDomain = site.customDomain && site.customDomainVerified
     ? site.customDomain
@@ -352,23 +376,46 @@ function SiteCard({ site, locale, root }) {
   const editHref = `/${locale}/dashboard/sites/${site.id}`;
 
   function handleCardClick(e) {
-    // Let native interactive elements (a, button) handle their own clicks
     if (e.target.closest('a, button')) return;
     router.push(editHref);
   }
 
   return (
-    <div
-      className="group relative rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] hover:border-[var(--surface-border-strong)] transition-all duration-200 overflow-hidden cursor-pointer"
+    <motion.div
+      ref={cardRef}
+      style={{ rotateX, rotateY, transformPerspective: 900, transformStyle: 'preserve-3d' }}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={handleMouseLeave}
       onClick={handleCardClick}
       role="link"
       tabIndex={0}
       aria-label={site.name}
       onKeyDown={(e) => { if (e.key === 'Enter') router.push(editHref); }}
+      animate={{ scale: hovered ? 1.025 : 1 }}
+      transition={{ scale: { type: 'spring', stiffness: 280, damping: 24 } }}
+      className="group relative rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] overflow-hidden cursor-pointer will-change-transform"
     >
+      {/* Premium glow border on hover */}
+      <motion.div
+        className="absolute inset-0 rounded-2xl pointer-events-none z-0"
+        animate={{
+          boxShadow: hovered
+            ? `0 0 0 1px rgba(124,92,255,0.5), 0 8px 40px rgba(124,92,255,0.18), 0 2px 8px rgba(0,0,0,0.4)`
+            : `0 0 0 1px transparent, 0 0 0 rgba(124,92,255,0), 0 2px 8px rgba(0,0,0,0.2)`,
+        }}
+        transition={{ duration: 0.25 }}
+      />
+
+      {/* Specular highlight that follows cursor */}
+      <motion.div
+        className="absolute inset-0 rounded-2xl pointer-events-none z-10 transition-opacity duration-300"
+        style={{ background: specular, opacity: hovered ? 1 : 0 }}
+      />
+
       {/* Thumbnail */}
       <div
-        className="relative h-32 w-full flex items-center justify-center overflow-hidden"
+        className="relative h-36 w-full flex items-center justify-center overflow-hidden"
         style={site.heroImage ? {} : { background: `linear-gradient(135deg, ${g1} 0%, ${g2} 100%)` }}
       >
         {site.heroImage ? (
@@ -379,23 +426,54 @@ function SiteCard({ site, locale, root }) {
             className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
-          <span className="font-display text-6xl font-bold text-white/20 select-none">
-            {(site.name || '?')[0].toUpperCase()}
-          </span>
+          <>
+            {/* Noise texture overlay */}
+            <div className="absolute inset-0 opacity-20"
+              style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.75\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\' opacity=\'0.4\'/%3E%3C/svg%3E")', backgroundSize: '120px' }}
+            />
+            {/* Shiny letter monogram */}
+            <span
+              className="font-display text-7xl font-black select-none"
+              style={{
+                color: 'transparent',
+                backgroundImage: `linear-gradient(145deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.35) 100%)`,
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))',
+              }}
+            >
+              {(site.name || '?')[0].toUpperCase()}
+            </span>
+            {/* Glassmorphism card floating over gradient */}
+            <div className="absolute bottom-3 left-3 right-3 h-8 rounded-lg backdrop-blur-md bg-white/[0.08] border border-white/[0.12] flex items-center px-3 gap-2">
+              <div className="h-1.5 w-1.5 rounded-full bg-white/60" />
+              <div className="h-1.5 flex-1 rounded-full bg-white/20" />
+              <div className="h-1.5 w-8 rounded-full bg-white/30" />
+            </div>
+          </>
         )}
 
-        {/* Hover overlay */}
-        <div className="absolute inset-0 bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3">
-          <span className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm pointer-events-none">
+        {/* Hover action overlay */}
+        <motion.div
+          className="absolute inset-0 flex items-center justify-center gap-2.5"
+          animate={{ opacity: hovered ? 1 : 0, backdropFilter: hovered ? 'blur(4px)' : 'blur(0px)' }}
+          transition={{ duration: 0.2 }}
+          style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.65) 100%)' }}
+        >
+          <Link
+            href={editHref}
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm hover:bg-white/20 transition-colors"
+          >
             <Icon name="edit" size={12} stroke="white" strokeWidth={2} />
             {L('Засах', 'Edit')}
-          </span>
+          </Link>
           <a
             href={publicUrl}
             target="_blank"
             rel="noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm hover:bg-white/20 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm hover:bg-white/20 transition-colors"
           >
             <Icon name="ext" size={12} stroke="white" strokeWidth={2} />
             {L('Харах', 'View')}
@@ -405,7 +483,7 @@ function SiteCard({ site, locale, root }) {
             onClick={generateImage}
             disabled={genImg}
             title={site.heroImage ? L('Зураг дахин үүсгэх', 'Regenerate image') : L('Зураг үүсгэх', 'Generate image')}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm hover:bg-white/20 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-sm hover:bg-white/20 disabled:opacity-50 transition-colors"
           >
             {genImg ? (
               <span className="flex gap-0.5">
@@ -417,11 +495,11 @@ function SiteCard({ site, locale, root }) {
               <Icon name="image" size={12} stroke="white" strokeWidth={2} />
             )}
           </button>
-        </div>
+        </motion.div>
       </div>
 
-      {/* Card body */}
-      <div className="p-4">
+      {/* Card body — raised slightly in 3D space */}
+      <div className="relative p-4" style={{ transform: 'translateZ(8px)' }}>
         <div className="flex items-start justify-between gap-2">
           <span className="font-semibold text-sm truncate">{site.name}</span>
           <StatusBadge status={site.status} locale={locale} />
@@ -453,7 +531,7 @@ function SiteCard({ site, locale, root }) {
           {site.updatedAtLabel}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -501,7 +579,7 @@ function EmptyState({ locale }) {
           )}
         </p>
         <Link href={`/${locale}/dashboard/sites/new`} className="btn btn-accent btn-lg mt-6 inline-flex">
-          {L('AI-аар эхлэх', 'Start with AI')} <span aria-hidden>→</span>
+          {L('AI-аар эхлэх', 'Start with AI')} <svg aria-hidden width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </Link>
       </div>
 
@@ -520,11 +598,16 @@ function EmptyState({ locale }) {
                 onClick={() => router.push(`/${locale}/dashboard/sites/new?prompt=${encodeURIComponent(data.prompt)}`)}
                 className="flex items-center gap-3 p-3.5 rounded-xl border border-[var(--surface-border)] bg-[var(--bg-secondary)] hover:border-[var(--surface-border-strong)] hover:bg-[var(--bg-tertiary)] transition-all text-left group"
               >
-                <span className="text-2xl">{t.icon}</span>
+                <span
+                  className="shrink-0 h-8 w-8 rounded-lg grid place-items-center"
+                  style={{ background: `${t.color}22` }}
+                >
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: t.color }} />
+                </span>
                 <div>
                   <div className="text-sm font-semibold">{data.title}</div>
                   <div className="text-[10px] text-[var(--text-muted)] mt-0.5 group-hover:text-[var(--text-tertiary)] transition-colors">
-                    {L('AI-аар үүсгэх', 'Generate with AI')} →
+                    {L('AI-аар үүсгэх', 'Generate with AI')}
                   </div>
                 </div>
               </button>

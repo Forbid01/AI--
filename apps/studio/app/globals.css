@@ -233,6 +233,120 @@ body {
 
   .scrollbar-none::-webkit-scrollbar { display: none; }
   .scrollbar-none { scrollbar-width: none; }
+
+  /* ── Glow utilities ── */
+  .glow-accent {
+    box-shadow: 0 0 40px rgba(124, 92, 255, 0.30), 0 0 80px rgba(124, 92, 255, 0.12);
+  }
+  .glow-accent-sm {
+    box-shadow: 0 0 20px rgba(124, 92, 255, 0.25), 0 0 40px rgba(124, 92, 255, 0.10);
+  }
+  .glow-success {
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.30);
+  }
+
+  /* ── Rotating gradient border (requires @property --angle above) ── */
+  .gradient-border {
+    position: relative;
+    border-radius: inherit;
+  }
+  .gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: -1.5px;
+    border-radius: inherit;
+    background: conic-gradient(from var(--angle), var(--gradient-start), var(--gradient-mid), var(--gradient-end), var(--gradient-start));
+    z-index: -1;
+    animation: border-rotate 4s linear infinite;
+  }
+  .gradient-border::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--bg-secondary);
+    z-index: -1;
+  }
+
+  /* ── Float animation ── */
+  .float { animation: float-y 6s ease-in-out infinite; }
+  .float-delayed { animation: float-y 6s ease-in-out infinite 1.5s; }
+
+  /* ── Shake (error) ── */
+  .shake { animation: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+
+  /* ── Perspective 3D container ── */
+  .perspective-container { perspective: 1000px; }
+
+  /* ── Counter reveal ── */
+  .count-reveal { animation: count-reveal 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+  /* ── Slide in from right ── */
+  .slide-in-right { animation: slide-in-right 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+  /* ── Progress ring ── */
+  .progress-ring-track {
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+  }
+  .progress-ring-fill {
+    stroke-dasharray: 220;
+    stroke-dashoffset: 220;
+    animation: progress-fill 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    stroke-linecap: round;
+  }
+
+  /* ── Mesh gradient background ── */
+  .mesh-gradient {
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 30%, rgba(124, 92, 255, 0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 80% 20%, rgba(192, 132, 252, 0.14) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 50% at 60% 80%, rgba(34, 211, 238, 0.10) 0%, transparent 60%),
+      var(--bg-primary);
+    animation: mesh-shift 12s ease-in-out infinite;
+  }
+
+  /* ── Browser frame chrome ── */
+  .browser-chrome {
+    background: var(--bg-elevated);
+    border-radius: 12px 12px 0 0;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid var(--surface-border);
+  }
+  .browser-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .browser-url {
+    flex: 1;
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-mono), monospace;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Shimmer (skeleton loading) ── */
+  .shimmer {
+    background: linear-gradient(90deg, var(--surface) 25%, var(--surface-raised) 50%, var(--surface) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  /* ── Star rating ── */
+  .star-filled {
+    fill: #f59e0b;
+    stroke: #f59e0b;
+  }
 }
 
 /* Keyframes */
@@ -297,6 +411,13 @@ body {
   vertical-align: baseline;
 }
 
+/* ─── CSS Houdini: animated conic border ─── */
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .orb, .float-slow, .float-med, .shine::after, .marquee-track, .gradient-text, .ai-pulse { animation: none !important; }
@@ -343,6 +464,70 @@ body {
 .card:hover {
   border-color: var(--surface-border-strong);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* New keyframes */
+@keyframes border-rotate {
+  0%   { --angle: 0deg; }
+  100% { --angle: 360deg; }
+}
+@keyframes shake {
+  10%, 90%  { transform: translateX(-2px); }
+  20%, 80%  { transform: translateX(4px); }
+  30%, 50%, 70% { transform: translateX(-6px); }
+  40%, 60%  { transform: translateX(6px); }
+}
+@keyframes count-reveal {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes progress-fill {
+  from { stroke-dashoffset: 220; }
+  to   { stroke-dashoffset: 40; }
+}
+@keyframes mesh-shift {
+  0%, 100% { filter: hue-rotate(0deg); }
+  50%      { filter: hue-rotate(15deg); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes browser-float {
+  0%, 100% { transform: translateY(0) rotateX(2deg); }
+  50%      { transform: translateY(-10px) rotateX(1deg); }
+}
+@keyframes template-slide {
+  0%   { opacity: 0; transform: translateY(12px) scale(0.98); }
+  15%  { opacity: 1; transform: translateY(0) scale(1); }
+  85%  { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-12px) scale(0.98); }
+}
+@keyframes confetti-fall {
+  0%   { transform: translateY(-10px) rotate(0deg) scale(1); opacity: 1; }
+  80%  { opacity: 0.8; }
+  100% { transform: translateY(140px) rotate(720deg) scale(0.6); opacity: 0; }
+}
+@keyframes ring-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes success-pop {
+  0%   { transform: scale(0.6); opacity: 0; }
+  70%  { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes msg-in-left {
+  from { opacity: 0; transform: translateX(-12px) translateY(4px); }
+  to   { opacity: 1; transform: translateX(0) translateY(0); }
+}
+@keyframes msg-in-right {
+  from { opacity: 0; transform: translateX(12px) translateY(4px); }
+  to   { opacity: 1; transform: translateX(0) translateY(0); }
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }

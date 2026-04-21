@@ -13,6 +13,9 @@ export async function POST(request) {
     if (!templateId || !business?.businessName || !subdomain) {
       return NextResponse.json({ error: 'templateId, businessName, subdomain шаардлагатай' }, { status: 400 });
     }
+
+    const VALID_TONES = ['formal', 'friendly', 'premium', 'sales'];
+    const resolvedTone = VALID_TONES.includes(tone) ? tone : 'friendly';
     const tpl = getTemplate(templateId);
     if (!tpl) return NextResponse.json({ error: 'Тохирох template олдсонгүй' }, { status: 400 });
 
@@ -25,7 +28,7 @@ export async function POST(request) {
         templateId,
         name: business.businessName,
         subdomain,
-        tone,
+        tone: resolvedTone,
         defaultLocale,
         enabledLocales: [defaultLocale],
         business,
@@ -35,11 +38,11 @@ export async function POST(request) {
     });
 
     const aiJob = await prisma.aiJob.create({
-      data: { siteId: site.id, type: 'content', status: 'running', input: { tone, locale: defaultLocale } },
+      data: { siteId: site.id, type: 'content', status: 'running', input: { tone: resolvedTone, locale: defaultLocale } },
     });
 
     try {
-      const sections = await generateSiteContent({ business, tone, locale: defaultLocale, templateId });
+      const sections = await generateSiteContent({ business, tone: resolvedTone, locale: defaultLocale, templateId });
 
       await prisma.siteContent.create({
         data: { siteId: site.id, locale: defaultLocale, sections },

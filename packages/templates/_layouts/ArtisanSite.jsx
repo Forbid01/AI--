@@ -76,7 +76,7 @@ export default function ArtisanSite({ content, theme, assets, business, locale =
                   <a href="#products"
                     className="group px-7 py-3.5 rounded-full bg-[var(--primary)] text-white font-medium hover:opacity-90 transition-all inline-flex items-center gap-2">
                     {content.hero.ctaPrimary}
-                    <span className="transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
+                    <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-0.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                   </a>
                 )}
                 {content.hero.ctaSecondary && (
@@ -172,8 +172,8 @@ export default function ArtisanSite({ content, theme, assets, business, locale =
               {content.services.map((s, i) => (
                 <div key={i}
                   className={`group rounded-2xl border border-[var(--hairline)] bg-white/60 p-8 hover:bg-white hover:shadow-xl hover:shadow-[var(--primary)]/8 hover:border-[var(--primary)]/20 transition-all reveal reveal-delay-${Math.min((i % 4) + 1, 4)}`}>
-                  <div className="text-2xl mb-5 opacity-60">
-                    {['◈', '◇', '◉', '◎', '◆', '◈'][i % 6]}
+                  <div className="h-8 w-8 rounded-full bg-[var(--primary)]/10 border border-[var(--primary)]/20 grid place-items-center mb-5">
+                    <span className="h-2.5 w-2.5 rounded-full bg-[var(--primary)] opacity-60" />
                   </div>
                   <h3 style={{ fontFamily: 'var(--font-display)' }}
                     className="text-xl font-semibold mb-3 group-hover:text-[var(--primary)] transition-colors">
@@ -264,8 +264,8 @@ export default function ArtisanSite({ content, theme, assets, business, locale =
               {content.features.slice(0, 4).map((f, i) => (
                 <div key={i}
                   className={`flex gap-5 reveal reveal-delay-${Math.min(i + 1, 4)}`}>
-                  <div className="h-8 w-8 shrink-0 rounded-full border border-[var(--accent)]/30 grid place-items-center text-[var(--accent)] text-sm mt-0.5">
-                    {['✦', '◇', '◉', '◎'][i] ?? '✦'}
+                  <div className="h-8 w-8 shrink-0 rounded-full border border-[var(--accent)]/30 grid place-items-center mt-0.5">
+                    <span className="h-2 w-2 rounded-full bg-[var(--accent)]" />
                   </div>
                   <div>
                     <h3 className="font-semibold mb-1.5">{f.title}</h3>
@@ -362,7 +362,7 @@ export default function ArtisanSite({ content, theme, assets, business, locale =
                 href={business?.contactPhone ? `tel:${business.contactPhone}` : `mailto:${business.contactEmail}`}
                 className="group reveal reveal-delay-3 mt-10 inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[var(--primary)] text-white font-medium hover:opacity-90 transition-opacity">
                 {content.contact.ctaLabel}
-                <span className="transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
+                <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-0.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
               </a>
             )}
             <dl className="reveal reveal-delay-4 mt-14 flex flex-wrap justify-center gap-10 text-sm text-[var(--muted)]">

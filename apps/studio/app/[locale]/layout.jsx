@@ -1,6 +1,5 @@
 import Link from 'next/link';
-import LanguageToggle from '@/components/LanguageToggle.jsx';
-import UserMenu from '@/components/UserMenu.jsx';
+import Navbar from '@/components/Navbar.jsx';
 
 export default function LocaleLayout({ children, params }) {
   const { locale } = params;
@@ -8,42 +7,7 @@ export default function LocaleLayout({ children, params }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg-primary)] text-[var(--text-primary)] relative">
-      <header className="sticky top-0 z-30 backdrop-blur-xl bg-[var(--bg-primary)]/70 border-b border-[var(--surface-border)]">
-        <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
-          <Link
-            href={`/${locale}`}
-            className="flex items-center gap-2.5 group"
-            aria-label="AiWeb"
-          >
-            <div className="relative h-9 w-9 rounded-xl bg-gradient-to-br from-[var(--gradient-start)] via-[var(--gradient-mid)] to-[var(--gradient-end)] grid place-items-center shadow-lg shadow-[var(--accent-soft)] overflow-hidden shine">
-              <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-                <path d="M8 1L14 5V11L8 15L2 11V5L8 1Z" fill="white" fillOpacity="0.95" />
-              </svg>
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="font-display text-lg font-bold tracking-[-0.02em]">AiWeb</span>
-              <span className="text-[10px] font-mono text-[var(--text-muted)] tracking-widest">AI · STUDIO</span>
-            </div>
-          </Link>
-
-          <nav className="flex items-center gap-5 text-sm">
-            <Link
-              href={`/${locale}/dashboard`}
-              className="hidden sm:inline text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-            >
-              {L('Хяналтын самбар', 'Dashboard')}
-            </Link>
-            <Link
-              href={`/${locale}/dashboard/billing`}
-              className="hidden sm:inline text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-            >
-              {L('Төлбөр', 'Billing')}
-            </Link>
-            <LanguageToggle current={locale} />
-            <UserMenu locale={locale} />
-          </nav>
-        </div>
-      </header>
+      <Navbar locale={locale} />
 
       <main className="flex-1 relative">{children}</main>
 

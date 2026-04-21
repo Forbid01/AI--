@@ -1,0 +1,422 @@
+import Link from 'next/link';
+import { templateList } from '@aiweb/templates';
+import LandingHero from '@/components/LandingHero.jsx';
+import LivePreview from '@/components/LivePreview.jsx';
+
+export const dynamic = 'force-static';
+
+export default function LandingPage({ params }) {
+  const { locale } = params;
+  const L = (mn, en) => (locale === 'mn' ? mn : en);
+
+  return (
+    <>
+      {/* Hero */}
+      <LandingHero locale={locale} />
+
+      {/* Live preview row */}
+      <section className="relative border-y border-[var(--surface-border)]">
+        <div className="mx-auto max-w-6xl px-6 py-20 md:py-28 grid md:grid-cols-12 gap-12 items-center">
+          <div className="md:col-span-5">
+            <span className="eyebrow text-[var(--accent-light)] reveal">
+              {L('Амьд урьдчилан харах', 'Live preview')}
+            </span>
+            <h2 className="mt-4 font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] leading-[1.05] reveal reveal-delay-1">
+              {L('Хэдхэн секундэд ', 'A website that ')}
+              <span className="gradient-text">{L('өөрийгөө бичдэг', 'writes itself')}</span>
+              {L(' вэбсайт', '')}
+            </h2>
+            <p className="mt-5 text-[var(--text-secondary)] leading-relaxed reveal reveal-delay-2">
+              {L(
+                'AI таны бизнест тохирсон эх текст, hero зураг, өнгө аяс сонгоод амьд харагдах мэт урьдчилан үзүүлнэ. Дэлгэрэнгүй засаж, нэг товчлуураар публиш хийнэ.',
+                'The AI picks copy, a hero image and a palette that match your business, and renders it as if it were already live. Fine-tune, then publish in one click.',
+              )}
+            </p>
+            <ul className="mt-8 space-y-3 reveal reveal-delay-3">
+              {[
+                L('Gemini 2.5 Flash — богино, байгалийн текст', 'Gemini 2.5 Flash — concise, natural copy'),
+                L('Flux schnell — дэмжлэгтэй чанартай зураг', 'Flux schnell — hero-grade imagery'),
+                L('Таны өгсөн өнгөөр автомат палитр', 'Palette auto-tuned to your brand cue'),
+                L('MN/EN хоёр хэл дээр нэгэн зэрэг', 'MN + EN copy side-by-side'),
+              ].map((t) => (
+                <li key={t} className="flex items-start gap-3 text-sm text-[var(--text-secondary)]">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-end)] shrink-0" />
+                  {t}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="md:col-span-7">
+            <LivePreview locale={locale} />
+          </div>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="relative">
+        <div className="absolute inset-0 pointer-events-none opacity-50 dot-pattern" />
+        <div className="relative mx-auto max-w-7xl px-6 py-24 md:py-32">
+          <div className="text-center max-w-2xl mx-auto reveal">
+            <span className="eyebrow text-[var(--accent-light)]">{L('Хэрхэн ажилладаг', 'How it works')}</span>
+            <h2 className="mt-4 font-display text-3xl md:text-5xl font-bold tracking-[-0.025em]">
+              {L('Гурван ', 'Three ')}
+              <span className="gradient-text">{L('нарийн алхам', 'careful steps')}</span>
+            </h2>
+          </div>
+
+          <div className="mt-16 grid md:grid-cols-3 gap-5">
+            {[
+              {
+                step: '01',
+                t: L('AI-д хэл', 'Prompt the AI'),
+                d: L('Бизнесийнхээ тухай хэдэн үг бичих — AI тодруулах асуулт асууна.', 'Describe your business in one line — the AI follows up to sharpen the brief.'),
+                icon: (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                ),
+              },
+              {
+                step: '02',
+                t: L('Санал авах', 'Get a draft'),
+                d: L('Gemini агуулга, Flux hero зураг, template + палитр санал болгоно.', 'Gemini writes the copy, Flux renders a hero, and a curated template locks it in.'),
+                icon: (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="3" />
+                    <path d="M3 9h18" />
+                    <path d="M9 21V9" />
+                  </svg>
+                ),
+              },
+              {
+                step: '03',
+                t: L('Публиш хийх', 'Publish it'),
+                d: L('Өөрийн домэйн эсвэл subdomain-аар нэг товчлуур дарж публиш.', 'One click to push live — on a subdomain or your own custom domain.'),
+                icon: (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                  </svg>
+                ),
+              },
+            ].map((item, i) => (
+              <article
+                key={item.step}
+                className={`card p-8 card-tilt reveal reveal-delay-${i + 1}`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[var(--accent-soft)] to-transparent border border-[var(--surface-border)] text-[var(--accent-light)] grid place-items-center">
+                    {item.icon}
+                  </div>
+                  <span className="font-mono text-xs text-[var(--text-muted)] tabular">{item.step}</span>
+                </div>
+                <h3 className="mt-6 font-display text-xl font-semibold tracking-tight">{item.t}</h3>
+                <p className="mt-3 text-sm text-[var(--text-secondary)] leading-relaxed">{item.d}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Bento features */}
+      <section className="border-t border-[var(--surface-border)]">
+        <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
+          <div className="flex items-end justify-between flex-wrap gap-6 reveal">
+            <div>
+              <span className="eyebrow text-[var(--accent-light)]">{L('Чадварууд', 'Capabilities')}</span>
+              <h2 className="mt-4 font-display text-3xl md:text-5xl font-bold tracking-[-0.025em]">
+                {L('Эхлэлээс публиш хүртэл ', 'From prompt to production ')}
+                <span className="gradient-text">{L('нэг платформ', 'on one platform')}</span>
+              </h2>
+            </div>
+            <p className="text-sm text-[var(--text-tertiary)] max-w-sm">
+              {L(
+                'Hosting, домэйн, AI, төлбөр — бид эх сурвалжуудыг нэгтгэсэн. Та зөвхөн бизнест анхаарлаа төвлөрүүл.',
+                'Hosting, domains, AI, and payments in one place. You stay on the business, we stitch the rest together.',
+              )}
+            </p>
+          </div>
+
+          <div className="mt-14 grid md:grid-cols-6 gap-4">
+            <FeatureCard
+              span="md:col-span-3"
+              title={L('AI зохиомжтой контент', 'AI copywriting')}
+              body={L(
+                'Gemini 2.5 Flash таны салбарт тохирсон hero, about, FAQ бичнэ. MN/EN хоёул.',
+                'Gemini 2.5 Flash writes hero, about, and FAQ copy tuned to your vertical. MN + EN.',
+              )}
+              visual={
+                <div className="relative h-40 rounded-2xl bg-gradient-to-br from-[var(--bg-tertiary)] to-[var(--bg-primary)] border border-[var(--surface-border)] p-4 overflow-hidden">
+                  <div className="flex items-center gap-1.5 mb-3">
+                    <span className="typing-dot h-1 w-1 rounded-full bg-[var(--accent-light)]" />
+                    <span className="typing-dot h-1 w-1 rounded-full bg-[var(--accent-light)]" />
+                    <span className="typing-dot h-1 w-1 rounded-full bg-[var(--accent-light)]" />
+                    <span className="text-[10px] font-mono text-[var(--text-muted)] ml-1">gemini</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="h-2 rounded-full bg-[var(--surface-border-strong)] w-11/12" />
+                    <div className="h-2 rounded-full bg-[var(--surface-border-strong)] w-10/12" />
+                    <div className="h-2 rounded-full bg-[var(--surface-border-strong)] w-9/12" />
+                    <div className="h-2 rounded-full bg-[var(--accent)]/60 w-4/12 shine" />
+                  </div>
+                </div>
+              }
+            />
+            <FeatureCard
+              span="md:col-span-3"
+              title={L('Flux зургийн генератор', 'Flux image generator')}
+              body={L(
+                'Hero + gallery-ийн зургийг Flux schnell-ээр. Брэндийнхээ өнгөтэй нийцүүлж үүснэ.',
+                'Hero + gallery imagery rendered by Flux schnell, tuned to your brand palette.',
+              )}
+              visual={
+                <div className="grid grid-cols-3 gap-2 h-40">
+                  {['from-rose-500 to-amber-500', 'from-violet-500 to-cyan-500', 'from-emerald-500 to-indigo-500'].map(
+                    (g, idx) => (
+                      <div
+                        key={g}
+                        className={`rounded-xl bg-gradient-to-br ${g} relative overflow-hidden ken-burns`}
+                        style={{ animationDelay: `${idx * 1.2}s` }}
+                      >
+                        <div className="absolute inset-0 grain" />
+                      </div>
+                    ),
+                  )}
+                </div>
+              }
+            />
+            <FeatureCard
+              span="md:col-span-2"
+              title={L('Өөрийн домэйн', 'Custom domain')}
+              body={L(
+                'DNS-ийн TXT-ээр баталгаажуулах, автоматаар HTTPS.',
+                'DNS TXT-verified, HTTPS provisioned automatically.',
+              )}
+              visual={
+                <div className="h-32 flex items-center justify-center">
+                  <div className="font-mono text-xs text-[var(--text-secondary)] bg-[var(--bg-tertiary)]/70 border border-[var(--surface-border)] rounded-lg px-3 py-1.5">
+                    _aiweb.<span className="text-[var(--accent-light)]">yourdomain.mn</span>
+                  </div>
+                </div>
+              }
+            />
+            <FeatureCard
+              span="md:col-span-2"
+              title={L('Монгол төлбөр', 'Mongolian payments')}
+              body={L('QPay, SocialPay, Хаан, Голомт.', 'QPay, SocialPay, Khan, Golomt.')}
+              visual={
+                <div className="h-32 flex items-center justify-center gap-2 flex-wrap">
+                  {['QPay', 'SocialPay', 'Khan', 'Golomt'].map((p) => (
+                    <span
+                      key={p}
+                      className="text-[11px] font-mono px-2.5 py-1.5 rounded-md border border-[var(--surface-border)] bg-[var(--bg-tertiary)]/60 text-[var(--text-secondary)]"
+                    >
+                      {p}
+                    </span>
+                  ))}
+                </div>
+              }
+            />
+            <FeatureCard
+              span="md:col-span-2"
+              title={L('Хоёр хэл', 'Bilingual')}
+              body={L('MN/EN нэг workspace-ээс.', 'MN / EN from a single workspace.')}
+              visual={
+                <div className="h-32 flex items-center justify-center gap-3">
+                  <span className="text-2xl font-display font-bold text-[var(--accent-light)]">МН</span>
+                  <span className="h-px w-8 bg-[var(--surface-border-strong)]" />
+                  <span className="text-2xl font-display font-bold text-[var(--accent-light)]">EN</span>
+                </div>
+              }
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Template showcase */}
+      <section className="border-t border-[var(--surface-border)] relative overflow-hidden">
+        <div
+          className="orb orb-a absolute"
+          style={{ top: '20%', left: '-10%', width: '420px', height: '420px', opacity: 0.25 }}
+        />
+        <div className="relative mx-auto max-w-7xl px-6 py-24 md:py-32">
+          <div className="flex items-end justify-between flex-wrap gap-6 reveal">
+            <div>
+              <span className="eyebrow text-[var(--accent-light)]">{L('Загварууд', 'Templates')}</span>
+              <h2 className="mt-4 font-display text-3xl md:text-5xl font-bold tracking-[-0.025em]">
+                {L('Мэргэжлийн загварын сан', 'A curated template library')}
+              </h2>
+              <p className="mt-3 text-[var(--text-secondary)] max-w-xl">
+                {L(
+                  'Ресторанаас портфолио хүртэл — AI таны брэндэд тохирсон загварыг санал болгоно.',
+                  'From restaurants to portfolios — the AI picks the right fit and tunes it to your brand.',
+                )}
+              </p>
+            </div>
+            <Link href={`/${locale}/dashboard/sites/new`} className="btn btn-outline btn-md">
+              {L('Бүгдийг үзэх', 'Browse all')} <span aria-hidden>&rarr;</span>
+            </Link>
+          </div>
+
+          <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+            {templateList.map((t, i) => (
+              <article
+                key={t.id}
+                className={`card overflow-hidden group card-tilt reveal reveal-delay-${Math.min(i + 1, 4)}`}
+              >
+                <div
+                  className="aspect-[4/5] relative overflow-hidden"
+                  style={{
+                    background: `linear-gradient(145deg, ${t.defaultTheme?.primary ?? '#7c5cff'} 0%, ${t.defaultTheme?.background ?? '#0a0a0f'} 100%)`,
+                  }}
+                >
+                  <div className="absolute inset-0 grain" />
+                  <div
+                    className="absolute -inset-20 opacity-40 group-hover:opacity-80 transition-opacity duration-700"
+                    style={{
+                      background: `radial-gradient(circle at 50% 30%, ${t.defaultTheme?.accent ?? '#c084fc'} 0%, transparent 60%)`,
+                    }}
+                  />
+                  <div className="absolute inset-6 flex flex-col justify-between text-white">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[10px] tabular opacity-60">
+                        0{i + 1} / 0{templateList.length}
+                      </span>
+                      <span className="h-2 w-2 rounded-full bg-white/60" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase tracking-[0.32em] opacity-60">{t.id}</div>
+                      <h3 className="mt-2 font-display text-2xl font-bold tracking-[-0.02em] leading-[1.05]">
+                        {t.name[locale] ?? t.name.mn}
+                      </h3>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-5 bg-[var(--surface)]">
+                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                    {t.description[locale] ?? t.description.mn}
+                  </p>
+                  <div className="mt-4 flex items-center gap-2">
+                    {['primary', 'accent', 'background'].map((key) => (
+                      <span
+                        key={key}
+                        className="h-4 w-4 rounded-full border border-[var(--surface-border)]"
+                        style={{ background: t.defaultTheme?.[key] }}
+                      />
+                    ))}
+                    <span className="ml-auto text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)]">
+                      {L('Загвар', 'Template')}
+                    </span>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials marquee */}
+      <section className="border-t border-[var(--surface-border)]">
+        <div className="mx-auto max-w-7xl px-6 pt-20 pb-10">
+          <div className="text-center reveal">
+            <span className="eyebrow text-[var(--accent-light)]">{L('Хэрэглэгчид', 'Loved by teams')}</span>
+            <h2 className="mt-4 font-display text-2xl md:text-3xl font-semibold tracking-tight">
+              {L('Монголын жижиг бизнест зориулсан', 'Built for Mongolian small businesses')}
+            </h2>
+          </div>
+        </div>
+        <div className="marquee py-6">
+          <div className="marquee-track">
+            {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
+              <figure
+                key={i}
+                className="w-[360px] shrink-0 rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] p-6"
+              >
+                <blockquote className="text-sm leading-relaxed text-[var(--text-primary)]">
+                  “{t[locale] ?? t.en}”
+                </blockquote>
+                <figcaption className="mt-4 text-xs text-[var(--text-tertiary)] font-mono">
+                  — {t.author}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Closing CTA */}
+      <section className="border-t border-[var(--surface-border)] relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div
+            className="orb orb-b"
+            style={{ top: '-20%', left: '15%', width: '500px', height: '500px' }}
+          />
+          <div
+            className="orb orb-c"
+            style={{ bottom: '-20%', right: '15%', width: '500px', height: '500px' }}
+          />
+          <div className="absolute inset-0 grid-pattern opacity-50" />
+        </div>
+        <div className="relative mx-auto max-w-4xl px-6 py-28 md:py-36 text-center">
+          <span className="eyebrow text-[var(--accent-light)] reveal">{L('Одоо эхлэх', 'Get started')}</span>
+          <h2 className="mt-5 font-display text-4xl md:text-6xl lg:text-7xl font-bold tracking-[-0.03em] leading-[1.02] reveal reveal-delay-1">
+            {L('Эхний вэбсайт ', 'Your first website is ')}
+            <span className="gradient-text">{L('хоёр минутад', 'two minutes away')}</span>
+          </h2>
+          <p className="mt-6 text-lg text-[var(--text-secondary)] max-w-xl mx-auto reveal reveal-delay-2">
+            {L(
+              'AI-д бизнесийнхээ тухай хэлээрэй. Бэлэн вэбсайтаа хэдхэн минутын дараа аваарай.',
+              'Tell the AI about your business. Get a ready-to-publish website in just a few minutes.',
+            )}
+          </p>
+          <div className="mt-10 flex flex-wrap justify-center gap-4 reveal reveal-delay-3">
+            <Link href={`/${locale}/dashboard/sites/new`} className="btn btn-accent btn-lg shine">
+              {L('Үнэгүй эхлүүлэх', 'Start for free')}
+              <span aria-hidden>&rarr;</span>
+            </Link>
+            <Link href={`/${locale}/signin`} className="btn btn-outline btn-lg">
+              {L('Нэвтрэх', 'Sign in')}
+            </Link>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+function FeatureCard({ title, body, visual, span = 'md:col-span-3' }) {
+  return (
+    <div className={`card p-6 reveal ${span} group card-tilt`}>
+      {visual}
+      <h3 className="mt-5 font-display text-lg font-semibold tracking-tight">{title}</h3>
+      <p className="mt-2 text-sm text-[var(--text-secondary)] leading-relaxed">{body}</p>
+    </div>
+  );
+}
+
+const TESTIMONIALS = [
+  {
+    mn: 'Бидэнд маркетингийн баг байгаагүй. AiWeb нэг өдрийн дотор вэбсайт бэлдэж өгсөн.',
+    en: 'We didn\u2019t have a marketing team. AiWeb spun up a site for us in an afternoon.',
+    author: 'Нараа — Nomad Coffee',
+  },
+  {
+    mn: 'Хамгийн гоё нь зураг бэлэн үүсгэгддэг. Flux-ийн чанар үнэхээр өндөр.',
+    en: 'The best part: imagery is generated on the fly. Flux quality is surprisingly high.',
+    author: 'Батаа — Zaisan Yoga',
+  },
+  {
+    mn: 'Монгол + англи контент зэрэг бэлдсэн. Гадаад зочдод маш таалагдсан.',
+    en: 'Content came out in both MN and EN. Foreign guests love it.',
+    author: 'Оюу — Gobi Boutique Hotel',
+  },
+  {
+    mn: 'Дизайн нь үнэхээр орчин үеийн. Бусад platform-оос илүү гэж хэлж чадна.',
+    en: 'The design feels properly modern. Ahead of most other builders.',
+    author: 'Sukhee — Atelier UB',
+  },
+  {
+    mn: 'QPay, SocialPay гэх мэт төлбөр бэлэн холбогдсон — бидэнд цаг хэмнэсэн.',
+    en: 'QPay and SocialPay hookups are wired in — saved us a full sprint.',
+    author: 'Tuul — Khuree Studio',
+  },
+];

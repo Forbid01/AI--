@@ -109,7 +109,7 @@ export default function Site({ content, theme, assets, business, locale = 'mn' }
                     className="group shine px-7 py-3.5 rounded-full bg-[var(--primary)] text-white font-semibold shadow-xl shadow-[var(--primary)]/25 hover:shadow-2xl hover:shadow-[var(--primary)]/30 transition-all inline-flex items-center gap-2"
                   >
                     {content.hero.ctaPrimary}
-                    <span className="transition-transform group-hover:translate-x-1" aria-hidden>→</span>
+                    <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                   </a>
                 )}
                 {content.hero.ctaSecondary && (
@@ -265,9 +265,7 @@ export default function Site({ content, theme, assets, business, locale = 'mn' }
                     <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-[var(--primary)]/10 to-[var(--accent)]/10 grid place-items-center text-[var(--primary)] font-semibold tabular-nums">
                       {String(i + 1).padStart(2, '0')}
                     </div>
-                    <span className="text-sm text-[var(--muted)] opacity-0 group-hover:opacity-100 transition-opacity">
-                      →
-                    </span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-100 transition-opacity"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                   </div>
                   <h3 className="mt-6 text-xl font-semibold tracking-tight">{s.title}</h3>
                   <p className="mt-3 text-[var(--muted)] leading-relaxed">{s.description}</p>
@@ -498,7 +496,7 @@ export default function Site({ content, theme, assets, business, locale = 'mn' }
                   className="group shine mt-10 inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[var(--primary)] text-white font-semibold hover:opacity-90 transition-all"
                 >
                   {content.contact.ctaLabel}
-                  <span className="transition-transform group-hover:translate-x-1" aria-hidden>→</span>
+                  <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </a>
               )}
             </div>

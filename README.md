@@ -33,24 +33,24 @@ Stack: **Next.js 14 App Router · Tailwind · Framer Motion · Prisma + Postgres
 
 ## Template сан (23)
 
-| Ангилал | Template-ууд |
-|---------|-------------|
-| Үндсэн | `minimal`, `business`, `portfolio` |
-| Хоол & Ундаа | `restaurant`, `restaurant_mongolian`, `organic_food` |
-| Эрүүл мэнд & Гоо сайхан | `beauty_salon`, `fitness`, `clinic` |
-| Мэргэжлийн үйлчилгээ | `education`, `legal`, `sales_rep`, `home_service`, `auto_repair`, `phone_repair` |
-| Бүтээлч & Худалдаа | `crafts`, `furniture`, `gifts`, `fashion_store`, `photography` |
-| Амьдралын хэв маяг | `travel`, `pet_shop`, `music_school` |
+| Ангилал                 | Template-ууд                                                                     |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| Үндсэн                  | `minimal`, `business`, `portfolio`                                               |
+| Хоол & Ундаа            | `restaurant`, `restaurant_mongolian`, `organic_food`                             |
+| Эрүүл мэнд & Гоо сайхан | `beauty_salon`, `fitness`, `clinic`                                              |
+| Мэргэжлийн үйлчилгээ    | `education`, `legal`, `sales_rep`, `home_service`, `auto_repair`, `phone_repair` |
+| Бүтээлч & Худалдаа      | `crafts`, `furniture`, `gifts`, `fashion_store`, `photography`                   |
+| Амьдралын хэв маяг      | `travel`, `pet_shop`, `music_school`                                             |
 
 ## Image generation
 
 Зураг үүсгэхдээ provider chain ашигладаг — `IMAGE_PROVIDER` env-ээр эхлэх provider-г тохируулна.
 
-| Provider | Env keys | Тайлбар |
-|----------|----------|---------|
-| `cloudflare` | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` | Flux-1-schnell, production-д санаачилагдсан |
-| `pollinations` | — | Credential-гүй fallback, rate-limited |
-| `placeholder` | — | Градиент SVG, API-гүй орчинд |
+| Provider       | Env keys                                        | Тайлбар                                     |
+| -------------- | ----------------------------------------------- | ------------------------------------------- |
+| `cloudflare`   | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` | Flux-1-schnell, production-д санаачилагдсан |
+| `pollinations` | —                                               | Credential-гүй fallback, rate-limited       |
+| `placeholder`  | —                                               | Градиент SVG, API-гүй орчинд                |
 
 `IMAGE_FAILOVER=true` (default) — нэг provider алдаа буцаавал автоматаар дараагийн provider-ийг туршина.
 
@@ -108,16 +108,16 @@ QPAY_INVOICE_CODE=...
 
 ### Credentials
 
-| Service | Үнэгүй | Хаанаас |
-|---------|--------|---------|
-| Gemini 2.5 Flash | ✅ Generous | aistudio.google.com |
-| Cloudflare Workers AI | ✅ 10k req/day | dash.cloudflare.com |
-| Pollinations (fallback) | ✅ Rate-limited | pollinations.ai |
-| Neon Postgres | 0.5GB | neon.tech |
-| QPay | Merchant гэрээ | developer.qpay.mn |
-| SocialPay | Merchant гэрээ | golomtbank.com |
-| Khan Bank | Merchant гэрээ | khanbank.com |
-| Golomt Bank | Merchant гэрээ | golomtbank.com |
+| Service                 | Үнэгүй          | Хаанаас             |
+| ----------------------- | --------------- | ------------------- |
+| Gemini 2.5 Flash        | ✅ Generous     | aistudio.google.com |
+| Cloudflare Workers AI   | ✅ 10k req/day  | dash.cloudflare.com |
+| Pollinations (fallback) | ✅ Rate-limited | pollinations.ai     |
+| Neon Postgres           | 0.5GB           | neon.tech           |
+| QPay                    | Merchant гэрээ  | developer.qpay.mn   |
+| SocialPay               | Merchant гэрээ  | golomtbank.com      |
+| Khan Bank               | Merchant гэрээ  | khanbank.com        |
+| Golomt Bank             | Merchant гэрээ  | golomtbank.com      |
 
 ### Preview зурагнуудыг дахин үүсгэх
 

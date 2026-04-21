@@ -54,7 +54,7 @@ export default function Hero({ data, asset, business, locale = 'mn' }) {
                 className="group relative inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[var(--primary)] text-[var(--background)] font-medium hover:opacity-90 transition-all shine overflow-hidden"
               >
                 <span className="relative">{data.ctaPrimary}</span>
-                <span className="relative transition-transform group-hover:translate-x-1" aria-hidden>→</span>
+                <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="relative transition-transform group-hover:translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
               </a>
             )}
             {data.ctaSecondary && (

@@ -604,7 +604,7 @@ export default function BillingForm({ locale }) {
                     onClick={() => { setInvoice(null); setTimeLeft(0); }}
                     className="w-full py-2 rounded-xl text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-white/[0.04] transition-colors"
                   >
-                    {L('← Буцах', '← Back')}
+                    {L('Буцах', 'Back')}
                   </button>
                 </div>
 

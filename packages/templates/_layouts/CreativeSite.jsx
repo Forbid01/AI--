@@ -92,7 +92,7 @@ export default function CreativeSite({ content, theme, assets, business, locale 
                   <a href="#contact"
                     className="group px-8 py-4 rounded-full bg-[var(--accent)] text-white font-medium tracking-[0.05em] hover:opacity-90 transition-all inline-flex items-center gap-2">
                     {content.hero.ctaPrimary}
-                    <span className="transition-transform group-hover:translate-x-1" aria-hidden>→</span>
+                    <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                   </a>
                 )}
                 {content.hero.ctaSecondary && (
@@ -184,7 +184,7 @@ export default function CreativeSite({ content, theme, assets, business, locale 
                   {s.price && (
                     <span className="text-[var(--accent)] font-semibold tabular-nums shrink-0">{s.price}</span>
                   )}
-                  <span className="text-[var(--accent)] opacity-0 group-hover:opacity-100 transition-opacity shrink-0">→</span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </div>
               ))}
             </div>
@@ -268,8 +268,8 @@ export default function CreativeSite({ content, theme, assets, business, locale 
               {content.features.slice(0, 4).map((f, i) => (
                 <div key={i}
                   className={`rounded-2xl border border-[var(--hairline)] p-8 hover:border-[var(--accent)]/40 transition-colors reveal reveal-delay-${Math.min(i + 1, 4)}`}>
-                  <div className="text-[var(--accent)] text-2xl mb-5">
-                    {['✦', '◆', '✧', '◈'][i] ?? '✦'}
+                  <div className="h-8 w-8 rounded-full bg-[var(--accent)]/15 border border-[var(--accent)]/30 grid place-items-center mb-5">
+                    <span className="h-2.5 w-2.5 rounded-full bg-[var(--accent)]" />
                   </div>
                   <h3 style={{ fontFamily: 'var(--font-display)' }}
                     className="text-xl md:text-2xl font-semibold mb-3">{f.title}</h3>
@@ -362,7 +362,7 @@ export default function CreativeSite({ content, theme, assets, business, locale 
                 href={business?.contactPhone ? `tel:${business.contactPhone}` : `mailto:${business.contactEmail}`}
                 className="group reveal reveal-delay-3 mt-12 inline-flex items-center gap-2 px-10 py-4 rounded-full bg-[var(--accent)] text-white font-medium tracking-[0.05em] hover:opacity-90 transition-all">
                 {content.contact.ctaLabel}
-                <span className="transition-transform group-hover:translate-x-1" aria-hidden>→</span>
+                <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
               </a>
             )}
             <div className="reveal reveal-delay-4 mt-16 grid sm:grid-cols-3 gap-10 text-sm">

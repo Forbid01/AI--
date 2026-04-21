@@ -55,7 +55,7 @@ export default function Contact({ data, business, locale = 'mn' }) {
               className="group mt-10 inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[var(--accent)] text-[var(--background)] font-medium hover:opacity-90 transition-all shine"
             >
               {data.ctaLabel}
-              <span className="transition-transform group-hover:translate-x-1" aria-hidden>→</span>
+              <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
             </a>
           )}
         </div>

@@ -7,6 +7,7 @@ export default function NewSitePage({ params, searchParams }) {
       locale={params.locale}
       templates={templateList}
       initialPrompt={searchParams?.prompt ?? ''}
+      initialTemplate={searchParams?.template ?? ''}
     />
   );
 }

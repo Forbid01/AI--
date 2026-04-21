@@ -45,7 +45,7 @@ export default function Services({ data, locale = 'mn' }) {
                 {s.description}
               </p>
               <span className="mt-auto pt-6 text-[11px] uppercase tracking-[0.22em] text-[var(--accent)] opacity-0 group-hover:opacity-100 transition-opacity">
-                {L('Дэлгэрэнгүй →', 'Learn more →')}
+                {L('Дэлгэрэнгүй', 'Learn more')}
               </span>
             </article>
           ))}

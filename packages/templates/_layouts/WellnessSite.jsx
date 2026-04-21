@@ -88,7 +88,7 @@ export default function WellnessSite({ content, theme, assets, business, locale 
                   <a href="#contact"
                     className="group px-7 py-3.5 rounded-full bg-[var(--primary)] text-white font-medium hover:opacity-90 transition-all inline-flex items-center gap-2">
                     {content.hero.ctaPrimary}
-                    <span className="transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
+                    <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-0.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                   </a>
                 )}
                 {content.hero.ctaSecondary && (
@@ -152,7 +152,7 @@ export default function WellnessSite({ content, theme, assets, business, locale 
                 <div key={i}
                   className={`group relative rounded-2xl border border-[var(--hairline)] bg-white p-7 hover:shadow-xl hover:shadow-[var(--primary)]/8 hover:border-[var(--primary)]/30 transition-all reveal reveal-delay-${Math.min((i % 4) + 1, 4)}`}>
                   <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[var(--primary)]/10 to-[var(--accent)]/30 grid place-items-center mb-5">
-                    <span className="text-[var(--primary)]">✦</span>
+                    <span className="h-2.5 w-2.5 rounded-full bg-[var(--primary)]" />
                   </div>
                   <h3 style={{ fontFamily: 'var(--font-display)' }}
                     className="text-xl font-medium group-hover:text-[var(--primary)] transition-colors">
@@ -362,7 +362,7 @@ export default function WellnessSite({ content, theme, assets, business, locale 
                 href={business?.contactPhone ? `tel:${business.contactPhone}` : `mailto:${business.contactEmail}`}
                 className="group reveal reveal-delay-3 mt-10 inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[var(--primary)] text-white font-medium hover:opacity-90 transition-opacity">
                 {content.contact.ctaLabel}
-                <span className="transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
+                <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-0.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
               </a>
             )}
             <dl className="reveal reveal-delay-4 mt-14 flex flex-wrap justify-center gap-10 text-sm text-[var(--muted)]">
