@@ -11,6 +11,152 @@ const BADGE = {
   new:     { mn: 'Шинэ',      en: 'New',      color: '#10b981', bg: 'rgba(16,185,129,0.15)' },
 };
 
+// ─── Shared premium mockup ────────────────────────────────────────────────────
+// Renders a realistic website preview with real Unsplash photo, branded logo,
+// nav (Home · About · Contact), hero title, CTA, and stats — driven by the
+// template's `mock` config object.
+
+function PremiumMockup({ template, compact = false, locale = 'mn' }) {
+  const L = (mn, en) => (locale === 'mn' ? mn : en);
+  const m = template.mock;
+  if (!m) return null;
+
+  const tier = m.tier ?? 'accent'; // 'gold' | 'accent'
+  const isGold = tier === 'gold';
+  const accentGrad = `linear-gradient(135deg, ${m.accent}, ${m.accent2})`;
+  const coinGrad = isGold
+    ? 'conic-gradient(from 45deg, #fde68a, #d4af37, #92400e, #fde68a)'
+    : `conic-gradient(from 45deg, ${m.accent}, ${m.accent2}, ${m.accent})`;
+
+  return (
+    <div className="relative h-full w-full overflow-hidden">
+      {/* Real photo background */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={m.img}
+        alt=""
+        loading="lazy"
+        className="absolute inset-0 w-full h-full object-cover scale-105"
+        aria-hidden="true"
+      />
+      {/* Color grade overlay — template-specific */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(135deg, ${m.palette[2]}cc 0%, ${m.palette[0]}1a 50%, ${m.palette[1]}55 100%)`,
+        }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+      {/* Top sheen */}
+      <div
+        className="absolute inset-x-0 top-0 h-1/3 pointer-events-none"
+        style={{ background: 'linear-gradient(165deg, rgba(255,255,255,0.10), transparent 70%)' }}
+      />
+
+      {/* Navbar */}
+      <div
+        className={`absolute top-0 inset-x-0 flex items-center justify-between ${compact ? 'px-3 py-1.5' : 'px-4 py-2.5'}`}
+        style={{ background: 'linear-gradient(to bottom, rgba(6,4,2,0.55), transparent)', backdropFilter: 'blur(4px)' }}
+      >
+        <div className="flex items-center gap-1.5">
+          <span className={`relative inline-block`} style={{ width: compact ? 9 : 12, height: compact ? 9 : 12 }}>
+            <span className="absolute inset-0 rounded-full" style={{ background: coinGrad }} />
+            <span className="absolute inset-[1.2px] rounded-full" style={{ background: m.palette[2] }} />
+            <span
+              className="absolute rounded-sm"
+              style={{ inset: compact ? 2.8 : 3.5, background: isGold ? 'linear-gradient(135deg, #fde68a, #d4af37)' : accentGrad }}
+            />
+          </span>
+          <span className={`font-black text-white tracking-widest uppercase ${compact ? 'text-[8px]' : 'text-[10px]'}`}>
+            {m.brand}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {['Home', 'About', 'Contact'].map((link, i) => (
+            <span
+              key={link}
+              className={`font-semibold tracking-wider ${compact ? 'text-[6.5px]' : 'text-[7.5px]'}`}
+              style={{ color: i === 0 ? (isGold ? '#fde68a' : m.accent) : 'rgba(255,255,255,0.55)' }}
+            >
+              {link}
+            </span>
+          ))}
+          {!compact && (
+            <span
+              className="ml-1 inline-flex items-center h-[18px] px-2 rounded-full text-[7.5px] font-bold"
+              style={{
+                background: isGold ? 'linear-gradient(135deg, #fde68a, #d4af37)' : accentGrad,
+                color: isGold ? '#0c0a09' : '#fff',
+              }}
+            >
+              {L(m.ctaShort || 'Эхлэх', m.ctaShortEn || 'Start')}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Center hero content */}
+      <div className={`absolute inset-0 flex flex-col justify-center ${compact ? 'px-3' : 'px-5'}`}>
+        <span
+          className={`font-mono uppercase tracking-[0.25em] mb-1 ${compact ? 'text-[6px]' : 'text-[8px]'}`}
+          style={{ color: isGold ? '#fde68a' : m.accent }}
+        >
+          — {L(m.eyebrow, m.eyebrowEn)}
+        </span>
+        <h3
+          className={`font-black text-white leading-[1.05] tracking-tight drop-shadow-xl ${compact ? 'text-[11px]' : 'text-[14px]'}`}
+          style={{ letterSpacing: '-0.02em' }}
+        >
+          {L(m.hero, m.heroEn)}
+        </h3>
+        {!compact && (
+          <p className="text-[8px] text-white/70 mt-1.5 max-w-[85%] leading-snug">
+            {L(m.sub, m.subEn)}
+          </p>
+        )}
+        <div className={`flex items-center gap-1.5 ${compact ? 'mt-2' : 'mt-3'}`}>
+          <span
+            className={`inline-flex items-center font-bold rounded-full ${compact ? 'h-[18px] px-2 text-[7px]' : 'h-[22px] px-2.5 text-[8.5px]'}`}
+            style={{
+              background: isGold ? 'linear-gradient(135deg, #fde68a, #d4af37)' : accentGrad,
+              color: isGold ? '#0c0a09' : '#fff',
+              boxShadow: `0 4px 12px -2px ${m.accent}55`,
+            }}
+          >
+            {L(m.cta, m.ctaEn)} →
+          </span>
+          {!compact && (
+            <span className="inline-flex items-center h-[22px] px-2 rounded-full text-[8px] font-semibold text-white/80 border border-white/25 backdrop-blur-sm">
+              {L(m.cta2 || 'Дэлгэрэнгүй', m.cta2En || 'Learn more')}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom stats bar */}
+      {!compact && m.stats && (
+        <div
+          className="absolute bottom-0 inset-x-0 px-4 py-1.5 flex items-center justify-between"
+          style={{ background: 'linear-gradient(to top, rgba(6,4,2,0.9), rgba(6,4,2,0.3))' }}
+        >
+          <div className="flex items-center gap-3">
+            {m.stats.map((s) => (
+              <div key={s.l} className="flex items-center gap-1">
+                <span className="text-[9px] font-black text-white tabular-nums" style={{ color: isGold ? '#fde68a' : m.accent }}>
+                  {s.v}
+                </span>
+                <span className="text-[6px] font-mono uppercase tracking-wider text-white/40">{s.l}</span>
+              </div>
+            ))}
+          </div>
+          <span className="text-[6px] font-mono text-white/35">© {m.brand.toLowerCase()}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const TEMPLATES = [
   {
     id: 'restaurant_mongolian',
@@ -20,36 +166,22 @@ const TEMPLATES = [
     description: { mn: 'Дулаан, уламжлалт — хоол, хүргэлт, захиалгын систем.', en: 'Warm and traditional — menu, delivery, and reservations.' },
     domain:      'nomads-kitchen.aiweb.mn',
     features:    { mn: ['Цэс хуудас', 'Хүргэлт', 'Захиалга'], en: ['Menu page', 'Delivery', 'Reservation'] },
-    gradient:    ['#7c2d12', '#c2410c'],
-    cover:       '/templates/restaurant_mongolian/cover.jpg',
-    preview: () => (
-      <div className="h-full flex flex-col" style={{ background: 'linear-gradient(150deg,#7c2d12,#c2410c 60%,#ea580c)' }}>
-        <div className="flex items-center gap-2 px-4 py-2.5 bg-black/25">
-          <div className="h-5 w-5 rounded bg-white/20" />
-          <div className="h-2 w-20 rounded bg-white/60" />
-          <div className="ml-auto flex gap-2">
-            {[28,36,32].map((w,i)=><div key={i} className="h-1.5 rounded bg-white/35" style={{width:w}}/>)}
-          </div>
-        </div>
-        <div className="flex-1 flex flex-col items-center justify-center gap-2.5 text-center px-5">
-          <div className="h-6 w-6 rounded-full bg-amber-400/70 mx-auto" />
-          <div className="h-4 w-44 rounded-md bg-white/90" />
-          <div className="h-2.5 w-32 rounded bg-white/50" />
-          <div className="flex gap-2 mt-1">
-            <div className="h-7 w-20 rounded-full bg-amber-400/90" />
-            <div className="h-7 w-20 rounded-full border border-white/40" />
-          </div>
-        </div>
-        <div className="flex gap-2 px-4 pb-3">
-          {['Хоол','Хүргэлт','Захиалга'].map(t=>(
-            <div key={t} className="flex-1 rounded-lg bg-black/20 p-2">
-              <div className="h-2 w-10 rounded bg-white/70 mb-1" />
-              <div className="h-1.5 w-full rounded bg-white/30" />
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
+    mock: {
+      img: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=900&q=80&fit=crop',
+      brand: 'NOMADS',
+      tier: 'accent',
+      accent: '#f59e0b',
+      accent2: '#c2410c',
+      palette: ['#fbbf24', '#c2410c', '#1c0a04'],
+      eyebrow: 'Ресторан',     eyebrowEn: 'Restaurant',
+      hero:    'Монгол амт',  heroEn:    'Nomad cuisine',
+      sub:     'Уламжлалтаас модерн болтол — 30 жилийн туршлагатай.',
+      subEn:   'From tradition to modernity — 30 years of experience.',
+      cta:     'Ширээ захиалах',  ctaEn: 'Reserve table',
+      cta2:    'Цэс харах',       cta2En: 'View menu',
+      ctaShort:'Захиалах',        ctaShortEn: 'Reserve',
+      stats:   [{ v: '4.9★', l: 'Rating' }, { v: '32', l: 'Dishes' }],
+    },
   },
   {
     id: 'beauty_salon',
@@ -59,35 +191,22 @@ const TEMPLATES = [
     description: { mn: 'Нарийн, эелдэг — салон, спа, wellness газарт.', en: 'Elegant and soft — for salons, spas, and wellness studios.' },
     domain:      'glow-studio.aiweb.mn',
     features:    { mn: ['Үйлчилгээний жагсаалт', 'Цаг захиалга', 'Багийн танилцуулга'], en: ['Service list', 'Booking', 'Team intro'] },
-    gradient:    ['#4a044e', '#86198f'],
-    cover:       '/templates/beauty_salon/cover.jpg',
-    preview: () => (
-      <div className="h-full flex flex-col" style={{ background: 'linear-gradient(150deg,#4a044e,#86198f 55%,#c026d3)' }}>
-        <div className="flex items-center justify-between px-4 py-2.5 bg-black/20">
-          <div className="h-2 w-24 rounded bg-white/70" />
-          <div className="h-6 w-16 rounded-full bg-pink-400/80" />
-        </div>
-        <div className="flex-1 flex items-center gap-3 px-4 py-2">
-          <div className="flex-1">
-            <div className="h-4 w-36 rounded bg-white/90 mb-1.5" />
-            <div className="h-2.5 w-24 rounded bg-white/50 mb-2.5" />
-            <div className="flex gap-0.5 mb-2">
-              {[1,2,3,4,5].map(i=><svg key={i} width="10" height="10" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>)}
-            </div>
-            <div className="h-7 w-24 rounded-lg bg-white/20 border border-white/35" />
-          </div>
-          <div className="w-20 h-24 rounded-xl bg-white/15 border border-white/20" />
-        </div>
-        <div className="px-4 pb-3 grid grid-cols-3 gap-1.5">
-          {['Үс','Маникюр','Нүүр'].map(s=>(
-            <div key={s} className="rounded-lg bg-white/10 border border-white/20 p-1.5 text-center">
-              <div className="h-1.5 w-10 rounded bg-white/70 mx-auto mb-1" />
-              <div className="h-1.5 w-8 rounded bg-white/35 mx-auto" />
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
+    mock: {
+      img: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900&q=80&fit=crop',
+      brand: 'GLOW',
+      tier: 'accent',
+      accent: '#ec4899',
+      accent2: '#a855f7',
+      palette: ['#f472b6', '#a855f7', '#1a0a18'],
+      eyebrow: 'Гоо сайхан',   eyebrowEn: 'Beauty',
+      hero:    'Өөрийг нээн',  heroEn:    'Discover your glow',
+      sub:     'Үс, нүүр, маникюр — бүх үйлчилгээ нэг дор.',
+      subEn:   'Hair, face, nails — everything in one place.',
+      cta:     'Цаг авах',      ctaEn: 'Book now',
+      cta2:    'Үйлчилгээ',    cta2En: 'Services',
+      ctaShort:'Цаг авах',      ctaShortEn: 'Book',
+      stats:   [{ v: '2.1k', l: 'Members' }, { v: '18', l: 'Services' }],
+    },
   },
   {
     id: 'portfolio',
@@ -97,32 +216,22 @@ const TEMPLATES = [
     description: { mn: 'Цэвэр, эдиториал — дизайнер, зураач, бүтээлч мэргэжилтнүүдэд.', en: 'Clean, editorial — for designers, artists, and creative professionals.' },
     domain:      'creative-folio.aiweb.mn',
     features:    { mn: ['Төслийн гэрэл зураг', 'Намтар', 'Холбоо барих'], en: ['Project gallery', 'About', 'Contact'] },
-    gradient:    ['#1e1b4b', '#4f46e5'],
-    cover:       '/templates/portfolio/cover.jpg',
-    preview: () => (
-      <div className="h-full flex flex-col" style={{ background: 'linear-gradient(150deg,#0f0c29,#302b63 50%,#24243e)' }}>
-        <div className="flex items-center justify-between px-4 py-2.5">
-          <div className="h-6 w-6 rounded-md bg-gradient-to-br from-violet-500 to-purple-700" />
-          <div className="flex gap-2">{[28,36,28].map((w,i)=><div key={i} className="h-1.5 rounded bg-white/30" style={{width:w}}/>)}</div>
-        </div>
-        <div className="px-4 pt-1 pb-2">
-          <div className="h-6 w-48 rounded bg-gradient-to-r from-violet-400 to-cyan-400 mb-1.5 opacity-90" />
-          <div className="h-2.5 w-40 rounded bg-white/40 mb-1" />
-          <div className="h-2.5 w-32 rounded bg-white/25 mb-3" />
-          <div className="flex gap-2">
-            <div className="h-6 w-20 rounded-md bg-violet-600/80" />
-            <div className="h-6 w-16 rounded-md border border-white/20" />
-          </div>
-        </div>
-        <div className="px-4 pb-3 grid grid-cols-2 gap-1.5 flex-1">
-          {[['#4c1d95','#6d28d9'],['#064e3b','#059669'],['#1e3a5f','#2563eb'],['#7c2d12','#ea580c']].map(([a,b],i)=>(
-            <div key={i} className="rounded-lg overflow-hidden" style={{background:`linear-gradient(135deg,${a},${b})`,minHeight:44}}>
-              <div className="p-1.5"><div className="h-1.5 w-12 rounded bg-white/60 mb-1"/><div className="h-1.5 w-8 rounded bg-white/35"/></div>
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
+    mock: {
+      img: 'https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=900&q=80&fit=crop',
+      brand: 'ORBIT',
+      tier: 'accent',
+      accent: '#7c5cff',
+      accent2: '#22d3ee',
+      palette: ['#a78bfa', '#22d3ee', '#0a0a1f'],
+      eyebrow: 'Дизайн портфолио', eyebrowEn: 'Design portfolio',
+      hero:    'Өөр өнцгөөс',      heroEn:    'From another angle',
+      sub:     'Бренд, вэбсайт, motion design бүтээлүүдийн түүвэр.',
+      subEn:   'A selection of brand, web, and motion work.',
+      cta:     'Ажлаа харах',      ctaEn: 'See work',
+      cta2:    'Хамтран ажиллах',  cta2En: 'Work together',
+      ctaShort:'Харах',             ctaShortEn: 'View',
+      stats:   [{ v: '47', l: 'Clients' }, { v: '12', l: 'Awards' }],
+    },
   },
   {
     id: 'business',
@@ -132,35 +241,22 @@ const TEMPLATES = [
     description: { mn: 'Итгэлтэй, үр дүнд чиглэсэн — корпорат, мэргэжлийн үйлчилгээнд.', en: 'Confident, results-driven — for corporate and professional services.' },
     domain:      'enterprise-pro.aiweb.mn',
     features:    { mn: ['Үйлчилгээ', 'Баг', 'Холбоо барих'], en: ['Services', 'Team', 'Contact'] },
-    gradient:    ['#1e3a5f', '#1d4ed8'],
-    cover:       '/templates/business/cover.jpg',
-    preview: () => (
-      <div className="h-full flex flex-col bg-[#0a0f1e]">
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/10">
-          <div className="flex items-center gap-2"><div className="h-5 w-5 rounded bg-blue-600"/><div className="h-2 w-16 rounded bg-white/70"/></div>
-          <div className="h-6 w-16 rounded bg-blue-500/80"/>
-        </div>
-        <div className="flex items-center gap-4 px-4 py-4 flex-1">
-          <div className="flex-1">
-            <div className="h-5 w-40 rounded bg-white/90 mb-2"/>
-            <div className="h-2.5 w-32 rounded bg-white/45 mb-1"/>
-            <div className="h-2.5 w-28 rounded bg-white/30 mb-4"/>
-            <div className="h-7 w-24 rounded-md bg-blue-500/80"/>
-          </div>
-          <div className="grid grid-cols-2 gap-1.5">
-            {[0,1,2,3].map(i=><div key={i} className="h-10 w-14 rounded-lg bg-white/[0.05] border border-white/10"/>)}
-          </div>
-        </div>
-        <div className="px-4 pb-3 flex gap-2">
-          {['Үйлчилгээ','Туршлага','Холбоо'].map(t=>(
-            <div key={t} className="flex-1 rounded-lg bg-blue-900/30 border border-blue-500/20 p-2">
-              <div className="h-2 w-full rounded bg-white/50 mb-1.5"/>
-              <div className="h-1.5 w-3/4 rounded bg-white/25"/>
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
+    mock: {
+      img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=900&q=80&fit=crop',
+      brand: 'ENTERPRISE',
+      tier: 'accent',
+      accent: '#3b82f6',
+      accent2: '#1d4ed8',
+      palette: ['#60a5fa', '#1d4ed8', '#0a0f1e'],
+      eyebrow: 'Бизнес зөвлөгөө', eyebrowEn: 'Business consulting',
+      hero:    'Өсөлтөд хамтдаа', heroEn:    'Partners in growth',
+      sub:     '15+ жилийн бүтээмжтэй зөвлөгөө. Бизнес гартаа барь.',
+      subEn:   'Proven consulting for 15+ years. Own your growth.',
+      cta:     'Зөвлөгөө авах',   ctaEn: 'Get advice',
+      cta2:    'Тухай',            cta2En: 'About us',
+      ctaShort:'Холбогдох',       ctaShortEn: 'Contact',
+      stats:   [{ v: '250+', l: 'Clients' }, { v: '15yr', l: 'Exp' }],
+    },
   },
   {
     id: 'minimal',
@@ -170,31 +266,22 @@ const TEMPLATES = [
     description: { mn: 'Цаасан цагаан, тайван — хувийн брэнд, хэвлэлийн мэдиад.', en: 'Paper-white and calm — for personal brands and editorial media.' },
     domain:      'minimal-studio.aiweb.mn',
     features:    { mn: ['Нийтлэл', 'Портфолио', 'Захидал'], en: ['Articles', 'Portfolio', 'Newsletter'] },
-    gradient:    ['#18181b', '#3f3f46'],
-    cover:       '/templates/minimal/cover.jpg',
-    preview: () => (
-      <div className="h-full flex flex-col bg-[#fafafa]">
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-black/10">
-          <div className="h-2 w-20 rounded bg-black/70"/>
-          <div className="flex gap-3">{[24,32,24].map((w,i)=><div key={i} className="h-1.5 rounded bg-black/30" style={{width:w}}/>)}</div>
-        </div>
-        <div className="flex-1 flex flex-col justify-center px-5 py-4">
-          <div className="h-6 w-52 rounded bg-black/90 mb-2"/>
-          <div className="h-3 w-44 rounded bg-black/40 mb-1"/>
-          <div className="h-3 w-36 rounded bg-black/25 mb-5"/>
-          <div className="h-8 w-24 rounded-full border-2 border-black/60"/>
-        </div>
-        <div className="px-4 pb-3 grid grid-cols-3 gap-2">
-          {[0,1,2].map(i=>(
-            <div key={i} className="rounded-lg bg-black/[0.04] border border-black/10 p-2">
-              <div className="h-12 rounded bg-black/[0.06] mb-1.5"/>
-              <div className="h-1.5 w-full rounded bg-black/30 mb-1"/>
-              <div className="h-1.5 w-2/3 rounded bg-black/20"/>
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
+    mock: {
+      img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900&q=80&fit=crop',
+      brand: 'ESSAY',
+      tier: 'accent',
+      accent: '#f1f5f9',
+      accent2: '#cbd5e1',
+      palette: ['#f1f5f9', '#94a3b8', '#0f172a'],
+      eyebrow: 'Хэвлэлийн нийтлэл', eyebrowEn: 'Editorial',
+      hero:    'Үгс, түүхүүд',      heroEn:    'Words and stories',
+      sub:     'Ботл тайван, цаасан цагаан — хувийн блог.',
+      subEn:   'Calm, paper-white — a personal journal.',
+      cta:     'Уншиж эхлэх',       ctaEn: 'Start reading',
+      cta2:    'Бичих',             cta2En: 'Write',
+      ctaShort:'Захиалах',          ctaShortEn: 'Subscribe',
+      stats:   [{ v: '840', l: 'Readers' }, { v: '62', l: 'Essays' }],
+    },
   },
   {
     id: 'gifts',
@@ -204,27 +291,22 @@ const TEMPLATES = [
     description: { mn: 'Гар урлал, бараа, бүтээгдэхүүн зарах онлайн дэлгүүр.', en: 'Sell handcrafts, goods, and products through your online store.' },
     domain:      'handcraft-store.aiweb.mn',
     features:    { mn: ['Бүтээгдэхүүний каталог', 'Бэлэгний цуглуулга', 'QPay/SocialPay'], en: ['Product catalog', 'Gift collections', 'QPay/SocialPay'] },
-    gradient:    ['#064e3b', '#0d9488'],
-    cover:       '/templates/gifts/cover.jpg',
-    preview: () => (
-      <div className="h-full flex flex-col bg-[#0a0a0f]">
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/10">
-          <div className="h-2 w-20 rounded bg-white/70"/>
-          <div className="flex gap-2 items-center">{[28,36].map((w,i)=><div key={i} className="h-1.5 rounded bg-white/30" style={{width:w}}/>)}<div className="h-6 w-14 rounded-full bg-emerald-500/80"/></div>
-        </div>
-        <div className="mx-3 mt-2 rounded-xl p-3" style={{background:'linear-gradient(135deg,#064e3b,#0d9488)'}}>
-          <div className="h-3 w-32 rounded bg-white/80 mb-1"/><div className="h-2 w-20 rounded bg-white/50"/>
-        </div>
-        <div className="px-3 pt-2 pb-3 grid grid-cols-3 gap-1.5 flex-1">
-          {['#1d4ed8','#7c3aed','#b45309','#0f766e','#9d174d','#1e40af'].map((c,i)=>(
-            <div key={i} className="rounded-lg overflow-hidden border border-white/10">
-              <div className="h-12" style={{background:`${c}55`}}/>
-              <div className="p-1"><div className="h-1.5 w-full rounded bg-white/50 mb-1"/><div className="h-1.5 w-8 rounded bg-emerald-400/70"/></div>
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
+    mock: {
+      img: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=900&q=80&fit=crop',
+      brand: 'ATELIER',
+      tier: 'accent',
+      accent: '#10b981',
+      accent2: '#0d9488',
+      palette: ['#6ee7b7', '#0d9488', '#03211b'],
+      eyebrow: 'Гар урлалын дэлгүүр', eyebrowEn: 'Handcraft store',
+      hero:    'Гар бүтээмжээр',      heroEn:    'Made by hand',
+      sub:     'Улаанбаатарт хийсэн, дэлхийд илгээнэ. QPay, банк.',
+      subEn:   'Crafted in Ulaanbaatar, shipped worldwide.',
+      cta:     'Худалдан авах',       ctaEn: 'Shop now',
+      cta2:    'Бэлэг',                cta2En: 'Gifts',
+      ctaShort:'Сагс',                 ctaShortEn: 'Cart',
+      stats:   [{ v: '120', l: 'Items' }, { v: '6', l: 'Cities' }],
+    },
   },
   {
     id: 'travel',
@@ -234,29 +316,22 @@ const TEMPLATES = [
     description: { mn: 'Тансаглаг, зочломтгой — жуулчлал, буудал, амралтын газарт.', en: 'Luxurious and welcoming — for tourism, hotels, and resorts.' },
     domain:      'steppe-lodge.aiweb.mn',
     features:    { mn: ['Аяллын пакет', 'Галерей', 'Газрын зураг'], en: ['Tour packages', 'Gallery', 'Map'] },
-    gradient:    ['#0f2027', '#203a43'],
-    cover:       '/templates/travel/cover.jpg',
-    preview: () => (
-      <div className="h-full flex flex-col" style={{background:'linear-gradient(150deg,#0f2027,#203a43 50%,#2c5364)'}}>
-        <div className="flex items-center justify-between px-4 py-2.5 bg-black/30">
-          <div className="h-2 w-24 rounded bg-white/70"/>
-          <div className="h-6 w-20 rounded bg-amber-400/80"/>
-        </div>
-        <div className="flex-1 relative px-4 py-3">
-          <div className="h-24 rounded-xl bg-white/10 border border-white/15 mb-3" />
-          <div className="h-4 w-40 rounded bg-white/90 mb-1.5"/>
-          <div className="h-2.5 w-32 rounded bg-white/50"/>
-        </div>
-        <div className="px-4 pb-3 grid grid-cols-3 gap-1.5">
-          {['Стандарт','Делюкс','Люкс'].map(r=>(
-            <div key={r} className="rounded-lg bg-white/10 border border-white/15 p-2">
-              <div className="h-2 w-full rounded bg-white/70 mb-1"/>
-              <div className="h-1.5 w-10 rounded bg-amber-400/80"/>
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
+    mock: {
+      img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=900&q=80&fit=crop',
+      brand: 'SILK',
+      tier: 'gold',
+      accent: '#d4af37',
+      accent2: '#92400e',
+      palette: ['#fde68a', '#d97706', '#0c0a09'],
+      eyebrow: 'Өв соёлт буудал',   eyebrowEn: 'Heritage hotel',
+      hero:    'Уламжлалт тансаг',  heroEn:    'Heritage luxury',
+      sub:     '1924 оноос буудагч Улаанбаатарын анхны 5★ boutique.',
+      subEn:   'Ulaanbaatar\'s first 5★ boutique since 1924.',
+      cta:     'Өрөө захиалах',     ctaEn: 'Book a suite',
+      cta2:    'Түүх',              cta2En: 'Story',
+      ctaShort:'Захиалах',          ctaShortEn: 'Book',
+      stats:   [{ v: '4.9', l: 'Rating' }, { v: '42', l: 'Suites' }],
+    },
   },
   {
     id: 'legal',
@@ -266,34 +341,22 @@ const TEMPLATES = [
     description: { mn: 'Найдвартай, мэргэжлийн — өмгөөллийн газар, зөвлөх үйлчилгээнд.', en: 'Authoritative, professional — for law firms and consulting services.' },
     domain:      'counsel-legal.aiweb.mn',
     features:    { mn: ['Үйлчилгэний чиглэл', 'Хуульчийн намтар', 'Зөвлөгөө авах'], en: ['Practice areas', 'Attorney bios', 'Consultation'] },
-    gradient:    ['#1c1c1e', '#2c2c2e'],
-    cover:       '/templates/legal/cover.jpg',
-    preview: () => (
-      <div className="h-full flex flex-col bg-[#0d0d0f]">
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/10">
-          <div className="flex items-center gap-2"><div className="h-1.5 w-1.5 rounded-full bg-amber-400"/><div className="h-2 w-24 rounded bg-white/70"/></div>
-          <div className="h-6 w-20 rounded bg-amber-500/30 border border-amber-500/40"/>
-        </div>
-        <div className="px-4 py-4 flex-1">
-          <div className="h-5 w-48 rounded bg-white/90 mb-2"/>
-          <div className="h-2.5 w-40 rounded bg-white/40 mb-1"/>
-          <div className="h-2.5 w-36 rounded bg-white/25 mb-4"/>
-          <div className="flex gap-2">
-            <div className="h-7 w-28 rounded bg-amber-500/80"/>
-            <div className="h-7 w-24 rounded border border-white/20"/>
-          </div>
-        </div>
-        <div className="px-4 pb-3 grid grid-cols-2 gap-2">
-          {['Иргэний хэрэг','Бизнесийн хууль','Хөдөлмөр','Өмч'].map(t=>(
-            <div key={t} className="rounded-lg bg-white/[0.04] border border-white/10 p-2">
-              <div className="h-2 w-3 rounded bg-amber-400 mb-1.5"/>
-              <div className="h-1.5 w-full rounded bg-white/50 mb-1"/>
-              <div className="h-1.5 w-2/3 rounded bg-white/25"/>
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
+    mock: {
+      img: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=900&q=80&fit=crop',
+      brand: 'COUNSEL',
+      tier: 'gold',
+      accent: '#fbbf24',
+      accent2: '#78350f',
+      palette: ['#fde68a', '#78350f', '#0d0d0f'],
+      eyebrow: 'Өмгөөллийн фирм',   eyebrowEn: 'Law firm',
+      hero:    'Таны эрх бидний үг', heroEn:    'Your rights, our voice',
+      sub:     '20+ жилийн хуулийн үйл ажиллагаа. Иргэний, бизнес, өмч.',
+      subEn:   '20+ years of practice. Civil, business, property law.',
+      cta:     'Зөвлөгөө авах',     ctaEn: 'Consult now',
+      cta2:    'Багаа танил',      cta2En: 'Meet the team',
+      ctaShort:'Холбогдох',         ctaShortEn: 'Contact',
+      stats:   [{ v: '450+', l: 'Cases' }, { v: '98%', l: 'Won' }],
+    },
   },
 ];
 
@@ -329,7 +392,6 @@ function TemplateCard({ template, locale, isActive, onHover, index }) {
   }, [rawX, rawY]);
 
   const badge = template.badge ? BADGE[template.badge] : null;
-  const PreviewComp = template.preview;
 
   return (
     <motion.div
@@ -352,7 +414,7 @@ function TemplateCard({ template, locale, isActive, onHover, index }) {
       >
         {/* Mini preview */}
         <div className="relative overflow-hidden" style={{ height: 140 }}>
-          <PreviewComp />
+          <PremiumMockup template={template} locale={locale} compact />
           {/* Overlay on hover */}
           <div
             className="absolute inset-0 transition-opacity duration-200 flex items-center justify-center"
@@ -396,7 +458,6 @@ function TemplateCard({ template, locale, isActive, onHover, index }) {
 
 function PreviewPanel({ template, locale }) {
   const L = (mn, en) => (locale === 'mn' ? mn : en);
-  const PreviewComp = template.preview;
 
   return (
     <motion.div
@@ -407,12 +468,13 @@ function PreviewPanel({ template, locale }) {
       transition={{ duration: 0.38, ease: [0.2, 0.8, 0.2, 1] }}
       className="rounded-2xl overflow-hidden border border-[var(--surface-border-strong)] bg-[var(--surface)] shadow-2xl shadow-black/40"
     >
-      {/* Browser chrome */}
-      <div className="browser-chrome">
-        <span className="browser-dot" style={{ background: '#ff5f57' }} />
-        <span className="browser-dot" style={{ background: '#febc2e' }} />
-        <span className="browser-dot" style={{ background: '#28c840' }} />
-        <div className="browser-url">{template.domain}</div>
+      {/* Browser chrome — padlock + domain, no macOS traffic lights */}
+      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[var(--surface-border)]" style={{ background: 'linear-gradient(180deg, #111 0%, #0a0a10 100%)' }}>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="11" width="18" height="10" rx="2" />
+          <path d="M7 11V7a5 5 0 0110 0v4" />
+        </svg>
+        <span className="flex-1 truncate text-[11px] font-mono text-white/55 tracking-tight">{template.domain}</span>
         <span className="flex items-center gap-1 text-[9px] text-[var(--success)] font-medium shrink-0">
           <span className="relative flex h-1.5 w-1.5">
             <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--success)] opacity-60 animate-ping" />
@@ -424,9 +486,7 @@ function PreviewPanel({ template, locale }) {
 
       {/* Preview */}
       <div className="relative overflow-hidden" style={{ height: 260 }}>
-        <PreviewComp />
-        {/* Gradient fade at bottom */}
-        <div className="absolute bottom-0 inset-x-0 h-12 pointer-events-none" style={{ background: 'linear-gradient(to top, var(--surface), transparent)' }} />
+        <PremiumMockup template={template} locale={locale} />
       </div>
 
       {/* Details */}

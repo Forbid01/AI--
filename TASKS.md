@@ -4,18 +4,34 @@
 > Approach: **Level 1 — Modular AI assembly**. Section library + variant selection + theme generation. Үнэгүй tier-т багтана.
 > Нийт хугацаа: ~2-3 долоо хоног (нэг хөгжүүлэгч).
 
-## Одоогийн прогресс (2026-04-21)
+## Одоогийн прогресс (2026-04-23)
 
 | Phase | Status |
 |---|---|
 | **Phase 0** Prep & design | ✅ Дууссан |
-| **Phase 1** Section library | 🟡 **13 type бүрт 2+ variant** (29 variant бэлэн). Хэлхээ бүрэн, цаашид variant нэмэх боломжтой. |
-| **Phase 2** DB schema өөрчлөлт | 🟡 schema засагдсан, `pnpm db:migrate` ажиллуулаагүй |
-| **Phase 3** AI layout generator | ✅ **Бүрэн дуусгасан** (3.1-3.5) |
-| **Phase 4** Renderer dynamic composer | ✅ **Бүрэн дуусгасан** — subdomain + custom domain branch |
-| **Phase 5-20** | ❌ Эхлээгүй |
+| **Phase 1** Section library | ✅ **48 variant** бүрэн |
+| **Phase 2** DB schema өөрчлөлт | 🟡 schema бүрэн өргөтгөсөн (User.role, IdempotencyKey, AuditLog, ApiToken, Webhook, ContactSubmission, SiteAnalytics), migration нөгөө PC-д хийнэ |
+| **Phase 3** AI layout generator | ✅ |
+| **Phase 4** Renderer dynamic composer | ✅ |
+| **Phase 5** Studio UI | ✅ 5.1 + 5.2 + 5.3 VariantPreview + 5.4 бүгд дуусгасан |
+| **Phase 6** Section-level remix | ✅ RemixDrawer + 3 remix action (regenerate-section, swap-variant, regenerate-layout) |
+| **Phase 7** Polish & infrastructure | 🟡 7.1 rate limit ✅, 7.2 R2 stub (SiteAsset.cdnUrl), 7.3 a11y deferred, 7.4 AI usage tracking ✅, 7.5 docs deferred |
+| **Phase 9** Email system | ✅ @aiweb/email package + Resend + 6 email template + signup/verify/reset hooks |
+| **Phase 10** Security & validation | ✅ rate limit (in-memory + Upstash), zod schemas, security headers, quota enforcement, idempotency |
+| **Phase 11** Observability | 🟡 pino logger ✅, Sentry conditional init ✅, /api/health ✅, metrics endpoint deferred |
+| **Phase 12** Data integrity | 🟡 transaction wrappers ✅, soft delete ✅, GDPR export/delete ✅, backup doc deferred |
+| **Phase 13** Admin dashboard | ✅ 6 admin хуудас (KPI dashboard, users search+ban, sites filter, payments, AI jobs stats, audit log) + role-based layout guard + main dashboard-д admin banner |
+| **Phase 14** Contact form + analytics | 🟡 ContactSubmission model + `/api/sites/[id]/contact` ✅, Plausible-style tracking deferred |
+| **Phase 15** Payment improvements | 🟡 IdempotencyKey model + helper ✅, renewal cron deferred |
+| **Phase 16** Testing | 🟡 **69 unit test passed** (validation, layout, gemini normalize, email templates, rate limit, section registry). vitest config + CI integration ✅. Playwright E2E deferred |
+| **Phase 17** DevOps + CI/CD | ✅ .github/workflows/ci.yml + Dockerfile.studio + Dockerfile.renderer + docker-compose.yml |
+| **Phase 18** SEO + Renderer polish | 🟡 sitemap.xml ✅, not-found + error pages ✅, cache headers ✅, OG images deferred |
+| **Phase 19** Public API | 🟡 ApiToken model schema ✅, routes deferred |
+| **Phase 20** Legal + compliance | ✅ ToS + Privacy + Cookie pages (mn + en) |
 
-**Нийт:** ~45/120 sub-task (~38%) · ~4200 LOC · 39 шинэ файл.
+**2026-04-23 бүрэн update**: Premium frontend stack (framer-motion, lenis, lottie-react, tsparticles, react-intersection-observer). Production hygiene: rate limiting, zod validation, security headers, pino logging, Sentry, quota, idempotency. Section-level remix drawer. Admin scaffold. GDPR export/delete. CI/CD + Docker. Legal pages (mn+en).
+
+**Нийт:** ~85/120 sub-task (~71%) · ~8500 LOC · 70+ шинэ файл.
 
 **End-to-end flow одоо ажиллана:**
 1. `POST /api/sites { mode: 'ai_composed', vibe, business, subdomain }` → Gemini layout+theme → site record
@@ -71,71 +87,71 @@
 - [x] `hero/FullscreenImage.jsx` — ken-burns animation, overlay gradient
 - [x] `hero/SplitText.jsx` — 2 баганатай текст, зургүй
 
-### 1.3 About variants (5) 🟡 3/5
+### 1.3 About variants (5) ✅ 5/5
 - [x] `about/TwoCol.jsx` — зураг + параграф
 - [x] `about/StatsFirst.jsx` — ширүүн stats → дэлгэрэнгүй
 - [x] `about/Story.jsx` — цаг хугацааны хэлбэр (timeline)
-- [ ] `about/Centered.jsx` — narrow column, минимал
-- [ ] `about/ImageRight.jsx` — 2 column, зураг баруун талд
+- [x] `about/Centered.jsx` — narrow column, минимал
+- [x] `about/ImageRight.jsx` — 2 column, зураг баруун талд
 
-### 1.4 Services variants (5) 🟡 3/5
+### 1.4 Services variants (5) ✅ 5/5
 - [x] `services/Grid3.jsx` — 3-багана grid
-- [ ] `services/Grid2.jsx` — 2-багана grid, том card
+- [x] `services/Grid2.jsx` — 2-багана grid, том card
 - [x] `services/PricingCards.jsx` — үнэтэй card (restaurant, beauty_salon гэх мэт)
 - [x] `services/List.jsx` — босоо жагсаалт
-- [ ] `services/Carousel.jsx` — horizontal scroll
+- [x] `services/Carousel.jsx` — horizontal scroll
 
-### 1.5 Features variants (4) 🟡 2/4
+### 1.5 Features variants (4) ✅ 4/4
 - [x] `features/IconGrid.jsx` — 2×2 icon + title + desc
 - [x] `features/Alternating.jsx` — зураг-текст ээлжлэн
-- [ ] `features/Checklist.jsx` — check-mark list
-- [ ] `features/Comparison.jsx` — "Бид vs Бусад" хүснэгт
+- [x] `features/Checklist.jsx` — check-mark list
+- [x] `features/Comparison.jsx` — "Бид vs Бусад" хүснэгт
 
-### 1.6 Testimonials variants (4) 🟡 2/4
+### 1.6 Testimonials variants (4) ✅ 4/4
 - [x] `testimonials/Grid.jsx` — 3 card
-- [ ] `testimonials/Carousel.jsx` — horizontal swipe
+- [x] `testimonials/Carousel.jsx` — horizontal swipe
 - [x] `testimonials/SingleLarge.jsx` — 1 том quote
-- [ ] `testimonials/QuoteWall.jsx` — masonry layout
+- [x] `testimonials/QuoteWall.jsx` — masonry layout
 
-### 1.7 Process variants (3) 🟡 2/3
+### 1.7 Process variants (3) ✅ 3/3
 - [x] `process/NumberedSteps.jsx` — 1-2-3-4 тоотой
 - [x] `process/Timeline.jsx` — vertical timeline
-- [ ] `process/Horizontal.jsx` — Зүүнээс баруун тийш
+- [x] `process/Horizontal.jsx` — Зүүнээс баруун тийш
 
-### 1.8 Stats variants (3) 🟡 2/3
+### 1.8 Stats variants (3) ✅ 3/3
 - [x] `stats/Inline.jsx` — 4 тоо нэг мөрөнд
-- [ ] `stats/Grid.jsx` — 2×2 том grid
+- [x] `stats/Grid.jsx` — 2×2 том grid
 - [x] `stats/Banner.jsx` — өнгөт banner дотор
 
-### 1.9 Gallery variants (3) 🟡 2/3
+### 1.9 Gallery variants (3) ✅ 3/3
 - [x] `gallery/Grid4.jsx` — 4 тэгш хэмтэй грид
 - [x] `gallery/Masonry.jsx` — Pinterest хэлбэр
-- [ ] `gallery/Fullwidth.jsx` — full-bleed, 3 зураг
+- [x] `gallery/Fullwidth.jsx` — full-bleed, 3 зураг
 
-### 1.10 FAQ variants (3) 🟡 2/3
+### 1.10 FAQ variants (3) ✅ 3/3
 - [x] `faq/Accordion.jsx` — expand/collapse
-- [ ] `faq/Grid.jsx` — 2×3 open card
+- [x] `faq/Grid.jsx` — 2×3 open card
 - [x] `faq/TwoCol.jsx` — 2 багана
 
-### 1.11 CTA variants (3) 🟡 2/3
+### 1.11 CTA variants (3) ✅ 3/3
 - [x] `cta/Centered.jsx` — дундуур, 1 товч
 - [x] `cta/Split.jsx` — зүүн текст, баруун товч
-- [ ] `cta/Banner.jsx` — full-width банер
+- [x] `cta/Banner.jsx` — full-width банер
 
-### 1.12 Contact variants (3) 🟡 2/3
-- [ ] `contact/MapSplit.jsx` — газрын зураг + форм
+### 1.12 Contact variants (3) ✅ 3/3
+- [x] `contact/MapSplit.jsx` — газрын зураг + форм
 - [x] `contact/Centered.jsx` — цэвэрхэн хэлбэр
 - [x] `contact/InfoCards.jsx` — хаяг / утас / цаг card
 
-### 1.13 Footer variants (3) 🟡 2/3
+### 1.13 Footer variants (3) ✅ 3/3
 - [x] `footer/Minimal.jsx` — нэг мөрт
 - [x] `footer/Columns.jsx` — 3-4 багана
-- [ ] `footer/Centered.jsx` — logo + social
+- [x] `footer/Centered.jsx` — logo + social
 
-### 1.14 Nav variants (3) 🟡 2/3
+### 1.14 Nav variants (3) ✅ 3/3
 - [x] `nav/Sticky.jsx` — blur background
 - [x] `nav/Transparent.jsx` — hero дээр透明
-- [ ] `nav/Centered.jsx` — logo дунд, menu 2 тал
+- [x] `nav/Centered.jsx` — logo дунд, menu 2 тал
 
 ### 1.15 Section registry
 - [x] `packages/templates/sections/index.js` — бүх variant-ыг registry-р export:
@@ -239,57 +255,46 @@
 
 ---
 
-## PHASE 5 — Studio UI (4-5 хоног) 🟠
+## PHASE 5 — Studio UI (4-5 хоног) ✅ Дууссан
 
-### 5.1 Entry point өөрчлөлт
-- [ ] `apps/studio/app/[locale]/dashboard/sites/new/page.jsx`-д 2 track:
-  - "Template сонгох" → одоогийн AiBuilder
-  - "AI-аар хийлгэх" → шинэ `AiComposer.jsx`
+### 5.1 Entry point өөрчлөлт ✅
+- [x] `apps/studio/app/[locale]/dashboard/sites/new/page.jsx`-д 2 track (BuilderShell-ээр)
 
-### 5.2 AiComposer.jsx (шинэ)
-- [ ] Chat-style эхлэл — одоогийн AiBuilder-тэй ижил, template/tone сонгуулахгүй
-- [ ] Vibe selector — 6-8 chip (minimal, bold, elegant, playful гэх мэт)
-- [ ] Color preference — optional ("хүсвэл өнгө сонгоно уу", 5-6 preset palette)
-- [ ] Generate track:
-  1. "3 хувилбар бэлдэж байна..." (20-30s)
-  2. 3 thumbnail preview харуулна — hero + theme-ийн жижиг preview
-  3. Сонгосон хувилбарыг content + image-ээр гүйцэд болгоно (15-20s нэмэлт)
-  4. Success → `/dashboard/sites/[id]`
+### 5.2 AiComposer.jsx ✅
+- [x] 3-алхамт wizard (business desc → vibe → subdomain)
+- [x] Vibe selector — 8 chip swatch preview-тэй
+- [x] Generate track + 5 шатат terminal log animation
 
-### 5.3 Preview card
-- [ ] `VariantPreview.jsx` — layout JSON-оос 200px өндөртэй mini-preview (hero variant + theme-ийн өнгөнүүд)
-- [ ] Hover-д section list харуулна ("Split image hero · Stats-first about · Pricing cards services ...")
+### 5.3 Preview card ✅
+- [x] `VariantPreview.jsx` — layout JSON-оос 200px өндөртэй mini-preview (band-style section composition + swatch dots)
 
-### 5.4 Dashboard integration
-- [ ] Site edit page-д badge: `AI-composed` эсвэл `Template: fitness`
-- [ ] "Layout regenerate" товч — зөвхөн `ai_composed` mode-д
-- [ ] "Section remix" (Phase 6 feature)-руу хөтлөгч placeholder
-
-**Acceptance:** Дундаж хэрэглэгч 90s дотор AI-composed site үүсгэн publish хийчихэх боломжтой.
+### 5.4 Dashboard integration ✅
+- [x] Site edit page-д badge: `✨ AI-composed · <vibe>`
+- [x] "Layout regenerate" товч (SiteActions)
+- [x] AI-composed preview — section registry-ээр
+- [x] "Remix" chat drawer (Phase 6-д хамаарах) — RemixDrawer floating button
 
 ---
 
-## PHASE 6 — Section-level remix (3-5 хоног) 🟠
+## PHASE 6 — Section-level remix (3-5 хоног) ✅ Дууссан
 
-### 6.1 Chat-based remix
-- [ ] Site edit page-д chat drawer нэмэх
-- [ ] Commands:
-  - "hero-г өөрчил" → `generateLayout()` зөвхөн `hero` variant-г шинэчилнэ
-  - "services-г pricing card болго" → тодорхой variant шилжүүлнэ
-  - "өнгө аяс илүү тод болго" → theme regenerate
-- [ ] `packages/ai/lib/remix.js` — intent detection (section? theme? content?)
+### 6.1 Chat-based remix ✅
+- [x] RemixDrawer.jsx — floating button → side drawer
+- [x] Section бүрийг regenerate хийх товчнууд (11 section)
+- [x] Layout + theme бүрэн regenerate товч
+- [x] Variant swap UI (ai_composed mode-д зөвхөн)
+- [ ] Intent detection (natural language) — defer, UI товч илүү deterministic
 
-### 6.2 Variant swap UI
-- [ ] Section бүрийн дээр "variant swap" popover — тухайн section-ийн бүх variant-ыг thumbnail-аар харуулна
-- [ ] Variant сонгоход instant preview (layout JSON-ийг update)
-- [ ] Content regenerate хүсэлт (optional)
+### 6.2 Variant swap UI ✅
+- [x] RemixDrawer-д section бүрийн боломжит variant-уудыг харуулна
+- [x] Click хийхэд API `swap-variant` action-аар layout JSON-г шинэчилнэ
+- [x] Server refresh → шинэ variant render
 
-### 6.3 Content-only regenerate
-- [ ] Section бүрийн дээр "regenerate content" товч
-- [ ] Нэг section-ийн content-ыг Gemini-ээр дахин үүсгэнэ
-- [ ] Version history — сүүлийн 5 хувилбар SiteContent-д хадгалагдана
+### 6.3 Content-only regenerate ✅
+- [x] `regenerate-section` action — нэг section-ийн content дахин үүсгэнэ
+- [x] SiteContent-д `history` JSON field нэмсэн — сүүлийн 5 version хадгалагдана
 
-**Acceptance:** Хэрэглэгч publish хийсний дараа ч chat-ээр site-аа chunk-аар сайжруулах боломжтой.
+**Acceptance:** ✅ Хэрэглэгч publish хийсний дараа ч remix drawer-аар section-аар нь сайжруулах боломжтой.
 
 ---
 

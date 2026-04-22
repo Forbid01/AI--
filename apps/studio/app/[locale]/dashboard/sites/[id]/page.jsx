@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { prisma } from '@aiweb/db';
 import { getTemplate } from '@aiweb/templates';
+import { getSection, normalizeLayout, availableVariants } from '@aiweb/templates/sections';
 import { notFound } from 'next/navigation';
 import { requireUser } from '@/lib/auth.js';
 import SiteActions from './SiteActions.jsx';
 import DomainPanel from './DomainPanel.jsx';
+import RemixDrawer from './RemixDrawer.jsx';
 
 export default async function SitePage({ params }) {
   const { id, locale } = params;
@@ -15,11 +17,18 @@ export default async function SitePage({ params }) {
   });
   if (!site) notFound();
 
-  const tpl = getTemplate(site.templateId);
-  const content = site.content.find((c) => c.locale === site.defaultLocale)?.sections;
+  const isAiComposed = site.mode === 'ai_composed';
+  const tpl = isAiComposed ? null : getTemplate(site.templateId);
+  const siteContentRow = site.content.find((c) => c.locale === site.defaultLocale);
+  const content = siteContentRow?.sections;
+  const layout = siteContentRow?.layout;
   const hero = site.assets.find((a) => a.kind === 'hero');
   const gallery = site.assets.filter((a) => a.kind === 'gallery');
   const SiteComponent = tpl?.component;
+  const vibe = isAiComposed && site.templateId?.startsWith('ai-')
+    ? site.templateId.slice(3)
+    : null;
+  const resolvedLayout = isAiComposed ? normalizeLayout(layout) : [];
 
   const L = (mn, en) => (locale === 'mn' ? mn : en);
   const root = process.env.PLATFORM_ROOT_DOMAIN || 'platform.mn';
@@ -47,7 +56,7 @@ export default async function SitePage({ params }) {
       {/* Masthead */}
       <div className="mt-6 flex items-start justify-between flex-wrap gap-6">
         <div className="min-w-0">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <span
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider"
               style={{ background: statusConfig.bg, color: statusConfig.color }}
@@ -55,7 +64,23 @@ export default async function SitePage({ params }) {
               <span className="h-1.5 w-1.5 rounded-full" style={{ background: statusConfig.color }} />
               {statusConfig.label}
             </span>
-            <span className="text-xs text-[var(--text-muted)] font-mono">{site.templateId}</span>
+            {isAiComposed ? (
+              <span
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider"
+                style={{
+                  background: 'linear-gradient(95deg, rgba(124,92,255,0.22), rgba(34,211,238,0.22))',
+                  color: '#c4b5fd',
+                }}
+              >
+                <span>✨</span>
+                {L('AI-composed', 'AI-composed')}
+                {vibe && <span className="font-mono text-[9px] opacity-70">· {vibe}</span>}
+              </span>
+            ) : (
+              <span className="text-xs text-[var(--text-muted)] font-mono">
+                {L('Template:', 'Template:')} {site.templateId}
+              </span>
+            )}
           </div>
           <h1 className="mt-4 font-display text-3xl md:text-4xl font-bold tracking-tight truncate">
             {site.name}
@@ -68,6 +93,15 @@ export default async function SitePage({ params }) {
           >
             {displayDomain} <span aria-hidden>&#8599;</span>
           </a>
+          <div className="mt-4">
+            <Link
+              href={`/${locale}/dashboard/sites/${site.id}/edit`}
+              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-white text-black text-sm font-semibold hover:bg-white/90 transition-colors"
+            >
+              <span aria-hidden>✎</span>
+              {L('Контент засах', 'Edit content')}
+            </Link>
+          </div>
         </div>
         <SiteActions site={site} locale={locale} />
       </div>
@@ -86,7 +120,16 @@ export default async function SitePage({ params }) {
             <span className="ml-3 text-xs font-mono text-[var(--text-muted)] truncate">{displayDomain}</span>
           </div>
           <div className="bg-white">
-            {SiteComponent && content ? (
+            {isAiComposed && resolvedLayout.length > 0 && content ? (
+              <AiComposedPreview
+                layout={resolvedLayout}
+                content={content}
+                theme={{ ...site.theme, vibe }}
+                assets={{ hero, gallery }}
+                business={site.business}
+                locale={site.defaultLocale}
+              />
+            ) : SiteComponent && content ? (
               <SiteComponent
                 content={content}
                 theme={site.theme}
@@ -112,6 +155,33 @@ export default async function SitePage({ params }) {
 
       {/* Domain panel */}
       <DomainPanel site={site} locale={locale} />
+
+      {/* AI remix chat drawer */}
+      <RemixDrawer site={site} locale={locale} variants={availableVariants} />
     </div>
+  );
+}
+
+function AiComposedPreview({ layout, content, theme, assets, business, locale }) {
+  const galleryAssets = Array.isArray(assets?.gallery) ? assets.gallery : [];
+  return (
+    <>
+      {layout.map(({ type, variant }, index) => {
+        const Component = getSection(type, variant);
+        if (!Component) return null;
+        const sectionAssets =
+          type === 'gallery' ? { ...assets, gallery: galleryAssets } : assets;
+        return (
+          <Component
+            key={`${type}-${index}`}
+            content={content?.[type]}
+            theme={theme}
+            assets={sectionAssets}
+            business={business}
+            locale={locale}
+          />
+        );
+      })}
+    </>
   );
 }

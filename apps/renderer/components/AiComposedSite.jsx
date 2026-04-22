@@ -1,4 +1,6 @@
 import { getSection, normalizeLayout } from '@aiweb/templates/sections';
+import SectionReveal from './SectionReveal.jsx';
+import ParticleField from './ParticleField.jsx';
 
 /**
  * Render an AI-composed site from a layout + content JSON pair.
@@ -9,6 +11,9 @@ import { getSection, normalizeLayout } from '@aiweb/templates/sections';
  * If an unknown variant is referenced, we silently fall back to the
  * first available variant for that type (see normalizeLayout).
  */
+
+const PARTICLE_VIBES = new Set(['tech', 'luxe', 'playful']);
+
 export default function AiComposedSite({ layout, content = {}, theme, assets, business, locale = 'mn' }) {
   const resolved = normalizeLayout(layout);
 
@@ -24,30 +29,45 @@ export default function AiComposedSite({ layout, content = {}, theme, assets, bu
   }
 
   const galleryAssets = Array.isArray(assets?.gallery) ? assets.gallery : [];
+  const vibe = theme?.vibe;
+  const showParticles = vibe && PARTICLE_VIBES.has(vibe);
 
   return (
-    <main>
-      {resolved.map(({ type, variant }, index) => {
-        const Component = getSection(type, variant);
-        if (!Component) return null;
+    <main className="relative">
+      {showParticles && (
+        <div
+          className="fixed inset-0 z-[40] pointer-events-none"
+          style={{ mixBlendMode: 'screen' }}
+          aria-hidden="true"
+        >
+          <ParticleField vibe={vibe} />
+        </div>
+      )}
 
-        const sectionContent = content?.[type];
-        const sectionAssets =
-          type === 'gallery'
-            ? { ...assets, gallery: galleryAssets }
-            : assets;
+      <div className="relative z-10">
+        {resolved.map(({ type, variant }, index) => {
+          const Component = getSection(type, variant);
+          if (!Component) return null;
 
-        return (
-          <Component
-            key={`${type}-${index}`}
-            content={sectionContent}
-            theme={theme}
-            assets={sectionAssets}
-            business={business}
-            locale={locale}
-          />
-        );
-      })}
+          const sectionContent = content?.[type];
+          const sectionAssets =
+            type === 'gallery'
+              ? { ...assets, gallery: galleryAssets }
+              : assets;
+
+          return (
+            <SectionReveal key={`${type}-${index}`} type={type} index={index}>
+              <Component
+                content={sectionContent}
+                theme={theme}
+                assets={sectionAssets}
+                business={business}
+                locale={locale}
+              />
+            </SectionReveal>
+          );
+        })}
+      </div>
     </main>
   );
 }

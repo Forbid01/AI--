@@ -12,9 +12,15 @@
     "@aiweb/db": "workspace:*",
     "@aiweb/templates": "workspace:*",
     "@prisma/client": "^5.22.0",
+    "@tsparticles/react": "^3.0.0",
+    "@tsparticles/slim": "^3.7.1",
+    "framer-motion": "^12.23.12",
+    "lenis": "^1.1.20",
+    "lottie-react": "^2.4.1",
     "next": "^14.2.15",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-intersection-observer": "^9.16.0"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",

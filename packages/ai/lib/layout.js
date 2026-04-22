@@ -34,19 +34,19 @@ export const VIBES = {
  * Kept in sync with packages/templates/sections/index.js.
  */
 export const LAYOUT_CATALOGUE = {
-  nav:          ['sticky', 'transparent'],
+  nav:          ['sticky', 'transparent', 'centered'],
   hero:         ['split-image', 'centered', 'parallax', 'minimal', 'fullscreen-image', 'split-text'],
-  about:        ['two-col', 'stats-first', 'story'],
-  services:     ['grid-3', 'pricing-cards', 'list'],
-  features:     ['icon-grid', 'alternating'],
-  process:      ['numbered-steps', 'timeline'],
-  stats:        ['inline', 'banner'],
-  gallery:      ['grid-4', 'masonry'],
-  testimonials: ['grid', 'single-large'],
-  faq:          ['accordion', 'two-col'],
-  cta:          ['centered', 'split'],
-  contact:      ['centered', 'info-cards'],
-  footer:       ['minimal', 'columns'],
+  about:        ['two-col', 'stats-first', 'story', 'centered', 'image-right'],
+  services:     ['grid-3', 'grid-2', 'pricing-cards', 'list', 'carousel'],
+  features:     ['icon-grid', 'alternating', 'checklist', 'comparison'],
+  process:      ['numbered-steps', 'timeline', 'horizontal'],
+  stats:        ['inline', 'banner', 'grid'],
+  gallery:      ['grid-4', 'masonry', 'fullwidth'],
+  testimonials: ['grid', 'single-large', 'carousel', 'quote-wall'],
+  faq:          ['accordion', 'two-col', 'grid'],
+  cta:          ['centered', 'split', 'banner'],
+  contact:      ['centered', 'info-cards', 'map-split'],
+  footer:       ['minimal', 'columns', 'centered'],
 };
 
 const DEFAULT_SECTION_ORDER = [

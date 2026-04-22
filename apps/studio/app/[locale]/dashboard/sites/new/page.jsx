@@ -1,13 +1,15 @@
 import { templateList } from '@aiweb/templates';
-import AiBuilder from './AiBuilder.jsx';
+import BuilderShell from './BuilderShell.jsx';
 
 export default function NewSitePage({ params, searchParams }) {
+  const initialTrack = searchParams?.track === 'ai' ? 'ai' : 'template';
   return (
-    <AiBuilder
+    <BuilderShell
       locale={params.locale}
       templates={templateList}
       initialPrompt={searchParams?.prompt ?? ''}
       initialTemplate={searchParams?.template ?? ''}
+      initialTrack={initialTrack}
     />
   );
 }

@@ -19,45 +19,62 @@ import HeroSplitText from './hero/SplitText.jsx';
 import AboutTwoCol from './about/TwoCol.jsx';
 import AboutStatsFirst from './about/StatsFirst.jsx';
 import AboutStory from './about/Story.jsx';
+import AboutCentered from './about/Centered.jsx';
+import AboutImageRight from './about/ImageRight.jsx';
 
 import ServicesGrid3 from './services/Grid3.jsx';
+import ServicesGrid2 from './services/Grid2.jsx';
 import ServicesPricingCards from './services/PricingCards.jsx';
 import ServicesList from './services/List.jsx';
+import ServicesCarousel from './services/Carousel.jsx';
 
 import FeaturesIconGrid from './features/IconGrid.jsx';
 import FeaturesAlternating from './features/Alternating.jsx';
+import FeaturesChecklist from './features/Checklist.jsx';
+import FeaturesComparison from './features/Comparison.jsx';
 
 import ProcessNumberedSteps from './process/NumberedSteps.jsx';
 import ProcessTimeline from './process/Timeline.jsx';
+import ProcessHorizontal from './process/Horizontal.jsx';
 
 import StatsInline from './stats/Inline.jsx';
 import StatsBanner from './stats/Banner.jsx';
+import StatsGrid from './stats/Grid.jsx';
 
 import GalleryGrid4 from './gallery/Grid4.jsx';
 import GalleryMasonry from './gallery/Masonry.jsx';
+import GalleryFullwidth from './gallery/Fullwidth.jsx';
 
 import TestimonialsGrid from './testimonials/Grid.jsx';
 import TestimonialsSingleLarge from './testimonials/SingleLarge.jsx';
+import TestimonialsCarousel from './testimonials/Carousel.jsx';
+import TestimonialsQuoteWall from './testimonials/QuoteWall.jsx';
 
 import FaqAccordion from './faq/Accordion.jsx';
 import FaqTwoCol from './faq/TwoCol.jsx';
+import FaqGrid from './faq/Grid.jsx';
 
 import CtaCentered from './cta/Centered.jsx';
 import CtaSplit from './cta/Split.jsx';
+import CtaBanner from './cta/Banner.jsx';
 
 import ContactCentered from './contact/Centered.jsx';
 import ContactInfoCards from './contact/InfoCards.jsx';
+import ContactMapSplit from './contact/MapSplit.jsx';
 
 import FooterMinimal from './footer/Minimal.jsx';
 import FooterColumns from './footer/Columns.jsx';
+import FooterCentered from './footer/Centered.jsx';
 
 import NavSticky from './nav/Sticky.jsx';
 import NavTransparent from './nav/Transparent.jsx';
+import NavCentered from './nav/Centered.jsx';
 
 export const sections = {
   nav: {
     'sticky':      NavSticky,
     'transparent': NavTransparent,
+    'centered':    NavCentered,
   },
   hero: {
     'split-image':      HeroSplitImage,
@@ -71,47 +88,62 @@ export const sections = {
     'two-col':     AboutTwoCol,
     'stats-first': AboutStatsFirst,
     'story':       AboutStory,
+    'centered':    AboutCentered,
+    'image-right': AboutImageRight,
   },
   services: {
     'grid-3':         ServicesGrid3,
+    'grid-2':         ServicesGrid2,
     'pricing-cards':  ServicesPricingCards,
     'list':           ServicesList,
+    'carousel':       ServicesCarousel,
   },
   features: {
     'icon-grid':   FeaturesIconGrid,
     'alternating': FeaturesAlternating,
+    'checklist':   FeaturesChecklist,
+    'comparison':  FeaturesComparison,
   },
   process: {
     'numbered-steps': ProcessNumberedSteps,
     'timeline':       ProcessTimeline,
+    'horizontal':     ProcessHorizontal,
   },
   stats: {
     'inline': StatsInline,
     'banner': StatsBanner,
+    'grid':   StatsGrid,
   },
   gallery: {
-    'grid-4':  GalleryGrid4,
-    'masonry': GalleryMasonry,
+    'grid-4':    GalleryGrid4,
+    'masonry':   GalleryMasonry,
+    'fullwidth': GalleryFullwidth,
   },
   testimonials: {
     'grid':         TestimonialsGrid,
     'single-large': TestimonialsSingleLarge,
+    'carousel':     TestimonialsCarousel,
+    'quote-wall':   TestimonialsQuoteWall,
   },
   faq: {
     'accordion': FaqAccordion,
     'two-col':   FaqTwoCol,
+    'grid':      FaqGrid,
   },
   cta: {
     'centered': CtaCentered,
     'split':    CtaSplit,
+    'banner':   CtaBanner,
   },
   contact: {
     'centered':   ContactCentered,
     'info-cards': ContactInfoCards,
+    'map-split':  ContactMapSplit,
   },
   footer: {
-    'minimal': FooterMinimal,
-    'columns': FooterColumns,
+    'minimal':  FooterMinimal,
+    'columns':  FooterColumns,
+    'centered': FooterCentered,
   },
 };
 

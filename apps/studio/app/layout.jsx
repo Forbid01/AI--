@@ -2,6 +2,7 @@ import './globals.css';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import Providers from './providers.jsx';
 import ScrollReveal from '@/components/ScrollReveal.jsx';
+import SmoothScroll from '@/components/SmoothScroll.jsx';
 
 const sans = Inter({
   subsets: ['latin', 'latin-ext'],
@@ -38,6 +39,7 @@ export default function RootLayout({ children }) {
       <body>
         <Providers>{children}</Providers>
         <ScrollReveal />
+        <SmoothScroll />
       </body>
     </html>
   );

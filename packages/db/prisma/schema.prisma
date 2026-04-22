@@ -65,17 +65,35 @@ enum AiJobStatus {
   failed
 }
 
+enum Role {
+  user
+  admin
+  superadmin
+}
+
 model User {
-  id            String         @id @default(cuid())
-  email         String         @unique
-  name          String?
-  passwordHash  String?
-  preferredLocale Locale       @default(mn)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  sites         Site[]
-  subscription  Subscription?
-  payments      Payment[]
+  id                      String         @id @default(cuid())
+  email                   String         @unique
+  name                    String?
+  passwordHash            String?
+  preferredLocale         Locale         @default(mn)
+  role                    Role           @default(user)
+  emailVerified           DateTime?
+  emailVerificationToken  String?        @unique
+  passwordResetToken      String?        @unique
+  passwordResetExpires    DateTime?
+  marketingOptIn          Boolean        @default(false)
+  deletedAt               DateTime?
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  sites                   Site[]
+  subscription            Subscription?
+  payments                Payment[]
+  apiTokens               ApiToken[]
+  auditLogs               AuditLog[]
+
+  @@index([deletedAt])
+  @@index([role])
 }
 
 model Site {
@@ -95,6 +113,7 @@ model Site {
   tone          TonePreset     @default(friendly)
   business      Json           // business info (name, industry, services, contact, etc.)
   screenshot    String?        // public URL of rendered site thumbnail (set on publish)
+  analyticsTag  String?        // user's GA4 / Plausible tag to inject
   deletedAt     DateTime?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -102,6 +121,9 @@ model Site {
   theme         SiteTheme?
   assets        SiteAsset[]
   aiJobs        AiJob[]
+  submissions   ContactSubmission[]
+  analytics     SiteAnalytics[]
+  webhooks      Webhook[]
 
   @@index([userId])
   @@index([status, deletedAt])
@@ -114,6 +136,7 @@ model SiteContent {
   locale    Locale
   sections  Json     // { hero: {...}, about: {...}, services: [...], ... }
   layout    Json?    // [{ type, variant }, ...] — only set when mode = ai_composed
+  history   Json?    // last N versions, [{ sections, layout, at }]
   version   Int      @default(1)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -140,7 +163,8 @@ model SiteAsset {
   siteId    String
   site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
   kind      String   // hero, gallery, logo, favicon
-  url       String
+  url       String   // data: URL or public CDN URL
+  cdnUrl    String?  // when uploaded to R2/S3, this is populated; prefer cdnUrl over url
   prompt    String?
   meta      Json?
   createdAt DateTime @default(now())
@@ -149,19 +173,22 @@ model SiteAsset {
 }
 
 model AiJob {
-  id        String      @id @default(cuid())
-  siteId    String
-  site      Site        @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  type      AiJobType
-  status    AiJobStatus @default(queued)
-  input     Json
-  output    Json?
-  error     String?
-  costCents Int         @default(0)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id         String      @id @default(cuid())
+  siteId     String
+  site       Site        @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  type       AiJobType
+  status     AiJobStatus @default(queued)
+  input      Json
+  output     Json?
+  error      String?
+  costCents  Int         @default(0)
+  tokenCount Int         @default(0)
+  latencyMs  Int         @default(0)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 
   @@index([siteId, status])
+  @@index([type, createdAt])
 }
 
 model Subscription {
@@ -187,9 +214,111 @@ model Payment {
   status          PaymentStatus   @default(pending)
   description     String?
   meta            Json?
+  invoicePdfUrl   String?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
   @@index([userId, status])
   @@index([provider, providerInvoiceId])
+}
+
+// Rate limiting + webhook replay protection.
+// Key: arbitrary string (user:action:resourceHash, webhook signature, etc.)
+// Unique by (key, scope) so the same key can exist per scope.
+model IdempotencyKey {
+  id        String   @id @default(cuid())
+  key       String
+  scope     String   // "payment.create", "webhook.qpay", etc.
+  userId    String?
+  responseBody Json?
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@unique([key, scope])
+  @@index([expiresAt])
+}
+
+// Admin audit log — who did what, when, from where.
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String   // "site.delete", "user.ban", "payment.refund"
+  entityType String?  // "Site", "User", "Payment"
+  entityId   String?
+  metadata   Json?
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([entityType, entityId])
+  @@index([action, createdAt])
+}
+
+// User-facing API tokens for public API access.
+model ApiToken {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  tokenHash  String    @unique
+  scopes     String[]  @default([]) // read:sites, write:sites, admin
+  lastUsedAt DateTime?
+  expiresAt  DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// Outgoing webhooks on platform events.
+model Webhook {
+  id         String    @id @default(cuid())
+  siteId     String
+  site       Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  url        String
+  events     String[]  @default([]) // site.published, payment.succeeded, etc.
+  secret     String    // HMAC signing secret
+  active     Boolean   @default(true)
+  lastSuccessAt DateTime?
+  lastFailureAt DateTime?
+  failureCount Int     @default(0)
+  createdAt  DateTime  @default(now())
+
+  @@index([siteId, active])
+}
+
+// Public site contact-form submissions.
+model ContactSubmission {
+  id         String   @id @default(cuid())
+  siteId     String
+  site       Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  name       String
+  email      String
+  phone      String?
+  message    String
+  ip         String?
+  userAgent  String?
+  spamScore  Float    @default(0)
+  handled    Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([siteId, createdAt])
+}
+
+// Privacy-friendly site visitor analytics (daily-aggregated rollups).
+model SiteAnalytics {
+  id         String   @id @default(cuid())
+  siteId     String
+  site       Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  day        DateTime @db.Date
+  pageViews  Int      @default(0)
+  uniqueVisitors Int  @default(0)
+  referrers  Json     @default("{}")
+  devices    Json     @default("{}")
+  countries  Json     @default("{}")
+
+  @@unique([siteId, day])
+  @@index([day])
 }

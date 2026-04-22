@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: aiweb
+      POSTGRES_PASSWORD: aiweb_dev
+      POSTGRES_DB: aiweb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aiweb -d aiweb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  studio:
+    build:
+      context: .
+      dockerfile: Dockerfile.studio
+    environment:
+      DATABASE_URL: postgresql://aiweb:aiweb_dev@postgres:5432/aiweb?schema=public
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-docker-compose-dev-secret}
+      NEXTAUTH_URL: http://localhost:3000
+      APP_URL: http://localhost:3000
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      IMAGE_PROVIDER: ${IMAGE_PROVIDER:-placeholder}
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  renderer:
+    build:
+      context: .
+      dockerfile: Dockerfile.renderer
+    environment:
+      DATABASE_URL: postgresql://aiweb:aiweb_dev@postgres:5432/aiweb?schema=public
+      PLATFORM_ROOT_DOMAIN: localhost
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pg_data:

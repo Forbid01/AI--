@@ -426,7 +426,7 @@ function SiteCard({ site, locale, root }) {
           generating={genImg}
           onRequestGenerate={() => triggerHeroGen(site.id)}
         />
-        {/* eslint-disable-next-line @next/next/no-unused-vars */}
+        {/* eslint-disable-next-line no-unused-vars */}
         {false && g1 && g2 && null /* preserve destructured vars for tilt */}
 
         {/* Hover action overlay */}

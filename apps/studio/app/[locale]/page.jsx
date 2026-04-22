@@ -5,6 +5,7 @@ import BentoCapabilities from '@/components/BentoCapabilities.jsx';
 import TemplateShowcase from '@/components/TemplateShowcase.jsx';
 import TestimonialsMarquee from '@/components/TestimonialsMarquee.jsx';
 import CtaSection from '@/components/CtaSection.jsx';
+import ParticleBackground from '@/components/ParticleBackground.jsx';
 
 export const dynamic = 'force-static';
 
@@ -14,6 +15,15 @@ export default function LandingPage({ params }) {
 
   return (
     <>
+      {/* Premium particle overlay — fixed, non-intrusive, mix-blend for depth */}
+      <div
+        className="fixed inset-0 z-[5] pointer-events-none"
+        style={{ mixBlendMode: 'screen', opacity: 0.7 }}
+        aria-hidden="true"
+      >
+        <ParticleBackground variant="landing" />
+      </div>
+
       {/* Hero — prompt input + typewriter */}
       <LandingHero locale={locale} />
 

@@ -1,0 +1,42 @@
+# syntax=docker/dockerfile:1.6
+FROM node:20-alpine AS base
+RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
+WORKDIR /app
+
+# Copy workspace definitions first to leverage layer caching
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json turbo.json ./
+COPY apps/studio/package.json apps/studio/package.json
+COPY apps/renderer/package.json apps/renderer/package.json
+COPY packages/ai/package.json packages/ai/package.json
+COPY packages/db/package.json packages/db/package.json
+COPY packages/email/package.json packages/email/package.json
+COPY packages/i18n/package.json packages/i18n/package.json
+COPY packages/payments/package.json packages/payments/package.json
+COPY packages/templates/package.json packages/templates/package.json
+COPY packages/validation/package.json packages/validation/package.json
+
+RUN pnpm install --frozen-lockfile
+
+# Copy full source and build
+FROM base AS build
+COPY . .
+RUN pnpm --filter @aiweb/db run generate
+RUN pnpm --filter @aiweb/studio build
+
+# Runtime image
+FROM node:20-alpine AS runtime
+RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
+WORKDIR /app
+
+COPY --from=build /app/apps/studio/.next /app/apps/studio/.next
+COPY --from=build /app/apps/studio/public /app/apps/studio/public
+COPY --from=build /app/apps/studio/package.json /app/apps/studio/package.json
+COPY --from=build /app/node_modules /app/node_modules
+COPY --from=build /app/packages /app/packages
+COPY --from=build /app/package.json /app/package.json
+COPY --from=build /app/pnpm-workspace.yaml /app/pnpm-workspace.yaml
+
+ENV NODE_ENV=production
+ENV PORT=3000
+EXPOSE 3000
+CMD ["pnpm", "--filter", "@aiweb/studio", "start"]

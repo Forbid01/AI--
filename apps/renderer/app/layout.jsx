@@ -1,6 +1,7 @@
 import './globals.css';
 import { Fraunces, Inter_Tight, JetBrains_Mono } from 'next/font/google';
 import ScrollReveal from '@/components/ScrollReveal.jsx';
+import SmoothScroll from '@/components/SmoothScroll.jsx';
 
 const sans = Inter_Tight({
   subsets: ['latin', 'latin-ext'],
@@ -37,6 +38,7 @@ export default function RootLayout({ children }) {
       <body>
         {children}
         <ScrollReveal />
+        <SmoothScroll />
       </body>
     </html>
   );

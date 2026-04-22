@@ -10,6 +10,7 @@ export default function SiteActions({ site, locale }) {
   const [notice, setNotice] = useState(null);
   const L = (mn, en) => (locale === 'mn' ? mn : en);
   const published = site.status === 'published';
+  const isAiComposed = site.mode === 'ai_composed';
 
   useEffect(() => {
     if (!notice && !error) return;
@@ -36,6 +37,7 @@ export default function SiteActions({ site, locale }) {
         regenerate: L('Контент шинэчлэгдлээ', 'Copy regenerated'),
         translate: L('Орчуулга бэлэн', 'Translation ready'),
         'hero-image': L('Шинэ зураг үүсгэгдлээ', 'New image generated'),
+        'regenerate-layout': L('Layout шинэчлэгдлээ', 'Layout regenerated'),
       }[action];
       setNotice(label || L('Амжилттай', 'Done'));
       router.refresh();
@@ -100,13 +102,27 @@ export default function SiteActions({ site, locale }) {
           <button
             onClick={() => ai('hero-image')}
             disabled={busy}
-            className="px-4 py-2.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] disabled:opacity-40 transition-colors"
+            className={`px-4 py-2.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] disabled:opacity-40 transition-colors ${isAiComposed ? 'border-r border-[var(--surface-border)]' : ''}`}
             title={L('Нүүр зургийг дахин үүсгэх', 'Regenerate hero image')}
           >
             {loading === 'hero-image' ? (
               <span className="flex gap-1"><span className="typing-dot h-1 w-1 rounded-full bg-[var(--accent-light)]" /><span className="typing-dot h-1 w-1 rounded-full bg-[var(--accent-light)]" /><span className="typing-dot h-1 w-1 rounded-full bg-[var(--accent-light)]" /></span>
             ) : L('Зураг', 'New image')}
           </button>
+          {isAiComposed && (
+            <button
+              onClick={() => ai('regenerate-layout')}
+              disabled={busy}
+              className="px-4 py-2.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] disabled:opacity-40 transition-colors"
+              title={L('Сайтын бүтцийг дахин үүсгэх', 'Regenerate layout')}
+            >
+              {loading === 'regenerate-layout' ? (
+                <span className="flex gap-1"><span className="typing-dot h-1 w-1 rounded-full bg-[var(--accent-light)]" /><span className="typing-dot h-1 w-1 rounded-full bg-[var(--accent-light)]" /><span className="typing-dot h-1 w-1 rounded-full bg-[var(--accent-light)]" /></span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5">✨ {L('Layout', 'Layout')}</span>
+              )}
+            </button>
+          )}
         </div>
         <button
           onClick={togglePublish}

@@ -39,11 +39,15 @@ export default async function DomainPage({ params, searchParams }) {
 
 function renderAiComposed({ site, content, hero, gallery, locale }) {
   const layout = pickLayout(site, locale);
+  const vibe =
+    typeof site.templateId === 'string' && site.templateId.startsWith('ai-')
+      ? site.templateId.slice(3)
+      : undefined;
   return (
     <AiComposedSite
       layout={layout}
       content={content}
-      theme={site.theme}
+      theme={{ ...site.theme, vibe }}
       assets={{ hero, gallery }}
       business={site.business}
       locale={locale}

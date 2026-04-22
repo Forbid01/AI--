@@ -6,39 +6,32 @@ import {
   generateHeroImage,
   generateGalleryImages,
   generateLayout,
-  VIBES,
 } from '@aiweb/ai';
 import { requireUser } from '@/lib/auth.js';
-
-const VALID_TONES = ['formal', 'friendly', 'premium', 'sales'];
+import { guardRate, LIMITS } from '@/lib/rateLimit.js';
+import { checkSiteQuota } from '@/lib/quota.js';
+import { CreateSiteSchema, parseBody } from '@aiweb/validation';
+import log from '@/lib/logger.js';
 
 export async function POST(request) {
+  const blocked = await guardRate(request, { key: 'sites:create', ...LIMITS.sites });
+  if (blocked) return blocked;
+
   try {
     const user = await requireUser();
-    const body = await request.json();
-    const {
-      mode = 'template',
-      templateId,
-      tone,
-      vibe = 'minimal',
-      defaultLocale = 'mn',
-      subdomain,
-      business,
-    } = body;
 
-    if (!business?.businessName || !subdomain) {
-      return NextResponse.json({ error: 'businessName, subdomain шаардлагатай' }, { status: 400 });
+    const quota = await checkSiteQuota(user.id);
+    if (!quota.ok) {
+      return NextResponse.json({ error: quota.message, code: quota.code, quota: quota.quota, used: quota.used }, { status: 402 });
     }
 
-    if (mode === 'template' && !templateId) {
-      return NextResponse.json({ error: 'Template mode-д templateId шаардлагатай' }, { status: 400 });
+    const parsed = parseBody(CreateSiteSchema, await request.json());
+    if (!parsed.ok) {
+      return NextResponse.json({ error: parsed.error.message, fields: parsed.error.fields }, { status: 400 });
     }
+    const { mode, templateId, tone, vibe = 'minimal', defaultLocale, subdomain, business } = parsed.data;
 
-    if (mode === 'ai_composed' && !VIBES[vibe]) {
-      return NextResponse.json({ error: 'Буруу vibe' }, { status: 400 });
-    }
-
-    const resolvedTone = VALID_TONES.includes(tone) ? tone : 'friendly';
+    const resolvedTone = tone || 'friendly';
 
     const exists = await prisma.site.findUnique({ where: { subdomain } });
     if (exists) return NextResponse.json({ error: 'Subdomain аль хэдийн ашиглагдсан' }, { status: 409 });
