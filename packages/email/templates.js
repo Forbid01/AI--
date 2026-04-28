@@ -162,6 +162,32 @@ export function subscriptionExpiring({ name, daysLeft, locale }) {
   };
 }
 
+export function otpCode({ code, purpose, locale }) {
+  const title = L(locale, 'Нэг удаагийн код', 'Your one-time code');
+  const purposeLabel = L(locale, 'нууц үг сэргээх', 'password reset');
+  const body = `
+    <h1 style="font-size:22px;font-weight:700;margin:0 0 16px;color:#0a0a0f">${L(locale, 'Нэг удаагийн код', 'One-time code')}</h1>
+    <p style="margin:0 0 20px;color:#52525b;line-height:1.6;font-size:15px">${L(
+      locale,
+      `Та ${purposeLabel}-д ашиглах нэг удаагийн кодыг доор харна уу. Код 10 минутын дотор хүчинтэй.`,
+      `Your one-time code for ${purposeLabel} is below. Valid for 10 minutes.`,
+    )}</p>
+    <div style="margin:0 0 24px;text-align:center">
+      <div style="display:inline-block;background:#f4f4f5;border-radius:12px;padding:20px 36px;letter-spacing:0.25em;font-size:32px;font-weight:800;color:#0a0a0f;font-family:monospace">${escape(code)}</div>
+    </div>
+    <p style="margin:0;color:#a1a1aa;font-size:12px">${L(
+      locale,
+      'Хэрэв та энэ хүсэлт гаргаагүй бол энэ и-мэйлийг үл тоомсорло.',
+      'If you did not request this, you can safely ignore this email.',
+    )}</p>
+  `;
+  return {
+    subject: `${title} — ${code}`,
+    html: shell({ title, preheader: `${L(locale, 'Таны код:', 'Your code:')} ${code}`, body, locale }),
+    text: `${L(locale, 'Таны нэг удаагийн код:', 'Your one-time code:')} ${code}\n${L(locale, '10 минутын дотор хүчинтэй.', 'Valid for 10 minutes.')}`,
+  };
+}
+
 function formatMoney(amount, currency = 'MNT') {
   if (currency === 'MNT') return `${new Intl.NumberFormat('mn-MN').format(amount)} ₮`;
   return `${amount} ${currency}`;

@@ -74,8 +74,10 @@ enum Role {
 model User {
   id                      String         @id @default(cuid())
   email                   String         @unique
+  phone                   String?        @unique
   name                    String?
   passwordHash            String?
+  googleId                String?        @unique
   preferredLocale         Locale         @default(mn)
   role                    Role           @default(user)
   emailVerified           DateTime?
@@ -94,6 +96,20 @@ model User {
 
   @@index([deletedAt])
   @@index([role])
+}
+
+// Short-lived one-time codes for email/phone verification and password reset.
+model OtpCode {
+  id        String    @id @default(cuid())
+  target    String    // email address or E.164 phone (+97699...)
+  code      String    // 6-digit
+  purpose   String    // "password-reset"
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([target, purpose])
+  @@index([expiresAt])
 }
 
 model Site {

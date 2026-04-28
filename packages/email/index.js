@@ -78,6 +78,11 @@ export async function sendPaymentReceiptEmail({ to, name, payment, locale = 'mn'
   return sendEmail({ to, ...tpl, tags: [{ name: 'type', value: 'payment-receipt' }] });
 }
 
+export async function sendOtpEmail({ to, code, purpose = 'password-reset', locale = 'mn' }) {
+  const tpl = templates.otpCode({ code, purpose, locale });
+  return sendEmail({ to, ...tpl, tags: [{ name: 'type', value: 'otp' }] });
+}
+
 export async function sendDomainVerifiedEmail({ to, name, domain, locale = 'mn' }) {
   const tpl = templates.domainVerified({ name, domain, locale });
   return sendEmail({ to, ...tpl, tags: [{ name: 'type', value: 'domain-verified' }] });

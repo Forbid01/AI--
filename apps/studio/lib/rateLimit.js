@@ -40,8 +40,8 @@ async function upstashIncr({ key, ttlMs }) {
   }
 }
 
-export async function rateLimit(req, { key: suffix, limit, windowMs }) {
-  const clientKey = clientId(req);
+export async function rateLimit(req, { key: suffix, limit, windowMs }, userId) {
+  const clientKey = userId ? `user:${userId}` : clientId(req);
   const key = `${suffix}:${clientKey}`;
 
   const remote = await upstashIncr({ key, ttlMs: windowMs });
@@ -81,9 +81,14 @@ function clientId(req) {
   return h.get('x-real-ip') || h.get('cf-connecting-ip') || 'anon';
 }
 
-/** Shortcut for Next.js route handlers — returns 429 response or null. */
-export async function guardRate(req, opts) {
-  const r = await rateLimit(req, opts);
+/**
+ * Shortcut for Next.js route handlers — returns 429 response or null.
+ * Pass { role, userId } from the authenticated session to bypass limits for
+ * admin/superadmin users and use userId-based bucketing instead of IP.
+ */
+export async function guardRate(req, opts, { role, userId } = {}) {
+  if (role === 'superadmin' || role === 'admin') return null;
+  const r = await rateLimit(req, opts, userId);
   if (r.success) return null;
   return new Response(JSON.stringify({ error: 'Too many requests', retryAfter: r.headers['Retry-After'] }), {
     status: 429,

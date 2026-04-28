@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { isRootHost, normalizeHost, resolveSitePathname } from '@/lib/hostRouting.js';
 
 /**
  * Host-ыг шалган rewrite хийнэ:
@@ -6,12 +7,6 @@ import { NextResponse } from 'next/server';
  *   custom.example.com         -> /sites/domain/<host>[path]
  *   platform.mn эсвэл localhost -> /_landing (эсвэл эхний хуудас)
  */
-
-const ROOT_DOMAINS = new Set([
-  process.env.PLATFORM_ROOT_DOMAIN || 'platform.mn',
-  'localhost:3001',
-  'localhost',
-]);
 
 export function middleware(request) {
   const host = (request.headers.get('host') || '').toLowerCase();
@@ -21,24 +16,15 @@ export function middleware(request) {
     return NextResponse.next();
   }
 
-  const hostWithoutPort = host.split(':')[0];
   const rootDomain = process.env.PLATFORM_ROOT_DOMAIN || 'platform.mn';
 
   // Platform root — landing
-  if (ROOT_DOMAINS.has(host) || hostWithoutPort === rootDomain) {
+  if (isRootHost(host, rootDomain)) {
     return NextResponse.next();
   }
 
   const url = request.nextUrl.clone();
-
-  if (hostWithoutPort.endsWith(`.${rootDomain}`)) {
-    const sub = hostWithoutPort.replace(`.${rootDomain}`, '');
-    url.pathname = `/sites/sub/${sub}${pathname}`;
-    return NextResponse.rewrite(url);
-  }
-
-  // Custom domain
-  url.pathname = `/sites/domain/${hostWithoutPort}${pathname}`;
+  url.pathname = resolveSitePathname(normalizeHost(host), pathname, rootDomain);
   return NextResponse.rewrite(url);
 }
 

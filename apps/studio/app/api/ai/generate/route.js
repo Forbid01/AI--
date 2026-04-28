@@ -8,11 +8,10 @@ import { AiActionSchema, parseBody } from '@aiweb/validation';
 import log from '@/lib/logger.js';
 
 export async function POST(request) {
-  const blocked = await guardRate(request, { key: 'ai:generate', ...LIMITS.ai });
-  if (blocked) return blocked;
-
   try {
     const user = await requireUser();
+    const blocked = await guardRate(request, { key: 'ai:generate', ...LIMITS.ai }, { role: user.role, userId: user.id });
+    if (blocked) return blocked;
 
     const quota = await checkAiQuota(user.id);
     if (!quota.ok) {

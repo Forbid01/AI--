@@ -14,11 +14,10 @@ import { CreateSiteSchema, parseBody } from '@aiweb/validation';
 import log from '@/lib/logger.js';
 
 export async function POST(request) {
-  const blocked = await guardRate(request, { key: 'sites:create', ...LIMITS.sites });
-  if (blocked) return blocked;
-
   try {
     const user = await requireUser();
+    const blocked = await guardRate(request, { key: 'sites:create', ...LIMITS.sites }, { role: user.role, userId: user.id });
+    if (blocked) return blocked;
 
     const quota = await checkSiteQuota(user.id);
     if (!quota.ok) {

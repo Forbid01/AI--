@@ -1,10 +1,3 @@
-/**
- * Subscription quota enforcement.
- * Free: 1 site, 3 AI/day
- * Starter: 5 sites, 30 AI/day
- * Pro: unlimited
- */
-
 import { prisma } from '@aiweb/db';
 
 const QUOTAS = {
@@ -14,8 +7,21 @@ const QUOTAS = {
 };
 
 async function getPlan(userId) {
-  const sub = await prisma.subscription.findUnique({ where: { userId } });
-  return sub?.plan ?? 'free';
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { 
+      role: true, 
+      subscription: {
+        select: { plan: true }
+      }
+    }
+  });
+
+  if (user?.role === 'superadmin' || user?.role === 'admin') {
+    return 'pro';
+  }
+
+  return user?.subscription?.plan ?? 'free';
 }
 
 export async function checkSiteQuota(userId) {

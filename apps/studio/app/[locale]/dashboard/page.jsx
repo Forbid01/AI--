@@ -67,7 +67,7 @@ export default async function DashboardPage({ params }) {
         <div className="sticky top-0 z-20 bg-gradient-to-r from-red-500/10 via-amber-500/10 to-red-500/10 border-b border-amber-500/30 backdrop-blur-lg">
           <div className="mx-auto max-w-7xl px-6 py-2 flex items-center justify-between gap-4 text-xs">
             <span className="text-amber-300 font-semibold">
-              {locale === 'mn' ? '🛡 Та админ эрхтэй' : '🛡 You have admin access'}
+              {locale === 'mn' ? ' Та админ эрхтэй' : 'You have admin access'}
             </span>
             <Link
               href={`/${locale}/dashboard/admin`}

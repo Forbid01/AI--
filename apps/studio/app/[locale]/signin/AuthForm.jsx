@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import {
   motion, AnimatePresence,
   useMotionValue, useTransform, useSpring, animate,
@@ -609,6 +609,63 @@ function GlowField({ children }) {
   );
 }
 
+function GoogleButton({ locale }) {
+  const L = (mn, en) => (locale === 'mn' ? mn : en);
+  const [loading, setLoading] = useState(false);
+
+  async function handleGoogle() {
+    setLoading(true);
+    await signIn('google', { callbackUrl: `/${locale}/dashboard` });
+    // signIn redirects, so no need to reset loading
+  }
+
+  return (
+    <div className="mt-5">
+      <div className="relative flex items-center gap-3 mb-4">
+        <div className="flex-1 h-px bg-white/10" />
+        <span className="text-xs text-[var(--text-muted)] font-mono uppercase tracking-widest shrink-0">
+          {L('эсвэл', 'or')}
+        </span>
+        <div className="flex-1 h-px bg-white/10" />
+      </div>
+
+      <motion.button
+        type="button"
+        onClick={handleGoogle}
+        disabled={loading}
+        whileHover={!loading ? { scale: 1.01 } : {}}
+        whileTap={!loading ? { scale: 0.99 } : {}}
+        className="w-full flex items-center justify-center gap-3 h-12 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
+        style={{
+          background: 'rgba(255,255,255,0.06)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          color: 'rgba(255,255,255,0.88)',
+        }}
+      >
+        {loading ? (
+          <span className="flex gap-1.5">
+            {[0, 1, 2].map((i) => (
+              <motion.span key={i} className="h-1.5 w-1.5 rounded-full bg-white/70"
+                animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }} />
+            ))}
+          </span>
+        ) : (
+          <>
+            {/* Google 'G' logo */}
+            <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
+              <path fill="#4285F4" d="M46.1 24.55c0-1.63-.15-3.2-.42-4.72H24v8.93h12.42c-.54 2.9-2.16 5.35-4.6 7v5.82h7.45c4.36-4.01 6.83-9.93 6.83-17.03z"/>
+              <path fill="#34A853" d="M24 48c6.27 0 11.54-2.08 15.38-5.64l-7.45-5.82c-2.08 1.4-4.73 2.23-7.93 2.23-6.1 0-11.26-4.12-13.1-9.66H3.2v5.98A23.99 23.99 0 0024 48z"/>
+              <path fill="#FBBC05" d="M10.9 29.11A14.4 14.4 0 019.6 24c0-1.77.3-3.49.9-5.11v-5.98H3.2A23.99 23.99 0 000 24c0 3.86.92 7.52 2.55 10.76l8.35-5.65z"/>
+              <path fill="#EA4335" d="M24 9.55c3.43 0 6.52 1.18 8.95 3.49l6.72-6.72C35.53 2.38 30.27 0 24 0 14.63 0 6.57 5.3 2.55 13.09l8.35 5.98C12.74 13.67 17.9 9.55 24 9.55z"/>
+            </svg>
+            {L('Google-ээр үргэлжлүүлэх', 'Continue with Google')}
+          </>
+        )}
+      </motion.button>
+    </div>
+  );
+}
+
 function EyeIcon({ open }) {
   return open ? (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
@@ -828,9 +885,20 @@ export default function AuthForm({ locale, mode }) {
                   </div>
 
                   <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                      {L('Нууц үг', 'Password')}
-                    </label>
+                    <div className="flex items-center justify-between mb-2">
+                      <label htmlFor="password" className="block text-sm font-medium text-[var(--text-secondary)]">
+                        {L('Нууц үг', 'Password')}
+                      </label>
+                      {!isSignup && (
+                        <Link
+                          href={`/${locale}/forgot-password`}
+                          className="text-xs text-[var(--accent-light)] hover:text-[var(--accent)] transition-colors"
+                          tabIndex={-1}
+                        >
+                          {L('Нууц үгээ мартсан уу?', 'Forgot password?')}
+                        </Link>
+                      )}
+                    </div>
                     <GlowField>
                       <div className="relative">
                         <input
@@ -917,6 +985,9 @@ export default function AuthForm({ locale, mode }) {
                     />
                   </motion.button>
                 </form>
+
+                {/* ── Google OAuth divider + button ── */}
+                <GoogleButton locale={locale} />
               </motion.div>
             </motion.div>
           </FormCardGlow>
