@@ -1,174 +1,432 @@
 # AiWeb
 
-AI-д суурилсан монгол жижиг бизнесийн вэбсайт үүсгэх платформ.
+**Монгол жижиг бизнесийн вэбсайт хялбархан, хурдан үүсгэх AI платформ.**
 
-## Features
+Chatbot-той ярилцаад л template → дизайн → контент → зураг автоматаар бэлдэгддэг — код мэдлэг шаардахгүй.
 
-- **AI chat-driven builder**: Бизнесийн мэдээллийг chatbot-оор асуугаад template → tone → контент → hero зураг автоматаар үүснэ
-- **23 industry template**: Ресторан, гоо сайхан, фитнес, аялал, эрх зүй, сургалт гэх мэт 23 мэргэжлийн загвар
-- **Хоёр хэл**: Монгол UI + AI default, English UI + AI — нэг workspace-ээс sync
-- **Tone presets**: Албан ёсны, найрсаг, премиум, борлуулалт, соёлын, вирал гэх мэт
-- **Publish + domain**: Subdomain (`*.aiweb.mn`) + custom domain (DNS TXT verification)
-- **Монгол төлбөр**: QPay, SocialPay, Хаан банк, Голомт банк
-- **Image generation**: Cloudflare Workers AI (Flux schnell) + Pollinations fallback
+---
+
+## Агуулга
+
+- [Онцлог](#онцлог)
+- [Архитектур](#архитектур)
+- [Tech Stack](#tech-stack)
+- [Template сан](#template-сан)
+- [Хурдан эхлэх](#хурдан-эхлэх)
+- [Environment Variables](#environment-variables)
+- [Database](#database)
+- [Image Generation](#image-generation)
+- [Төлбөрийн систем](#төлбөрийн-систем)
+- [Auth](#auth)
+- [Docker](#docker)
+- [Scripts](#scripts)
+- [Renderer локал тест](#renderer-локал-тест)
+- [Тест & Lint](#тест--lint)
+- [Deploy](#deploy)
+- [Roadmap](#roadmap)
+- [Тэмдэглэл](#тэмдэглэл)
+
+---
+
+## Онцлог
+
+| Онцлог | Тайлбар |
+|---|---|
+| **AI Chat Builder** | Бизнесийн мэдээллийг chatbot-оор асуугаад template, tone, контент, hero зурагийг автоматаар үүсгэнэ |
+| **23 Industry Template** | Ресторан, гоо сайхан, фитнес, эрх зүй, сургалт, аялал болон өөр 17 мэргэжлийн загвар |
+| **Tone System** | Albany ёсны, найрсаг, премиум, борлуулалт — AI-ийн дуу хоолойг бизнест тохируулдаг |
+| **Хоёр хэл** | Монгол ба Англи UI + AI контент нэг workspace-ааас sync хийгддэг |
+| **Publish & Domain** | `*.aiweb.mn` subdomain + custom domain (DNS TXT баталгаажуулалт) |
+| **Монгол Төлбөр** | QPay, SocialPay, Хаан банк, Голомт банк |
+| **Image Generation** | Cloudflare Workers AI (Flux-1-schnell) → Pollinations.ai → placeholder градиент SVG failover |
+| **Analytics** | Хувийн нууцлалд ойр, өдөр тутам нэгтгэсэн сайтын статистик |
+| **Webhook** | Сайтын үйл явдлуудын webhook систем |
+| **API Token** | Гадаад хандалтын API token |
+
+---
 
 ## Архитектур
 
 ```
-apps/
-  studio/       # Builder dashboard — platform / aiweb.mn
-  renderer/     # Нийтэлсэн сайтууд — *.aiweb.mn + custom domains
-packages/
-  db/           # Prisma schema + client (Neon Postgres)
-  ai/           # Gemini 2.5 Flash + image generation (Cloudflare / Pollinations)
-  templates/    # 23 template — schema, layout components, defaultTheme
-  payments/     # QPay / SocialPay / KhanBank / Golomt adapters
-  i18n/         # mn/en орчуулгууд
-scripts/
-  generate-preview-images.mjs   # Landing page preview зурагнуудыг Pollinations-аар үүсгэх
-  gen-covers.mjs                # Template cover зурагнуудыг үүсгэх
+AiWeb (pnpm monorepo + Turbo)
+│
+├── apps/
+│   ├── studio/          # Builder dashboard (Next.js 14) — port 3000
+│   │   ├── app/[locale] # MN/EN internationalised routes
+│   │   ├── app/api/     # Auth, AI generation, payments, admin, sites
+│   │   └── components/  # UI components, AI builder, dashboard
+│   │
+│   └── renderer/        # Нийтэлсэн сайтууд (Next.js 14) — port 3001
+│       └── app/sites/   # Subdomain / custom domain dynamic render
+│
+├── packages/
+│   ├── db/              # Prisma schema + shared client (Neon Postgres)
+│   ├── ai/              # Gemini prompts, tone presets, layout generation, image providers
+│   ├── templates/       # 23 template — layout components, schema, defaultTheme
+│   ├── payments/        # QPay / SocialPay / KhanBank / Golomt adapters
+│   ├── i18n/            # mn/en орчуулгууд
+│   ├── email/           # Resend интеграц
+│   └── validation/      # Zod schemas
+│
+└── scripts/
+    ├── generate-preview-images.mjs  # Landing slideshow зурагнуудыг үүсгэх
+    └── gen-covers.mjs               # Template cover зурагнуудыг үүсгэх
 ```
 
-Stack: **Next.js 14 App Router · Tailwind · Framer Motion · Prisma + Postgres (Neon) · Gemini 2.5 Flash · Cloudflare Workers AI (Flux) · NextAuth v4 · JavaScript**
+---
 
-## Template сан (23)
+## Tech Stack
 
-| Ангилал                 | Template-ууд                                                                     |
-| ----------------------- | -------------------------------------------------------------------------------- |
-| Үндсэн                  | `minimal`, `business`, `portfolio`                                               |
-| Хоол & Ундаа            | `restaurant`, `restaurant_mongolian`, `organic_food`                             |
-| Эрүүл мэнд & Гоо сайхан | `beauty_salon`, `fitness`, `clinic`                                              |
-| Мэргэжлийн үйлчилгээ    | `education`, `legal`, `sales_rep`, `home_service`, `auto_repair`, `phone_repair` |
-| Бүтээлч & Худалдаа      | `crafts`, `furniture`, `gifts`, `fashion_store`, `photography`                   |
-| Амьдралын хэв маяг      | `travel`, `pet_shop`, `music_school`                                             |
+| Давхарга | Технологи |
+|---|---|
+| **Frontend** | Next.js 14 App Router, React 18, Tailwind CSS 3.4, Framer Motion 12 |
+| **Backend** | Next.js API Routes (full-stack) |
+| **Database** | Prisma 5.22 + PostgreSQL (Neon) |
+| **Auth** | NextAuth v4, JWT strategy, bcrypt |
+| **AI / LLM** | Google Gemini 2.5 Flash |
+| **Image AI** | Cloudflare Workers AI (Flux-1-schnell), Pollinations.ai |
+| **Email** | Resend |
+| **Build** | Turbo (monorepo), pnpm 9.12 |
+| **Test** | Vitest |
+| **Language** | Pure JavaScript (TypeScript-гүй) |
 
-## Image generation
+---
 
-Зураг үүсгэхдээ provider chain ашигладаг — `IMAGE_PROVIDER` env-ээр эхлэх provider-г тохируулна.
+## Template сан
 
-| Provider       | Env keys                                        | Тайлбар                                     |
-| -------------- | ----------------------------------------------- | ------------------------------------------- |
-| `cloudflare`   | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` | Flux-1-schnell, production-д санаачилагдсан |
-| `pollinations` | —                                               | Credential-гүй fallback, rate-limited       |
-| `placeholder`  | —                                               | Градиент SVG, API-гүй орчинд                |
+23 мэргэжлийн загвар — бүр тус бүр өөрийн дизайн DNA, layout, defaultTheme-тэй.
 
-`IMAGE_FAILOVER=true` (default) — нэг provider алдаа буцаавал автоматаар дараагийн provider-ийг туршина.
+| Ангилал | Template-ууд |
+|---|---|
+| Үндсэн | `minimal`, `business`, `portfolio` |
+| Хоол & Ундаа | `restaurant`, `restaurant_mongolian`, `organic_food` |
+| Эрүүл мэнд & Гоо сайхан | `beauty_salon`, `fitness`, `clinic` |
+| Мэргэжлийн үйлчилгээ | `education`, `legal`, `sales_rep`, `home_service`, `auto_repair`, `phone_repair` |
+| Бүтээлч & Худалдаа | `crafts`, `furniture`, `gifts`, `fashion_store`, `photography` |
+| Амьдралын хэв маяг | `travel`, `pet_shop`, `music_school` |
 
-## Auth
+Шинэ template нэмэхэд `packages/templates/src/[name]/` дотор `schema.js`, `layout.jsx`, `defaultTheme.js` файлуудыг үүсгэнэ.
 
-NextAuth v4 + JWT strategy. Credentials provider (email + bcrypt password).
+---
 
-- **Server**: `requireUser()` → 401 throw, `getCurrentUser()` → null-safe
-- **Client**: `signIn('credentials', { email, password })`, `signOut()`
-- **Middleware**: locale redirect (`/` → `/mn`) + dashboard auth gate
+## Хурдан эхлэх
 
-## Setup
+### Шаардлага
+
+- Node.js ≥ 20
+- pnpm ≥ 9.12 (`npm i -g pnpm`)
+- PostgreSQL эсвэл [Neon](https://neon.tech) database
+
+### Суулгалт
 
 ```bash
-# 1. Install deps
+# 1. Repo clone
+git clone https://github.com/<org>/aiweb.git
+cd aiweb
+
+# 2. Dependencies суулгах
 pnpm install
 
-# 2. Copy env
+# 3. Environment хуулах, тохируулах
 cp .env.example .env
-# .env дотор API key / DB URL-аа бөглө
+# .env дотор шаардлагатай утгуудаа бөглөнө (доорх хүснэгт үзнэ)
 
-# 3. DB migrate
+# 4. Database migrate
 pnpm db:generate
 pnpm db:migrate
 
-# 4. Dev
+# 5. Dev server ажиллуулах (хоёр app зэрэг)
 pnpm dev
-# Studio:   http://localhost:3000
-# Renderer: http://localhost:3001
 ```
 
-### Шаардлагатай env variables
+| App | URL |
+|---|---|
+| Studio (builder) | http://localhost:3000 |
+| Renderer (published sites) | http://localhost:3001 |
+
+---
+
+## Environment Variables
+
+### Шаардлагатай
 
 ```env
-# Auth
-NEXTAUTH_SECRET=...           # openssl rand -base64 32
+# ── Auth ─────────────────────────────────────────
+NEXTAUTH_SECRET=...             # openssl rand -base64 32
 NEXTAUTH_URL=http://localhost:3000
 
-# Database
-DATABASE_URL=postgresql://...  # Neon эсвэл локал Postgres
+# ── Database ─────────────────────────────────────
+DATABASE_URL=postgresql://user:password@host/db?sslmode=require
 
-# AI
-GEMINI_API_KEY=...            # aistudio.google.com
+# ── AI ───────────────────────────────────────────
+GEMINI_API_KEY=...              # https://aistudio.google.com
 
-# Image generation (нэг нь хангалттай)
-CLOUDFLARE_ACCOUNT_ID=...     # Workers AI ашиглах бол
+# ── Image Generation ─────────────────────────────
+IMAGE_PROVIDER=cloudflare       # cloudflare | pollinations | placeholder
+IMAGE_FAILOVER=true             # provider алдаа буцаавал auto-fallback
+CLOUDFLARE_ACCOUNT_ID=...
 CLOUDFLARE_API_TOKEN=...
-# IMAGE_PROVIDER=pollinations  # Cloudflare-гүй бол
 
-# Payments (optional)
+# ── Platform ─────────────────────────────────────
+PLATFORM_ROOT_DOMAIN=aiweb.mn  # Subdomain detection-д ашиглана
+APP_URL=http://localhost:3000
+```
+
+### Нэмэлт (Payments)
+
+```env
+# QPay
 QPAY_USERNAME=...
 QPAY_PASSWORD=...
 QPAY_INVOICE_CODE=...
+
+# SocialPay
+SOCIALPAY_USERNAME=...
+SOCIALPAY_PASSWORD=...
+SOCIALPAY_TERMINAL=...
+
+# Khan Bank
+KHANBANK_CLIENT_ID=...
+KHANBANK_CLIENT_SECRET=...
+KHANBANK_TERMINAL_ID=...
+
+# Golomt Bank
+GOLOMT_CLIENT_ID=...
+GOLOMT_CLIENT_SECRET=...
 ```
 
-### Credentials
+### Нэмэлт (Email)
 
-| Service                 | Үнэгүй          | Хаанаас             |
-| ----------------------- | --------------- | ------------------- |
-| Gemini 2.5 Flash        | ✅ Generous     | aistudio.google.com |
-| Cloudflare Workers AI   | ✅ 10k req/day  | dash.cloudflare.com |
-| Pollinations (fallback) | ✅ Rate-limited | pollinations.ai     |
-| Neon Postgres           | 0.5GB           | neon.tech           |
-| QPay                    | Merchant гэрээ  | developer.qpay.mn   |
-| SocialPay               | Merchant гэрээ  | golomtbank.com      |
-| Khan Bank               | Merchant гэрээ  | khanbank.com        |
-| Golomt Bank             | Merchant гэрээ  | golomtbank.com      |
+```env
+RESEND_API_KEY=...
+EMAIL_FROM=noreply@aiweb.mn
+```
 
-### Preview зурагнуудыг дахин үүсгэх
+### Credential авах хаяг
+
+| Service | Үнэгүй | Хаанаас |
+|---|---|---|
+| Gemini 2.5 Flash | ✅ Generous tier | [aistudio.google.com](https://aistudio.google.com) |
+| Cloudflare Workers AI | ✅ 10k req/day | [dash.cloudflare.com](https://dash.cloudflare.com) |
+| Pollinations.ai | ✅ Rate-limited | [pollinations.ai](https://pollinations.ai) |
+| Neon Postgres | ✅ 0.5 GB | [neon.tech](https://neon.tech) |
+| Resend | ✅ 3k email/mo | [resend.com](https://resend.com) |
+| QPay | Merchant гэрээ | [developer.qpay.mn](https://developer.qpay.mn) |
+| SocialPay | Merchant гэрээ | golomtbank.com |
+| Khan Bank | Merchant гэрээ | khanbank.com |
+| Golomt Bank | Merchant гэрээ | golomtbank.com |
+
+---
+
+## Database
+
+Prisma + PostgreSQL (Neon хэрэглэхийг зөвлөнө).
 
 ```bash
-# Landing page slideshow зургууд (apps/studio/public/images/preview-*.jpg)
+# Prisma client дахин үүсгэх
+pnpm db:generate
+
+# Шинэ migration үүсгэх
+pnpm db:migrate
+
+# Prisma Studio (GUI)
+pnpm db:studio
+```
+
+**Үндсэн model-ууд:** `User`, `Site`, `SiteContent` (locale-тай), `SiteTheme`, `SiteAsset`, `AiJob`, `Subscription`, `Payment`, `ContactSubmission`, `AuditLog`
+
+---
+
+## Image Generation
+
+Provider chain ашигладаг — `IMAGE_PROVIDER` env-ээр эхлэх provider-г тохируулна.
+
+| Provider | Тохиргоо | Тайлбар |
+|---|---|---|
+| `cloudflare` | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` | Flux-1-schnell, production-д тохиромжтой |
+| `pollinations` | Тохиргоо шаардахгүй | Rate-limited fallback |
+| `placeholder` | Тохиргоо шаардахгүй | Градиент SVG, API-гүй орчинд |
+
+`IMAGE_FAILOVER=true` (default) тохиргоотой үед нэг provider алдаа буцаавал автоматаар дараагийн provider руу шилждэг.
+
+---
+
+## Төлбөрийн систем
+
+4 Монгол банкны adapter нэгдсэн интерфэйсээр ажилладаг:
+
+```js
+// Бүх adapter-д ижил дуудлага
+await adapter.createInvoice(amount, description)
+await adapter.checkInvoice(invoiceId)
+await adapter.verifyCallback(payload, signature)
+```
+
+`packages/payments/src/` дотор QPay, SocialPay, KhanBank, Golomt-ын adapter-ууд байрладаг.
+
+---
+
+## Auth
+
+NextAuth v4 + JWT strategy. Credentials provider (email + bcrypt нууц үг).
+
+```js
+// Server side — 401 throw хийдэг
+import { requireUser } from '@/lib/auth'
+const user = await requireUser()
+
+// Server side — null-safe
+import { getCurrentUser } from '@/lib/auth'
+const user = await getCurrentUser()
+
+// Client side
+signIn('credentials', { email, password })
+signOut()
+```
+
+**Middleware:** locale redirect (`/` → `/mn`) + dashboard auth gate.
+
+---
+
+## Docker
+
+```bash
+# Бүх сервис зэрэг (Postgres + Studio + Renderer)
+docker compose up
+
+# Зөвхөн studio
+docker build -f Dockerfile.studio -t aiweb-studio .
+docker run -p 3000:3000 --env-file .env aiweb-studio
+
+# Зөвхөн renderer
+docker build -f Dockerfile.renderer -t aiweb-renderer .
+docker run -p 3001:3001 --env-file .env aiweb-renderer
+```
+
+Dockerfile хоёулаа multi-stage build ашигладаг — production image жижиг байна.
+
+---
+
+## Scripts
+
+```bash
+# Landing page slideshow зургуудыг Pollinations-аар үүсгэх
+# → apps/studio/public/images/preview-*.jpg
 node scripts/generate-preview-images.mjs
 
-# Template cover зургууд (apps/studio/public/templates/*/cover.jpg)
+# Template cover зургуудыг үүсгэх
+# → apps/studio/public/templates/*/cover.jpg
 node scripts/gen-covers.mjs
 ```
 
-### Renderer-ийг локал дээр турших
+---
+
+## Renderer локал тест
+
+Subdomain routing-г локал орчинд туршихад `/etc/hosts` засварлана.
 
 ```bash
-# /etc/hosts
-127.0.0.1  aiweb.local mybiz.aiweb.local
+# /etc/hosts дотор нэмэх
+127.0.0.1  aiweb.local
+127.0.0.1  mybiz.aiweb.local
 
-# .env
+# .env дотор
 PLATFORM_ROOT_DOMAIN=aiweb.local
 
-# Нэвтрэх
-http://mybiz.aiweb.local:3001
+# Renderer ажиллуулаад
+pnpm dev
+
+# Хандах
+open http://mybiz.aiweb.local:3001
 ```
+
+---
+
+## Тест & Lint
+
+```bash
+# Unit тест (Vitest)
+pnpm test
+
+# Watch горим
+pnpm test:watch
+
+# Coverage тайлан
+pnpm test:coverage
+
+# ESLint (бүх app)
+pnpm lint
+
+# Build шалгах
+pnpm build
+```
+
+Тест нь `packages/ai/` доорх AI JSON parsing, layout generation, prompt-уудад анхаарлаа хандуулдаг.
+
+---
+
+## Deploy
+
+### Production build
+
+```bash
+pnpm build
+# Studio:   pnpm --filter @aiweb/studio start   (port 3000)
+# Renderer: pnpm --filter @aiweb/renderer start (port 3001)
+```
+
+### CI/CD
+
+GitHub Actions workflow нь `main` branch-д push болоход автоматаар:
+1. `pnpm lint` — Lint шалгалт
+2. `pnpm test` — Unit тест
+3. `pnpm build` — Production build
+
+### Санамж
+
+- Studio болон Renderer-ийг тусдаа сервер / container-д deploy хийж болно
+- Renderer custom domain support-д wildcard DNS (`*.aiweb.mn → server IP`) тохиргоо хэрэгтэй
+- Prisma generate нь build-аас өмнө ажиллах ёстой — Dockerfile-д тусгагдсан
+
+---
 
 ## Roadmap
 
 ### Дууссан
 
-- [x] Monorepo scaffold (Next.js + Prisma + Tailwind)
+- [x] Monorepo scaffold (Next.js + Prisma + Tailwind + Turbo)
 - [x] NextAuth v4 credentials auth
-- [x] AI chat builder (AiBuilder.jsx — prompt → template → tone → generate)
+- [x] AI chat builder (template → tone → контент → зураг)
 - [x] 23 industry template + layout components
-- [x] Gemini 2.5 Flash контент + Cloudflare Flux зураг
+- [x] Gemini 2.5 Flash контент генерац
+- [x] Cloudflare Flux зураг + Pollinations fallback
 - [x] Subdomain + custom domain renderer
 - [x] DNS TXT domain verification
-- [x] 4 Монгол төлбөрийн adapter (QPay, SocialPay, Хаан, Голомт)
+- [x] 4 Монгол банкны adapter (QPay, SocialPay, Хаан, Голомт)
 - [x] MN/EN bilingual support
 - [x] Landing page (LivePreview, BentoCapabilities, TemplateShowcase)
 - [x] Dashboard (sites list, site editor, domain panel, billing)
+- [x] Site analytics, webhook, API token
+- [x] Contact form + spam scoring
+- [x] Audit log
 
-### Дараа
+### Хийгдэж байгаа / Дараа
 
-- [ ] Section-level AI remix (нэг хэсгийг дахин generate хийх)
-- [ ] Blog / contact form
-- [ ] Site analytics
+- [ ] Email system (Resend integration бүрэн)
+- [ ] Section-level AI remix (нэг хэсгийг дахин generate)
+- [ ] Admin dashboard (платформын хяналт)
 - [ ] Team collaboration
+- [ ] Blog
 - [ ] Custom template builder
+- [ ] Performance monitoring (OpenTelemetry)
+- [ ] Automated E2E тест (Playwright)
 
-## Notes
+---
 
-- Код бүхэлдээ **JavaScript** (TypeScript биш) — onboarding хялбар байлгах
-- AI output-ийн default хэл монгол; `translate` action-ээр англи хувилбар үүснэ
-- Payment adapter-ууд нэгдсэн интерфэйстэй: `createInvoice`, `checkInvoice`, `verifyCallback`
-- Template `defaultTheme` flat schema: `primary`, `accent`, `background`, `foreground`, `fontHeading`, `fontBody`, `radius`
+## Тэмдэглэл
+
+- **JavaScript** — TypeScript ашиглаагүй, onboarding хялбар байлгах зорилгоор
+- **AI default хэл** — монгол; `translate` action-ээр англи хувилбар үүснэ
+- **Template `defaultTheme`** flat schema: `primary`, `accent`, `background`, `foreground`, `fontHeading`, `fontBody`, `radius`
+- **Payment adapter интерфэйс** нэгдсэн: `createInvoice`, `checkInvoice`, `verifyCallback`
+- **Monorepo командууд** — `pnpm --filter @aiweb/{package} <command>` pattern ашигладаг
