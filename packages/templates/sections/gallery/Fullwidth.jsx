@@ -1,4 +1,5 @@
 import { themeToCssVars, L } from '../_primitives/SectionShell.jsx';
+import { GalleryVisualTile } from '../_primitives/VisualPlaceholders.jsx';
 
 export default function Fullwidth({ theme, assets, locale = 'mn' }) {
   const style = themeToCssVars(theme);
@@ -22,25 +23,10 @@ export default function Fullwidth({ theme, assets, locale = 'mn' }) {
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5">
-        {(images.length > 0 ? images : [null, null, null]).map((img, i) => (
-          <div
-            key={i}
-            className="relative aspect-[4/5] md:aspect-[3/4] overflow-hidden"
-            style={{ background: `linear-gradient(${120 + i * 40}deg, var(--accent), color-mix(in srgb, var(--accent) 40%, var(--background)))` }}
-          >
-            {img?.url ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={img.url} alt="" className="w-full h-full object-cover" />
-            ) : null}
-            <div
-              className="absolute inset-x-0 bottom-0 p-5 text-white text-xs font-mono tracking-[0.2em] uppercase"
-              style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.55))' }}
-            >
-              {String(i + 1).padStart(2, '0')}
-            </div>
-          </div>
-        ))}
+      <div className="grid grid-cols-1 gap-3 px-6 md:grid-cols-12 md:auto-rows-[132px] md:gap-4 md:px-6">
+        <GalleryVisualTile image={images[0]} index={0} className="aspect-[4/5] md:col-span-4 md:row-span-3 md:aspect-auto" />
+        <GalleryVisualTile image={images[1]} index={1} className="aspect-[4/5] md:col-span-4 md:row-span-4 md:aspect-auto" />
+        <GalleryVisualTile image={images[2]} index={2} className="aspect-[4/5] md:col-span-4 md:row-span-3 md:aspect-auto" />
       </div>
       <div className="pb-20 md:pb-28" />
     </section>

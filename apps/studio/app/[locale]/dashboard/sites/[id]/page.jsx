@@ -7,6 +7,7 @@ import { requireUser } from '@/lib/auth.js';
 import SiteActions from './SiteActions.jsx';
 import DomainPanel from './DomainPanel.jsx';
 import RemixDrawer from './RemixDrawer.jsx';
+import AssetAutoRefresh from './AssetAutoRefresh.jsx';
 
 export default async function SitePage({ params }) {
   const { id, locale } = params;
@@ -24,6 +25,13 @@ export default async function SitePage({ params }) {
   const layout = siteContentRow?.layout;
   const hero = site.assets.find((a) => a.kind === 'hero');
   const gallery = site.assets.filter((a) => a.kind === 'gallery');
+  const expectedGalleryCount = Array.isArray(content?.galleryPrompts) ? Math.min(content.galleryPrompts.length, 4) : 0;
+  const createdRecently = Date.now() - new Date(site.createdAt).getTime() < 10 * 60 * 1000;
+  const visualsPending = Boolean(siteContentRow) && (
+    !hero ||
+    (expectedGalleryCount > 0 && gallery.length < expectedGalleryCount)
+  );
+  const autoRefreshVisuals = createdRecently && visualsPending;
   const SiteComponent = tpl?.component;
   const vibe = isAiComposed && site.templateId?.startsWith('ai-')
     ? site.templateId.slice(3)
@@ -108,6 +116,14 @@ export default async function SitePage({ params }) {
 
       {/* Preview */}
       <div className="mt-10">
+        {autoRefreshVisuals ? (
+          <AssetAutoRefresh
+            locale={locale}
+            pendingHero={!hero}
+            galleryCount={gallery.length}
+            expectedGalleryCount={expectedGalleryCount}
+          />
+        ) : null}
         <div className="flex items-center justify-between mb-3">
           <span className="eyebrow text-[var(--text-muted)]">{L('Урьдчилан үзэх', 'Preview')}</span>
           <span className="font-mono text-xs text-[var(--text-muted)] tabular">{site.defaultLocale.toUpperCase()}</span>

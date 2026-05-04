@@ -1,23 +1,23 @@
 import { schema } from './schema.js';
-import Site from '../_layouts/ProServiceSite.jsx';
+import Site from '../_layouts/LegalSite.jsx';
 
 export default {
   id: 'legal',
   name: { mn: 'Хууль', en: 'Legal' },
   description: {
-    mn: 'Эрх мэдэлтэй, итгэл төрүүлэхүйц — хуулийн фирм, өмгөөлөгчийн үйлчилгээнд.',
-    en: 'Authoritative and trustworthy — law firms and legal professionals.',
+    mn: 'Харанхуй-алт эрх мэдэл — хуулийн фирм, өмгөөлөгчийн үйлчилгээнд.',
+    en: 'Dark-gold authority — law firms and legal professionals.',
   },
   preview: '/templates/legal.svg',
   industries: ['legal', 'law-firm', 'attorney', 'notary', 'compliance', 'consulting'],
   defaultTheme: {
-    primary: '#1e293b',
-    accent: '#64748b',
-    background: '#f8fafc',
-    foreground: '#0f172a',
-    fontHeading: 'Inter',
+    primary: '#0c0e14',
+    accent: '#c9a84c',
+    background: '#08090c',
+    foreground: '#e8ddc8',
+    fontHeading: 'Cormorant Garamond',
     fontBody: 'Inter',
-    radius: 'sm',
+    radius: 'none',
   },
   schema,
   component: Site,

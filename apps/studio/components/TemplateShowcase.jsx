@@ -11,12 +11,14 @@ const BADGE = {
   new:     { mn: 'Шинэ',      en: 'New',      color: '#10b981', bg: 'rgba(16,185,129,0.15)' },
 };
 
+const LANDING_TEMPLATE_LIMIT = 9;
+
 // ─── Shared premium mockup ────────────────────────────────────────────────────
 // Renders a realistic website preview with real Unsplash photo, branded logo,
 // nav (Home · About · Contact), hero title, CTA, and stats — driven by the
 // template's `mock` config object.
 
-function PremiumMockup({ template, compact = false, locale = 'mn' }) {
+export function PremiumMockup({ template, compact = false, locale = 'mn' }) {
   const L = (mn, en) => (locale === 'mn' ? mn : en);
   const m = template.mock;
   if (!m) return null;
@@ -157,7 +159,7 @@ function PremiumMockup({ template, compact = false, locale = 'mn' }) {
   );
 }
 
-const TEMPLATES = [
+export const TEMPLATE_SHOWCASE_TEMPLATES = [
   {
     id: 'restaurant_mongolian',
     category: 'restaurant',
@@ -259,6 +261,381 @@ const TEMPLATES = [
     },
   },
   {
+    id: 'restaurant',
+    category: 'restaurant',
+    badge: 'popular',
+    name:        { mn: 'Кафе ресторан', en: 'Restaurant' },
+    description: { mn: 'Дулаахан, амт татам өнгө аяс — кафе, brunch, fine dining газарт.', en: 'Warm, appetite-driven design for cafes, brunch spots, and restaurants.' },
+    domain:      'ember-table.aiweb.mn',
+    features:    { mn: ['Меню', 'Ширээ захиалга', 'Байршил'], en: ['Menu', 'Reservations', 'Location'] },
+    mock: {
+      img: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=900&q=80&fit=crop',
+      brand: 'EMBER',
+      tier: 'gold',
+      accent: '#fb923c',
+      accent2: '#7c2d12',
+      palette: ['#fdba74', '#9a3412', '#140c0a'],
+      eyebrow: 'Хотын ресторан', eyebrowEn: 'City restaurant',
+      hero: 'Амттай орой', heroEn: 'Evenings worth tasting',
+      sub: 'Гал тогоо, дарс, уур амьсгал гурав төгс нийлэх орон зай.',
+      subEn: 'A place where kitchen, wine, and atmosphere come together.',
+      cta: 'Ширээ захиалах', ctaEn: 'Reserve now',
+      cta2: 'Меню үзэх', cta2En: 'View menu',
+      ctaShort: 'Book', ctaShortEn: 'Book',
+      stats: [{ v: '48', l: 'Seats' }, { v: '4.8★', l: 'Rating' }],
+    },
+  },
+  {
+    id: 'fitness',
+    category: 'service',
+    badge: null,
+    name:        { mn: 'Фитнесс', en: 'Fitness' },
+    description: { mn: 'Хүчтэй, эрчтэй харагдац — gym, club, coaching студид.', en: 'Bold, high-energy design for gyms, training clubs, and coaching studios.' },
+    domain:      'iron-core.aiweb.mn',
+    features:    { mn: ['Хөтөлбөр', 'Дасгалжуулагч', 'Гишүүнчлэл'], en: ['Programs', 'Coaches', 'Membership'] },
+    mock: {
+      img: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=900&q=80&fit=crop',
+      brand: 'IRON',
+      tier: 'accent',
+      accent: '#ef4444',
+      accent2: '#f59e0b',
+      palette: ['#f87171', '#f59e0b', '#0b0b0e'],
+      eyebrow: 'Performance club', eyebrowEn: 'Performance club',
+      hero: 'Хүчээ нээ', heroEn: 'Train for more',
+      sub: 'Crossfit, strength, recovery бүгд нэг membership дотор.',
+      subEn: 'Crossfit, strength, and recovery in one membership.',
+      cta: 'Эхлэх', ctaEn: 'Start now',
+      cta2: 'Хөтөлбөр', cta2En: 'Programs',
+      ctaShort: 'Join', ctaShortEn: 'Join',
+      stats: [{ v: '320+', l: 'Members' }, { v: '28', l: 'Classes' }],
+    },
+  },
+  {
+    id: 'crafts',
+    category: 'store',
+    badge: 'new',
+    name:        { mn: 'Гар урлал', en: 'Crafts' },
+    description: { mn: 'Дулаан, гар хийцийн мэдрэмжтэй — maker, artisan брэндүүдэд.', en: 'Warm, handcrafted presentation for makers and artisan brands.' },
+    domain:      'earth-hands.aiweb.mn',
+    features:    { mn: ['Цуглуулга', 'Түүх', 'Захиалга'], en: ['Collections', 'Story', 'Orders'] },
+    mock: {
+      img: 'https://images.unsplash.com/photo-1517705008128-361805f42e86?w=900&q=80&fit=crop',
+      brand: 'LOOM',
+      tier: 'accent',
+      accent: '#d97706',
+      accent2: '#92400e',
+      palette: ['#fbbf24', '#92400e', '#1a1208'],
+      eyebrow: 'Artisan studio', eyebrowEn: 'Artisan studio',
+      hero: 'Гараар бүтээсэн', heroEn: 'Made with intention',
+      sub: 'Материал, хөдөлмөр, түүх гурав нэгдсэн цуглуулгууд.',
+      subEn: 'Collections shaped by material, craft, and story.',
+      cta: 'Цуглуулга үзэх', ctaEn: 'Explore collection',
+      cta2: 'Түүх унших', cta2En: 'Read the story',
+      ctaShort: 'Shop', ctaShortEn: 'Shop',
+      stats: [{ v: '86', l: 'Pieces' }, { v: '12', l: 'Series' }],
+    },
+  },
+  {
+    id: 'education',
+    category: 'service',
+    badge: null,
+    name:        { mn: 'Боловсрол', en: 'Education' },
+    description: { mn: 'Glassmorphism · Дашборд мэдрэмж — сургалтын төв, онлайн курс, академид.', en: 'Glassmorphism dashboard feel — training centers, online courses, academies.' },
+    domain:      'north-academy.aiweb.mn',
+    features:    { mn: ['Хөтөлбөр', 'Багш нар', 'Бүртгэл'], en: ['Programs', 'Teachers', 'Enrollment'] },
+    mock: {
+      img: '/templates/education/cover.png',
+      brand: 'NORTH',
+      tier: 'accent',
+      accent: '#2563eb',
+      accent2: '#0f766e',
+      palette: ['#60a5fa', '#0f766e', '#08111f'],
+      eyebrow: 'Learning center', eyebrowEn: 'Learning center',
+      hero: 'Шинэ шат руу', heroEn: 'Advance with confidence',
+      sub: 'IELTS, coding, design зэрэг практик ур чадварын сургалтууд.',
+      subEn: 'Practical programs in IELTS, coding, design, and more.',
+      cta: 'Бүртгүүлэх', ctaEn: 'Enroll now',
+      cta2: 'Хөтөлбөр үзэх', cta2En: 'View programs',
+      ctaShort: 'Enroll', ctaShortEn: 'Enroll',
+      stats: [{ v: '1.8k', l: 'Students' }, { v: '94%', l: 'Pass' }],
+    },
+  },
+  {
+    id: 'clinic',
+    category: 'service',
+    badge: null,
+    name:        { mn: 'Эмнэлэг', en: 'Clinic' },
+    description: { mn: 'Цэвэр, тайвшруулах өнгө төрх — clinic, health center, medical practice-д.', en: 'Clean, reassuring design for clinics, health centers, and medical practices.' },
+    domain:      'whiteleaf-clinic.aiweb.mn',
+    features:    { mn: ['Эмч нар', 'Үйлчилгээ', 'Цаг авах'], en: ['Doctors', 'Services', 'Appointments'] },
+    mock: {
+      img: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=900&q=80&fit=crop',
+      brand: 'WHITELEAF',
+      tier: 'accent',
+      accent: '#14b8a6',
+      accent2: '#0f766e',
+      palette: ['#5eead4', '#0f766e', '#071413'],
+      eyebrow: 'Health clinic', eyebrowEn: 'Health clinic',
+      hero: 'Эрүүл мэндэд ойр', heroEn: 'Care you can trust',
+      sub: 'Мэргэжлийн тусламж, хурдан цаг авалт, ил тод зөвлөгөө.',
+      subEn: 'Professional care, fast appointments, and clear guidance.',
+      cta: 'Цаг захиалах', ctaEn: 'Book appointment',
+      cta2: 'Эмч нар', cta2En: 'Meet doctors',
+      ctaShort: 'Book', ctaShortEn: 'Book',
+      stats: [{ v: '12', l: 'Doctors' }, { v: '4.9', l: 'Care' }],
+    },
+  },
+  {
+    id: 'auto_repair',
+    category: 'service',
+    badge: null,
+    name:        { mn: 'Авто засвар', en: 'Auto Repair' },
+    description: { mn: 'Шууд, хүчтэй өнгө төрх — сервис, засвар, оношлогоонд.', en: 'Strong, straightforward layout for garages, repair shops, and diagnostics.' },
+    domain:      'torque-garage.aiweb.mn',
+    features:    { mn: ['Засварын төрөл', 'Үнийн багц', 'Байршил'], en: ['Repair services', 'Pricing', 'Location'] },
+    mock: {
+      img: 'https://images.unsplash.com/photo-1486006920555-c77dcf18193c?w=900&q=80&fit=crop',
+      brand: 'TORQUE',
+      tier: 'accent',
+      accent: '#f97316',
+      accent2: '#dc2626',
+      palette: ['#fb923c', '#dc2626', '#090909'],
+      eyebrow: 'Auto garage', eyebrowEn: 'Auto garage',
+      hero: 'Илүү найдвартай яв', heroEn: 'Back on the road fast',
+      sub: 'Оношлогоо, тос, тоормос, моторын үйлчилгээ нэг дор.',
+      subEn: 'Diagnostics, oil, brakes, and engine service in one place.',
+      cta: 'Цаг товлох', ctaEn: 'Schedule service',
+      cta2: 'Үйлчилгээ', cta2En: 'Services',
+      ctaShort: 'Service', ctaShortEn: 'Service',
+      stats: [{ v: '600+', l: 'Cars' }, { v: '24h', l: 'Turn' }],
+    },
+  },
+  {
+    id: 'fashion_store',
+    category: 'store',
+    badge: 'new',
+    name:        { mn: 'Fashion Store', en: 'Fashion' },
+    description: { mn: 'Sleek, editorial feel — хувцас, аксессуар, fashion брэндүүдэд.', en: 'Sleek editorial feel for clothing stores and fashion brands.' },
+    domain:      'atelier-mode.aiweb.mn',
+    features:    { mn: ['Коллекц', 'Lookbook', 'Shop'], en: ['Collections', 'Lookbook', 'Shop'] },
+    mock: {
+      img: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=900&q=80&fit=crop',
+      brand: 'MODE',
+      tier: 'accent',
+      accent: '#f5f5f4',
+      accent2: '#d6d3d1',
+      palette: ['#fafaf9', '#d6d3d1', '#111111'],
+      eyebrow: 'New collection', eyebrowEn: 'New collection',
+      hero: 'Шинэ улирал', heroEn: 'For the new season',
+      sub: 'Тайван, цэвэр шугамтай коллекцууд ба editorials.',
+      subEn: 'Quiet silhouettes, clean lines, and editorial styling.',
+      cta: 'Коллекц үзэх', ctaEn: 'View collection',
+      cta2: 'Lookbook', cta2En: 'Lookbook',
+      ctaShort: 'Shop', ctaShortEn: 'Shop',
+      stats: [{ v: '36', l: 'Looks' }, { v: '8', l: 'Drops' }],
+    },
+  },
+  {
+    id: 'home_service',
+    category: 'service',
+    badge: null,
+    name:        { mn: 'Home Service', en: 'Home Service' },
+    description: { mn: 'Цэвэр, practical — cleaning, plumbing, repair, renovation бизнест.', en: 'Practical and clear for cleaning, repairs, plumbing, and renovation.' },
+    domain:      'homestead-pro.aiweb.mn',
+    features:    { mn: ['Үйлчилгээ', '24/7 дуудлага', 'Quote авах'], en: ['Services', '24/7 calls', 'Get a quote'] },
+    mock: {
+      img: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=900&q=80&fit=crop',
+      brand: 'HOMESTEAD',
+      tier: 'accent',
+      accent: '#0284c7',
+      accent2: '#1d4ed8',
+      palette: ['#38bdf8', '#1d4ed8', '#08111a'],
+      eyebrow: 'Home care', eyebrowEn: 'Home care',
+      hero: 'Гэрээ найдвартай даатга', heroEn: 'Reliable help for every room',
+      sub: 'Цэвэрлэгээ, сантехник, цахилгаан, засвар нэг багт.',
+      subEn: 'Cleaning, plumbing, electrical, and repairs from one team.',
+      cta: 'Үнэ авах', ctaEn: 'Get a quote',
+      cta2: 'Үйлчилгээ', cta2En: 'Services',
+      ctaShort: 'Quote', ctaShortEn: 'Quote',
+      stats: [{ v: '1h', l: 'Reply' }, { v: '900+', l: 'Jobs' }],
+    },
+  },
+  {
+    id: 'sales_rep',
+    category: 'service',
+    badge: null,
+    name:        { mn: 'Sales Rep', en: 'Sales' },
+    description: { mn: 'Results-driven дизайн — B2B sales, distribution, commerce багуудад.', en: 'Conversion-focused design for sales teams, distributors, and commerce operators.' },
+    domain:      'tradebridge.aiweb.mn',
+    features:    { mn: ['Partner болох', 'Барааны шугам', 'Quote'], en: ['Become a partner', 'Product lines', 'Quotes'] },
+    mock: {
+      img: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=900&q=80&fit=crop',
+      brand: 'TRADEBRIDGE',
+      tier: 'accent',
+      accent: '#8b5cf6',
+      accent2: '#2563eb',
+      palette: ['#a78bfa', '#2563eb', '#0b1020'],
+      eyebrow: 'Distribution', eyebrowEn: 'Distribution',
+      hero: 'Борлуулалтаа тэл', heroEn: 'Scale your channels',
+      sub: 'Brand partner, wholesale, retail expansion-д зориулсан төв.',
+      subEn: 'A hub for brand partners, wholesale, and retail expansion.',
+      cta: 'Partner болох', ctaEn: 'Become a partner',
+      cta2: 'Каталог', cta2En: 'Catalog',
+      ctaShort: 'Partner', ctaShortEn: 'Partner',
+      stats: [{ v: '42', l: 'Brands' }, { v: '18', l: 'Cities' }],
+    },
+  },
+  {
+    id: 'photography',
+    category: 'portfolio',
+    badge: null,
+    name:        { mn: 'Photography', en: 'Photography' },
+    description: { mn: 'Dark, visual-first — photographer, studio, visual artist нарт.', en: 'Dark, visual-first portfolio for photographers and visual studios.' },
+    domain:      'afterlight-photo.aiweb.mn',
+    features:    { mn: ['Gallery', 'Packages', 'Inquiry'], en: ['Gallery', 'Packages', 'Inquiry'] },
+    mock: {
+      img: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=900&q=80&fit=crop',
+      brand: 'AFTERLIGHT',
+      tier: 'accent',
+      accent: '#22d3ee',
+      accent2: '#0ea5e9',
+      palette: ['#67e8f9', '#0ea5e9', '#05070d'],
+      eyebrow: 'Visual stories', eyebrowEn: 'Visual stories',
+      hero: 'Гэрлээр ярь', heroEn: 'Stories in light',
+      sub: 'Portrait, editorial, commercial зураг авалтын бүтээлүүд.',
+      subEn: 'Portrait, editorial, and commercial work in one portfolio.',
+      cta: 'Ажлаа үзэх', ctaEn: 'See portfolio',
+      cta2: 'Үнэ асуух', cta2En: 'Ask pricing',
+      ctaShort: 'View', ctaShortEn: 'View',
+      stats: [{ v: '210', l: 'Shoots' }, { v: '14', l: 'Cities' }],
+    },
+  },
+  {
+    id: 'furniture',
+    category: 'store',
+    badge: null,
+    name:        { mn: 'Тавилга', en: 'Furniture' },
+    description: { mn: 'Дулаан, refined — furniture maker, interior, home decor брэндүүдэд.', en: 'Warm and refined for furniture makers, interiors, and home decor brands.' },
+    domain:      'oakform.aiweb.mn',
+    features:    { mn: ['Collections', 'Materials', 'Inquiry'], en: ['Collections', 'Materials', 'Inquiry'] },
+    mock: {
+      img: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=900&q=80&fit=crop',
+      brand: 'OAKFORM',
+      tier: 'gold',
+      accent: '#d4af37',
+      accent2: '#8b5e34',
+      palette: ['#f5deb3', '#8b5e34', '#120e0b'],
+      eyebrow: 'Interior craft', eyebrowEn: 'Interior craft',
+      hero: 'Зайг зөөллөнө', heroEn: 'Spaces with character',
+      sub: 'Мод, даавуу, гэрлийн тэнцвэртэй минимал цуглуулгууд.',
+      subEn: 'Balanced minimal collections in wood, fabric, and light.',
+      cta: 'Коллекц үзэх', ctaEn: 'View pieces',
+      cta2: 'Материал', cta2En: 'Materials',
+      ctaShort: 'Pieces', ctaShortEn: 'Pieces',
+      stats: [{ v: '28', l: 'Designs' }, { v: '7', l: 'Wood' }],
+    },
+  },
+  {
+    id: 'pet_shop',
+    category: 'store',
+    badge: 'new',
+    name:        { mn: 'Pet Shop', en: 'Pet Shop' },
+    description: { mn: 'Friendly, warm — pet store, grooming, veterinary service-д.', en: 'Friendly and warm for pet shops, grooming, and veterinary services.' },
+    domain:      'pawhaus.aiweb.mn',
+    features:    { mn: ['Products', 'Grooming', 'Vet booking'], en: ['Products', 'Grooming', 'Vet booking'] },
+    mock: {
+      img: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=900&q=80&fit=crop',
+      brand: 'PAWHAUS',
+      tier: 'accent',
+      accent: '#f59e0b',
+      accent2: '#ec4899',
+      palette: ['#fcd34d', '#ec4899', '#1a0f12'],
+      eyebrow: 'Pet care', eyebrowEn: 'Pet care',
+      hero: 'Сүүл савласан аз жаргал', heroEn: 'Care they run toward',
+      sub: 'Хоол, тоглоом, grooming, vet зөвлөгөө бүгд нэг дор.',
+      subEn: 'Food, toys, grooming, and vet guidance in one place.',
+      cta: 'Shop эхлэх', ctaEn: 'Start shopping',
+      cta2: 'Grooming', cta2En: 'Grooming',
+      ctaShort: 'Pet', ctaShortEn: 'Pet',
+      stats: [{ v: '120+', l: 'Items' }, { v: '4.9★', l: 'Happy' }],
+    },
+  },
+  {
+    id: 'phone_repair',
+    category: 'service',
+    badge: null,
+    name:        { mn: 'Утас засвар', en: 'Phone Repair' },
+    description: { mn: 'Technical, reliable — утас, tablet, device repair газарт.', en: 'Technical and reliable for phone, tablet, and device repair shops.' },
+    domain:      'pixelfix.aiweb.mn',
+    features:    { mn: ['Repair types', 'Үнэ', 'Warranty'], en: ['Repair types', 'Pricing', 'Warranty'] },
+    mock: {
+      img: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=900&q=80&fit=crop',
+      brand: 'PIXELFIX',
+      tier: 'accent',
+      accent: '#0ea5e9',
+      accent2: '#22d3ee',
+      palette: ['#38bdf8', '#22d3ee', '#06111a'],
+      eyebrow: 'Device repair', eyebrowEn: 'Device repair',
+      hero: 'Хурдан засвар', heroEn: 'Fast fixes, clear pricing',
+      sub: 'Display, battery, camera, board-level service нэг дор.',
+      subEn: 'Display, battery, camera, and board-level repair in one lab.',
+      cta: 'Repair захиалах', ctaEn: 'Book repair',
+      cta2: 'Үнэ харах', cta2En: 'View pricing',
+      ctaShort: 'Repair', ctaShortEn: 'Repair',
+      stats: [{ v: '45min', l: 'Avg' }, { v: '1yr', l: 'Warranty' }],
+    },
+  },
+  {
+    id: 'music_school',
+    category: 'service',
+    badge: 'new',
+    name:        { mn: 'Хөгжим', en: 'Music' },
+    description: { mn: 'Уран сайхны, expressive — music school, studio, instructors-д.', en: 'Artistic and expressive for music schools, studios, and instructors.' },
+    domain:      'crescendo.aiweb.mn',
+    features:    { mn: ['Classes', 'Teachers', 'Performances'], en: ['Classes', 'Teachers', 'Performances'] },
+    mock: {
+      img: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=900&q=80&fit=crop',
+      brand: 'CRESCENDO',
+      tier: 'accent',
+      accent: '#a855f7',
+      accent2: '#ec4899',
+      palette: ['#c084fc', '#ec4899', '#120615'],
+      eyebrow: 'Music school', eyebrowEn: 'Music school',
+      hero: 'Дуу авиагаар өс', heroEn: 'Grow through sound',
+      sub: 'Төгөлдөр хуур, гитар, vocal, theory сургалтууд.',
+      subEn: 'Piano, guitar, vocal, and theory programs for every level.',
+      cta: 'Хичээл эхлэх', ctaEn: 'Start lessons',
+      cta2: 'Багш нар', cta2En: 'Teachers',
+      ctaShort: 'Learn', ctaShortEn: 'Learn',
+      stats: [{ v: '380', l: 'Students' }, { v: '24', l: 'Recitals' }],
+    },
+  },
+  {
+    id: 'organic_food',
+    category: 'store',
+    badge: null,
+    name:        { mn: 'Organic Food', en: 'Organic' },
+    description: { mn: 'Natural, green — farm shop, organic store, healthy food брэндүүдэд.', en: 'Natural and green for farm shops, organic markets, and healthy food brands.' },
+    domain:      'rootandfield.aiweb.mn',
+    features:    { mn: ['Products', 'Farms', 'Delivery'], en: ['Products', 'Farms', 'Delivery'] },
+    mock: {
+      img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=900&q=80&fit=crop',
+      brand: 'ROOT&FIELD',
+      tier: 'accent',
+      accent: '#65a30d',
+      accent2: '#ca8a04',
+      palette: ['#bef264', '#ca8a04', '#0d1307'],
+      eyebrow: 'Organic market', eyebrowEn: 'Organic market',
+      hero: 'Шинэхэн, цэвэрхэн', heroEn: 'Closer to the harvest',
+      sub: 'Фермээс шууд ирсэн хүнс, амт, улирлын сонголтууд.',
+      subEn: 'Seasonal produce and pantry goods delivered from local farms.',
+      cta: 'Захиалах', ctaEn: 'Order now',
+      cta2: 'Фермүүд', cta2En: 'Our farms',
+      ctaShort: 'Order', ctaShortEn: 'Order',
+      stats: [{ v: '14', l: 'Farms' }, { v: '2h', l: 'Fresh' }],
+    },
+  },
+  {
     id: 'minimal',
     category: 'portfolio',
     badge: null,
@@ -338,7 +715,7 @@ const TEMPLATES = [
     category: 'service',
     badge: null,
     name:        { mn: 'Хуулийн фирм', en: 'Law Firm' },
-    description: { mn: 'Найдвартай, мэргэжлийн — өмгөөллийн газар, зөвлөх үйлчилгээнд.', en: 'Authoritative, professional — for law firms and consulting services.' },
+    description: { mn: 'Харанхуй-алт эрх мэдэл — хуулийн фирм, өмгөөлөгч, нотариуст.', en: 'Dark-gold authority — law firms, attorneys, and notary services.' },
     domain:      'counsel-legal.aiweb.mn',
     features:    { mn: ['Үйлчилгэний чиглэл', 'Хуульчийн намтар', 'Зөвлөгөө авах'], en: ['Practice areas', 'Attorney bios', 'Consultation'] },
     mock: {
@@ -360,7 +737,7 @@ const TEMPLATES = [
   },
 ];
 
-const CATEGORIES = [
+export const TEMPLATE_SHOWCASE_CATEGORIES = [
   { key: 'all',        mn: 'Бүгд',      en: 'All' },
   { key: 'restaurant', mn: 'Ресторан',  en: 'Restaurant' },
   { key: 'store',      mn: 'Дэлгүүр',  en: 'Store' },
@@ -446,7 +823,7 @@ function TemplateCard({ template, locale, isActive, onHover, index }) {
             {template.name[locale] ?? template.name.mn}
           </div>
           <div className="text-[10px] text-[var(--text-muted)] mt-0.5 capitalize">
-            {CATEGORIES.find(c => c.key === template.category)?.[locale] ?? template.category}
+            {TEMPLATE_SHOWCASE_CATEGORIES.find(c => c.key === template.category)?.[locale] ?? template.category}
           </div>
         </div>
       </div>
@@ -540,11 +917,12 @@ function PreviewPanel({ template, locale }) {
 export default function TemplateShowcase({ locale }) {
   const L = useCallback((mn, en) => (locale === 'mn' ? mn : en), [locale]);
   const [activeCategory, setActiveCategory] = useState('all');
-  const [hoveredTemplate, setHoveredTemplate] = useState(TEMPLATES[0]);
+  const landingTemplates = TEMPLATE_SHOWCASE_TEMPLATES.slice(0, LANDING_TEMPLATE_LIMIT);
+  const [hoveredTemplate, setHoveredTemplate] = useState(landingTemplates[0]);
 
   const filtered = activeCategory === 'all'
-    ? TEMPLATES
-    : TEMPLATES.filter((t) => t.category === activeCategory);
+    ? landingTemplates
+    : landingTemplates.filter((t) => t.category === activeCategory);
 
   // Keep hovered template valid after filter change
   const displayTemplate = filtered.find(t => t.id === hoveredTemplate?.id) ?? filtered[0];
@@ -590,7 +968,7 @@ export default function TemplateShowcase({ locale }) {
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
         >
-          {CATEGORIES.map((cat) => {
+          {TEMPLATE_SHOWCASE_CATEGORIES.map((cat) => {
             const active = activeCategory === cat.key;
             return (
               <button

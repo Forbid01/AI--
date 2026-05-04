@@ -1,10 +1,18 @@
 import { themeToCssVars, L } from '../_primitives/SectionShell.jsx';
+import { GalleryVisualTile } from '../_primitives/VisualPlaceholders.jsx';
+
+const TILE_LAYOUT = [
+  'aspect-[4/3] md:col-span-7 md:row-span-3 md:aspect-auto',
+  'aspect-[4/5] md:col-span-5 md:row-span-2 md:aspect-auto',
+  'aspect-[4/3] md:col-span-4 md:row-span-2 md:aspect-auto',
+  'aspect-[4/3] md:col-span-3 md:row-span-2 md:aspect-auto',
+  'aspect-[4/3] md:col-span-5 md:row-span-3 md:aspect-auto',
+];
 
 export default function Masonry({ theme, assets, locale = 'mn' }) {
   const style = themeToCssVars(theme);
   const images = Array.isArray(assets?.gallery) ? assets.gallery : [];
-
-  const tiles = images.length > 0 ? images : Array.from({ length: 4 }).map((_, i) => ({ placeholder: true, i }));
+  const tiles = Array.from({ length: Math.max(images.length, 5) }).map((_, i) => images[i] ?? null).slice(0, 5);
 
   return (
     <section
@@ -25,28 +33,15 @@ export default function Masonry({ theme, assets, locale = 'mn' }) {
           </h2>
         </div>
 
-        <div className="columns-2 md:columns-3 gap-3 space-y-3">
-          {tiles.map((img, i) => {
-            const aspect = ['aspect-[4/5]', 'aspect-square', 'aspect-[3/4]', 'aspect-[5/4]'][i % 4];
-            if (img.placeholder) {
-              return (
-                <div
-                  key={i}
-                  className={`break-inside-avoid ${aspect} rounded-[var(--radius)]`}
-                  style={{ background: `linear-gradient(${30 + i * 60}deg, color-mix(in srgb, var(--accent) 30%, var(--background)), var(--accent))` }}
-                />
-              );
-            }
-            return (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                key={i}
-                src={img.url}
-                alt={img.prompt ?? ''}
-                className={`break-inside-avoid ${aspect} w-full rounded-[var(--radius)] object-cover mb-3`}
-              />
-            );
-          })}
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-12 md:auto-rows-[120px] md:gap-4">
+          {tiles.map((img, i) => (
+            <GalleryVisualTile
+              key={img?.url ?? `placeholder-${i}`}
+              image={img}
+              index={i}
+              className={TILE_LAYOUT[i] ?? TILE_LAYOUT[TILE_LAYOUT.length - 1]}
+            />
+          ))}
         </div>
       </div>
     </section>

@@ -4,6 +4,7 @@ import HowItWorks from '@/components/HowItWorks.jsx';
 import BentoCapabilities from '@/components/BentoCapabilities.jsx';
 import TemplateShowcase from '@/components/TemplateShowcase.jsx';
 import TestimonialsMarquee from '@/components/TestimonialsMarquee.jsx';
+import PricingSection from '@/components/PricingSection.jsx';
 import CtaSection from '@/components/CtaSection.jsx';
 import ParticleBackground from '@/components/ParticleBackground.jsx';
 
@@ -47,8 +48,8 @@ export default function LandingPage({ params }) {
             </p>
             <ul className="mt-8 space-y-3 reveal reveal-delay-3">
               {[
-                L('Gemini 2.5 Flash — богино, байгалийн текст', 'Gemini 2.5 Flash — concise, natural copy'),
-                L('Flux schnell — hero-grade чанартай зураг', 'Flux schnell — hero-grade imagery'),
+                L('AI copy engine — богино, байгалийн текст', 'AI copy engine — concise, natural copy'),
+                L('AI image engine — hero-grade чанартай зураг', 'AI image engine — hero-grade imagery'),
                 L('Таны өгсөн өнгөөр автомат палитр', 'Palette auto-tuned to your brand cue'),
                 L('MN/EN хоёр хэл дээр нэгэн зэрэг', 'MN + EN copy side-by-side'),
               ].map((t) => (
@@ -76,6 +77,9 @@ export default function LandingPage({ params }) {
 
       {/* Testimonials — pause-on-hover infinite marquee */}
       <TestimonialsMarquee locale={locale} />
+
+      {/* Pricing — modern subscription cards */}
+      <PricingSection locale={locale} />
 
       {/* Closing CTA — mouse-tracking glow */}
       <CtaSection locale={locale} />

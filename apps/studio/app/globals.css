@@ -286,6 +286,30 @@ body {
 
   .float-slow { animation: float-y 8s ease-in-out infinite; }
   .float-med  { animation: float-y 5s ease-in-out infinite; }
+  .float-tilt { animation: float-y 10s ease-in-out infinite; }
+
+  .premium-card {
+    transform: translateZ(0);
+    transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.45s ease, border-color 0.35s ease, background 0.35s ease;
+    box-shadow: 0 18px 50px -34px color-mix(in srgb, var(--primary, #111827) 42%, transparent);
+  }
+  .premium-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 30px 80px -42px color-mix(in srgb, var(--primary, #111827) 58%, transparent);
+  }
+  .premium-frame {
+    box-shadow:
+      0 28px 80px -42px color-mix(in srgb, var(--primary, #111827) 70%, transparent),
+      inset 0 1px 0 rgba(255,255,255,0.28);
+  }
+  .premium-orb {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(70px);
+    opacity: 0.18;
+    pointer-events: none;
+    background: radial-gradient(circle, var(--accent, #22d3ee), transparent 65%);
+  }
 
   .marquee {
     display: flex;

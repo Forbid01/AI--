@@ -3,6 +3,7 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 import { themeToCssVars } from '../_primitives/SectionShell.jsx';
+import { HeroVisualPlaceholder } from '../_primitives/VisualPlaceholders.jsx';
 
 export default function Parallax({ content = {}, theme, assets, business }) {
   const style = themeToCssVars(theme);
@@ -35,19 +36,15 @@ export default function Parallax({ content = {}, theme, assets, business }) {
               <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/60 to-transparent" />
               <div className="absolute inset-0 bg-gradient-to-r from-[var(--background)]/70 via-transparent to-transparent" />
             </>
-          ) : (
-            <div
-              className="w-full h-full"
-              style={{
-                background: `
-                  radial-gradient(ellipse at 30% 20%, color-mix(in srgb, var(--accent) 40%, transparent) 0%, transparent 50%),
-                  radial-gradient(ellipse at 70% 80%, color-mix(in srgb, var(--accent) 20%, transparent) 0%, transparent 50%),
-                  var(--background)
-                `,
-              }}
+        ) : (
+            <HeroVisualPlaceholder
+              businessName={business?.businessName}
+              industry={business?.industry}
+              mode="immersive"
+              className="h-full w-full"
             />
-          )}
-        </motion.div>
+        )}
+      </motion.div>
 
         <motion.div
           style={{ y: textY }}

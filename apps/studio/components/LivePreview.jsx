@@ -368,6 +368,43 @@ export default function LivePreview({ locale }) {
               }}
             />
 
+            <div className="absolute left-4 top-4 z-[5] hidden max-w-[185px] rounded-xl border border-white/15 bg-black/35 p-3 shadow-2xl backdrop-blur-md md:block">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <span className="text-[8px] font-semibold uppercase tracking-[0.2em] text-white/45">
+                  {L('Өмнө', 'Before')}
+                </span>
+                <span className="rounded-full bg-white/10 px-2 py-0.5 text-[7px] font-mono text-white/45">
+                  prompt
+                </span>
+              </div>
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={`prompt-${sample.slug}`}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.25 }}
+                  className="text-[10px] leading-relaxed text-white/72"
+                >
+                  {L(`"${sample.label} бизнесийн modern сайт"`, `"Modern ${sample.label.toLowerCase()} website"`)}
+                </motion.p>
+              </AnimatePresence>
+              <div className="mt-3 flex items-center gap-1.5 text-[8px] font-mono text-emerald-200/80">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
+                {L('AI live preview болгож байна', 'AI turns it into preview')}
+              </div>
+            </div>
+
+            <div className="absolute right-4 top-4 z-[5] hidden items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[8px] font-semibold uppercase tracking-[0.18em] text-white/70 backdrop-blur-md md:flex">
+              <span>{L('Дараа', 'After')}</span>
+              <motion.span
+                className="h-1.5 w-8 rounded-full bg-gradient-to-r from-emerald-300 to-cyan-300"
+                animate={{ opacity: [0.45, 1, 0.45] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+              />
+              <span>live</span>
+            </div>
+
             {/* Content layer */}
             <div className="absolute inset-0 z-[2] flex flex-col justify-between p-6 md:p-10 text-white">
               {/* Fake nav */}
@@ -548,7 +585,7 @@ export default function LivePreview({ locale }) {
             {L('Hero зураг', 'Hero image')}
           </span>
           <span className="text-[8px] text-[var(--text-muted)] font-mono leading-none">
-            Flux · 1024×768
+            AI image · 1024×768
           </span>
         </div>
       </TiltBadge>

@@ -26,6 +26,13 @@ export default function CreativeSite({ content, theme, assets, business, locale 
 
   const gallery = Array.isArray(assets?.gallery) ? assets.gallery : [];
 
+  /** Deterministic avatar hue from author name — wide creative range */
+  function avatarHue(name = '') {
+    let h = 0;
+    for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
+    return (h % 300) + 30; // broad hue range: 30–330
+  }
+
   return (
     <div style={{ ...style, '--font-display': displayFamily }}
       className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased">
@@ -293,19 +300,32 @@ export default function CreativeSite({ content, theme, assets, business, locale 
               </div>
             </div>
             <div className="grid md:grid-cols-2 gap-8">
-              {content.testimonials.map((t, i) => (
-                <figure key={i} className={`reveal reveal-delay-${Math.min(i + 1, 4)}`}>
-                  <div style={{ fontFamily: 'var(--font-display)' }}
-                    className="text-5xl text-[var(--accent)] leading-none opacity-60 mb-3">&ldquo;</div>
-                  <blockquote style={{ fontFamily: 'var(--font-display)' }}
-                    className="text-xl md:text-2xl leading-[1.5] font-light italic">
-                    {t.quote}
-                  </blockquote>
-                  <figcaption className="mt-6 text-xs tracking-[0.22em] uppercase text-[var(--muted)]">
-                    — {t.author}{t.role ? ` · ${t.role}` : ''}
-                  </figcaption>
-                </figure>
-              ))}
+              {content.testimonials.map((t, i) => {
+                const hue = avatarHue(t.author);
+                return (
+                  <figure key={i} className={`reveal reveal-delay-${Math.min(i + 1, 4)}`}>
+                    <div style={{ fontFamily: 'var(--font-display)' }}
+                      className="text-5xl text-[var(--accent)] leading-none opacity-60 mb-3">&ldquo;</div>
+                    <blockquote style={{ fontFamily: 'var(--font-display)' }}
+                      className="text-xl md:text-2xl leading-[1.5] font-light italic">
+                      {t.quote}
+                    </blockquote>
+                    <figcaption className="mt-6 flex items-center gap-3">
+                      <span
+                        className="shrink-0 h-9 w-9 rounded-full grid place-items-center text-white font-bold text-sm"
+                        style={{ background: `linear-gradient(135deg, hsl(${hue} 60% 45%), hsl(${hue + 30} 65% 55%))` }}
+                        aria-hidden
+                      >
+                        {(t.author ?? 'U').slice(0, 1).toUpperCase()}
+                      </span>
+                      <div>
+                        <div className="text-sm font-medium tracking-tight">{t.author}</div>
+                        {t.role && <div className="text-xs tracking-[0.18em] uppercase text-[var(--muted)] mt-0.5">{t.role}</div>}
+                      </div>
+                    </figcaption>
+                  </figure>
+                );
+              })}
             </div>
           </div>
         </section>

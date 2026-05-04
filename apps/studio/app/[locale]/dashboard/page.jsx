@@ -34,7 +34,11 @@ export default async function DashboardPage({ params }) {
   const drafts = sites.filter((s) => s.status === 'draft').length;
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const thisMonth = sites.filter((s) => new Date(s.createdAt) >= monthStart).length;
+  const lastMonthNew = sites.filter(
+    (s) => new Date(s.createdAt) >= lastMonthStart && new Date(s.createdAt) < monthStart,
+  ).length;
 
   // Format date server-side to avoid client/server locale mismatch
   // (Node.js ICU may not have 'mn-MN' data, producing different output than the browser)
@@ -82,7 +86,7 @@ export default async function DashboardPage({ params }) {
         locale={locale}
         userName={user.name || user.email.split('@')[0]}
         sites={serialized}
-        stats={{ total: sites.length, published, drafts, thisMonth }}
+        stats={{ total: sites.length, published, drafts, thisMonth, lastMonthNew }}
         root={root}
       />
     </>

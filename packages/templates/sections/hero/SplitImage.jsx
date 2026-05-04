@@ -1,7 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { themeToCssVars, L } from '../_primitives/SectionShell.jsx';
+import { themeToCssVars } from '../_primitives/SectionShell.jsx';
+import { HeroVisualPlaceholder } from '../_primitives/VisualPlaceholders.jsx';
 
 const container = {
   hidden: { opacity: 0 },
@@ -97,14 +98,11 @@ export default function SplitImage({ content = {}, theme, assets, business, loca
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="absolute inset-0 grid place-items-center">
-                <span
-                  style={{ fontFamily: 'var(--font-heading)' }}
-                  className="text-8xl md:text-9xl font-black text-[var(--background)]/20 select-none"
-                >
-                  {(business?.businessName ?? '?')[0].toUpperCase()}
-                </span>
-              </div>
+              <HeroVisualPlaceholder
+                businessName={business?.businessName}
+                industry={business?.industry}
+                className="absolute inset-0"
+              />
             )}
             <div className="absolute inset-0 ring-1 ring-inset ring-[var(--foreground)]/10 rounded-[inherit] pointer-events-none" />
           </div>

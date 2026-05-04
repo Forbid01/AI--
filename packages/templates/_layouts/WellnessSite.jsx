@@ -28,7 +28,9 @@ export default function WellnessSite({ content, theme, assets, business, locale 
 
   return (
     <div style={{ ...style, '--font-display': displayFamily }}
-      className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased">
+      className="relative min-h-screen overflow-hidden bg-[var(--background)] text-[var(--foreground)] antialiased">
+      <div aria-hidden className="premium-orb -top-24 -right-20 h-80 w-80" />
+      <div aria-hidden className="premium-orb left-[-10%] top-[40rem] h-96 w-96 opacity-10" />
 
       {/* Nav */}
       <nav className="sticky top-0 z-40 bg-[var(--background)]/90 backdrop-blur-xl border-b border-[var(--hairline)]">
@@ -47,7 +49,7 @@ export default function WellnessSite({ content, theme, assets, business, locale 
             {(business?.contactPhone || business?.contactEmail) && (
               <a
                 href={business?.contactPhone ? `tel:${business.contactPhone}` : `mailto:${business.contactEmail}`}
-                className="px-5 py-2.5 rounded-full bg-[var(--primary)] text-white text-sm font-medium hover:opacity-90 transition-opacity">
+                className="shine px-5 py-2.5 rounded-full bg-[var(--primary)] text-white text-sm font-medium shadow-lg shadow-[var(--primary)]/20 hover:opacity-90 transition-opacity">
                 {L('Захиалах', 'Book now')}
               </a>
             )}
@@ -86,7 +88,7 @@ export default function WellnessSite({ content, theme, assets, business, locale 
               <div className="reveal reveal-delay-3 mt-10 flex flex-wrap gap-3">
                 {content.hero.ctaPrimary && (
                   <a href="#contact"
-                    className="group px-7 py-3.5 rounded-full bg-[var(--primary)] text-white font-medium hover:opacity-90 transition-all inline-flex items-center gap-2">
+                    className="group shine px-7 py-3.5 rounded-full bg-[var(--primary)] text-white font-medium shadow-lg shadow-[var(--primary)]/20 hover:opacity-90 transition-all inline-flex items-center gap-2">
                     {content.hero.ctaPrimary}
                     <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-0.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                   </a>
@@ -150,7 +152,7 @@ export default function WellnessSite({ content, theme, assets, business, locale 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {content.services.map((s, i) => (
                 <div key={i}
-                  className={`group relative rounded-2xl border border-[var(--hairline)] bg-white p-7 hover:shadow-xl hover:shadow-[var(--primary)]/8 hover:border-[var(--primary)]/30 transition-all reveal reveal-delay-${Math.min((i % 4) + 1, 4)}`}>
+                  className={`premium-card group relative rounded-3xl border border-[var(--hairline)] bg-white/85 p-7 hover:border-[var(--primary)]/30 transition-all reveal reveal-delay-${Math.min((i % 4) + 1, 4)}`}>
                   <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[var(--primary)]/10 to-[var(--accent)]/30 grid place-items-center mb-5">
                     <span className="h-2.5 w-2.5 rounded-full bg-[var(--primary)]" />
                   </div>
@@ -265,7 +267,7 @@ export default function WellnessSite({ content, theme, assets, business, locale 
             <div className="space-y-5">
               {content.features.slice(0, 4).map((f, i) => (
                 <div key={i}
-                  className={`p-6 rounded-2xl border border-[var(--hairline)] bg-white hover:border-[var(--primary)]/30 hover:shadow-lg hover:shadow-[var(--primary)]/5 transition-all reveal reveal-delay-${Math.min(i + 1, 4)}`}>
+                  className={`premium-card p-6 rounded-3xl border border-[var(--hairline)] bg-white/85 hover:border-[var(--primary)]/30 transition-all reveal reveal-delay-${Math.min(i + 1, 4)}`}>
                   <h3 style={{ fontFamily: 'var(--font-display)' }} className="text-xl font-medium mb-3">{f.title}</h3>
                   <p className="text-[var(--muted)] leading-relaxed">{f.description}</p>
                 </div>
@@ -289,14 +291,26 @@ export default function WellnessSite({ content, theme, assets, business, locale 
             <div className="grid md:grid-cols-3 gap-6">
               {content.testimonials.map((t, i) => (
                 <figure key={i}
-                  className={`rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 p-7 reveal reveal-delay-${Math.min(i + 1, 4)}`}>
+                  className={`premium-card rounded-3xl bg-white/10 backdrop-blur-sm border border-white/20 p-7 reveal reveal-delay-${Math.min(i + 1, 4)}`}>
                   <blockquote style={{ fontFamily: 'var(--font-display)' }}
                     className="text-lg italic leading-relaxed opacity-90">
                     "{t.quote}"
                   </blockquote>
                   <figcaption className="mt-5 flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-full"
-                      style={{ background: `linear-gradient(135deg, hsl(${(i * 83 + 320) % 360} 80% 75%), hsl(${(i * 83 + 360) % 360} 70% 65%))` }} />
+                    {(() => {
+                      let nameHash = 0;
+                      for (let c = 0; c < (t.author ?? '').length; c++) nameHash = (nameHash * 31 + (t.author ?? '').charCodeAt(c)) & 0xffff;
+                      const hue = (nameHash % 60) + 300;
+                      return (
+                        <div
+                          className="shrink-0 h-9 w-9 rounded-full grid place-items-center text-white font-bold text-sm"
+                          style={{ background: `linear-gradient(135deg, hsl(${hue} 70% 55%), hsl(${hue + 20} 65% 65%))` }}
+                          aria-hidden
+                        >
+                          {(t.author ?? 'U').slice(0, 1).toUpperCase()}
+                        </div>
+                      );
+                    })()}
                     <div>
                       <div className="font-semibold text-sm">{t.author}</div>
                       {t.role && <div className="text-xs opacity-70">{t.role}</div>}

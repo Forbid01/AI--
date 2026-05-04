@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { resolveTone } from './tones.js';
+import { generateJson } from './json.js';
 
 const MODEL = 'gemini-2.5-flash';
 
@@ -7,12 +8,6 @@ function client() {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('GEMINI_API_KEY тохируулаагүй байна');
   return new GoogleGenerativeAI(key);
-}
-
-function extractJson(text) {
-  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  const raw = (fenced ? fenced[1] : text).trim();
-  return JSON.parse(raw);
 }
 
 /**
@@ -177,8 +172,7 @@ export async function generateLayout({ business, tone = 'friendly', locale = 'mn
   });
 
   const prompt = buildLayoutPrompt({ business, tone, locale, vibe });
-  const result = await model.generateContent(prompt);
-  const raw = extractJson(result.response.text());
+  const raw = await generateJson(model, prompt, { maxAttempts: 2 });
 
   return {
     layout: normalizeLayout(raw?.layout),

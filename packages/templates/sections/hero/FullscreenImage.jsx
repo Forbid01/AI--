@@ -3,6 +3,7 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 import { themeToCssVars } from '../_primitives/SectionShell.jsx';
+import { HeroVisualPlaceholder } from '../_primitives/VisualPlaceholders.jsx';
 
 export default function FullscreenImage({ content = {}, theme, assets, business }) {
   const style = themeToCssVars(theme);
@@ -36,11 +37,11 @@ export default function FullscreenImage({ content = {}, theme, assets, business 
             <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-transparent to-transparent" />
           </>
         ) : (
-          <div
-            className="w-full h-full"
-            style={{
-              background: `linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 60%, var(--background)))`,
-            }}
+          <HeroVisualPlaceholder
+            businessName={business?.businessName}
+            industry={business?.industry}
+            mode="immersive"
+            className="h-full w-full"
           />
         )}
       </motion.div>

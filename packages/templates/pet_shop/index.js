@@ -15,7 +15,7 @@ export default {
     accent: '#4ade80',
     background: '#f0fdf4',
     foreground: '#052e16',
-    fontHeading: 'Inter',
+    fontHeading: 'Playfair Display',
     fontBody: 'Inter',
     radius: 'xl',
   },

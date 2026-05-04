@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatSiteValidationError } from '@/lib/siteValidation.js';
 
 const VIBES = [
   { id: 'minimal',   label: 'Минимал',     desc: 'Цэвэрхэн, цагаан орон зайтай', swatch: ['#0f172a', '#7c5cff', '#ffffff'] },
@@ -37,6 +38,7 @@ export default function AiComposer({ locale = 'mn' }) {
   const [vibe, setVibe] = useState('minimal');
   const [subdomain, setSubdomain] = useState('');
   const [error, setError] = useState(null);
+  const root = process.env.NEXT_PUBLIC_PLATFORM_ROOT_DOMAIN || 'platform.mn';
 
   const cleanSubdomain = useMemo(
     () =>
@@ -67,20 +69,20 @@ export default function AiComposer({ locale = 'mn' }) {
           subdomain: cleanSubdomain,
           business: {
             businessName: businessName.trim(),
-            industry: industry || 'Бизнес',
+            industry: industry || (locale === 'mn' ? 'Бизнес' : 'Business'),
             description: description.trim(),
           },
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Алдаа гарлаа');
+      if (!res.ok) throw new Error(formatSiteValidationError(data, locale));
       setStep('done');
       setTimeout(() => {
         router.push(`/${locale}/dashboard/sites/${data.site.id}`);
       }, 1600);
     } catch (e) {
       setError(e.message || String(e));
-      setStep('vibe');
+      setStep('subdomain');
     }
   }
 
@@ -203,7 +205,7 @@ export default function AiComposer({ locale = 'mn' }) {
                   autoFocus
                 />
                 <span className="px-4 py-3 text-white/40 border-l border-white/10 font-mono text-sm">
-                  .aiweb.mn
+                  .{root}
                 </span>
               </div>
 

@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { prisma } from '@aiweb/db';
+import { requireAdmin } from '@/lib/admin.js';
+import DeleteSiteButton from './DeleteSiteButton.jsx';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,6 +9,8 @@ export default async function AdminSitesPage({ params, searchParams }) {
   const locale = params.locale;
   const L = (mn, en) => (locale === 'mn' ? mn : en);
   const status = searchParams?.status;
+  const admin = await requireAdmin();
+  const isSuperadmin = admin.role === 'superadmin';
 
   const sites = await prisma.site.findMany({
     where: { deletedAt: null, ...(status ? { status } : {}) },
@@ -56,6 +60,7 @@ export default async function AdminSitesPage({ params, searchParams }) {
               <th className="text-left font-semibold p-3">Mode</th>
               <th className="text-left font-semibold p-3">{L('Төлөв', 'Status')}</th>
               <th className="text-left font-semibold p-3 hidden md:table-cell">{L('Шинэчилсэн', 'Updated')}</th>
+              {isSuperadmin && <th className="text-right font-semibold p-3">{L('Үйлдэл', 'Actions')}</th>}
             </tr>
           </thead>
           <tbody>
@@ -79,12 +84,17 @@ export default async function AdminSitesPage({ params, searchParams }) {
                   <td className="p-3 hidden md:table-cell text-xs text-[var(--text-muted)]">
                     {new Date(s.updatedAt).toLocaleDateString()}
                   </td>
+                  {isSuperadmin && (
+                    <td className="p-3 text-right">
+                      <DeleteSiteButton siteId={s.id} siteName={s.name} locale={locale} />
+                    </td>
+                  )}
                 </tr>
               );
             })}
             {sites.length === 0 && (
               <tr>
-                <td colSpan={5} className="p-8 text-center text-[var(--text-muted)]">
+                <td colSpan={isSuperadmin ? 6 : 5} className="p-8 text-center text-[var(--text-muted)]">
                   {L('Сайт олдсонгүй', 'No sites found')}
                 </td>
               </tr>

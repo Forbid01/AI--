@@ -1,23 +1,23 @@
 import { schema } from './schema.js';
-import Site from '../_layouts/ProServiceSite.jsx';
+import Site from '../_layouts/EducationSite.jsx';
 
 export default {
   id: 'education',
   name: { mn: 'Сургалт', en: 'Education' },
   description: {
-    mn: 'Итгэлтэй, эмх цэгцтэй — сургалтын төв, дасгалжуулагч, онлайн курст.',
-    en: 'Trustworthy and structured — training centers, tutors, and online courses.',
+    mn: 'Glassmorphism · Дашборд мэдрэмж — сургалтын төв, онлайн курс, академид.',
+    en: 'Glassmorphism dashboard feel — training centers, online courses, academies.',
   },
-  preview: '/templates/education.svg',
+  preview: '/templates/education/cover.png',
   industries: ['education', 'training', 'tutoring', 'language', 'online-course', 'academy'],
   defaultTheme: {
-    primary: '#1e3a8a',
-    accent: '#3b82f6',
-    background: '#f8faff',
-    foreground: '#0b1220',
-    fontHeading: 'Inter',
+    primary: '#1d4ed8',
+    accent: '#38bdf8',
+    background: '#0a0f1e',
+    foreground: '#e8f4ff',
+    fontHeading: 'Sora',
     fontBody: 'Inter',
-    radius: 'md',
+    radius: 'lg',
   },
   schema,
   component: Site,

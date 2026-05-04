@@ -298,14 +298,21 @@ export default function FitnessSite({ content, theme, assets, business, locale =
                 style={{ color: 'var(--accent)' }}>{L('Харилцагчдын сэтгэгдэл', 'Members say')}</span>
             </div>
             <div className="grid md:grid-cols-3 gap-5">
-              {content.testimonials.map((t, i) => (
+              {content.testimonials.map((t, i) => {
+                let nameHash = 0;
+                for (let c = 0; c < (t.author ?? '').length; c++) nameHash = (nameHash * 31 + (t.author ?? '').charCodeAt(c)) & 0xffff;
+                const hue = (nameHash % 60) + 170;
+                return (
                 <figure key={i}
                   className={`rounded-xl border border-[var(--hairline)] p-7 reveal reveal-delay-${Math.min(i + 1, 4)}`}>
                   <blockquote className="text-lg leading-relaxed">{t.quote}</blockquote>
                   <figcaption className="mt-5 flex items-center gap-3 border-t border-[var(--hairline)] pt-5">
-                    <div className="h-9 w-9 rounded-lg font-bold grid place-items-center text-sm"
-                      style={{ background: 'var(--accent)', color: 'var(--background)' }}>
-                      {(t.author ?? 'U').slice(0, 1)}
+                    <div
+                      className="shrink-0 h-9 w-9 rounded-lg font-bold grid place-items-center text-sm text-white"
+                      style={{ background: `linear-gradient(135deg, hsl(${hue} 75% 40%), hsl(${hue + 25} 80% 52%))` }}
+                      aria-hidden
+                    >
+                      {(t.author ?? 'U').slice(0, 1).toUpperCase()}
                     </div>
                     <div>
                       <div className="font-bold text-sm">{t.author}</div>
@@ -313,7 +320,8 @@ export default function FitnessSite({ content, theme, assets, business, locale =
                     </div>
                   </figcaption>
                 </figure>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>

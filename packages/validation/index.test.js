@@ -31,6 +31,22 @@ describe('CreateSiteSchema', () => {
     expect(CreateSiteSchema.safeParse(validAi).success).toBe(true);
   });
 
+  it('accepts blank optional business fields from form submissions', () => {
+    const r = CreateSiteSchema.safeParse({
+      ...validTemplate,
+      business: {
+        businessName: 'My Gym',
+        industry: '   ',
+        description: '',
+        address: '',
+        contactPhone: '',
+        contactEmail: '',
+      },
+    });
+    expect(r.success).toBe(true);
+    expect(r.data.business.contactEmail).toBeUndefined();
+  });
+
   it('rejects template mode without templateId', () => {
     const r = CreateSiteSchema.safeParse({ ...validTemplate, templateId: undefined });
     expect(r.success).toBe(false);
@@ -46,6 +62,15 @@ describe('CreateSiteSchema', () => {
   it('accepts a 30-char subdomain', () => {
     const subdomain = 'a' + 'b'.repeat(28) + 'c'; // exactly 30
     const r = CreateSiteSchema.safeParse({ ...validAi, subdomain });
+    expect(r.success).toBe(true);
+  });
+
+  it('accepts a 1000-char industry', () => {
+    const industry = 'a'.repeat(1000);
+    const r = CreateSiteSchema.safeParse({
+      ...validAi,
+      business: { ...validAi.business, industry },
+    });
     expect(r.success).toBe(true);
   });
 

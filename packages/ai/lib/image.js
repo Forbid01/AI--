@@ -18,6 +18,7 @@ export async function generateGalleryImages({
   business,
   prompts,
   section = "gallery",
+  style,
 }) {
   if (!Array.isArray(prompts) || prompts.length === 0) return [];
 
@@ -26,7 +27,7 @@ export async function generateGalleryImages({
     const p = typeof raw === "string" ? raw.trim() : "";
     if (!p) continue;
     try {
-      const prompt = buildImagePrompt({ business, section, customPrompt: p });
+      const prompt = buildImagePrompt({ business, section, style, customPrompt: p });
       const result = await runImagePipeline({ business, section, prompt });
       if (result?.url) out.push(result);
     } catch (err) {

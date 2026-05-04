@@ -1,5 +1,137 @@
 import { resolveTone } from "./tones.js";
 
+/**
+ * Design DNA — visual intent metadata per template.
+ * Injected into the content prompt so AI copy matches the aesthetic.
+ * Fields:
+ *   visualStyle   — describes the look so copy tone matches
+ *   ctaStrategy   — what type of CTA to write (action verb + context)
+ *   trustMechanism — how to frame credibility in this template
+ *   imageMood     — shapes galleryPrompts for photo aesthetic
+ */
+const DESIGN_DNA = {
+  legal: {
+    visualStyle: 'dark-gold authority — measured, dignified, understated. Every word earns its place.',
+    ctaStrategy: 'consultation-first: "Schedule a consultation", "Speak with an attorney" — never "Sign up" or "Buy"',
+    trustMechanism: 'track record, years of practice, cases handled, bar association membership, confidentiality',
+    imageMood: 'executive — dark marble, legal library, courtroom corridors, gold-lit office, dramatic chiaroscuro',
+  },
+  education: {
+    visualStyle: 'modern learning platform — tech-forward, inspiring, student-outcome-focused',
+    ctaStrategy: 'enrollment-driven: "Start learning", "Enroll now", "Join the program", "Book a free session"',
+    trustMechanism: 'graduate outcomes, pass rates, instructor credentials, course completion rate, job placement',
+    imageMood: 'bright and focused — students collaborating, laptop-lit study sessions, classroom energy, achievement moments',
+  },
+  fitness: {
+    visualStyle: 'brutal bold kinetic — short punchy sentences, all-caps energy, transformation focus',
+    ctaStrategy: 'action-now: "Join now", "Start training", "Claim your spot", "Begin your transformation"',
+    trustMechanism: 'member count, weight lost, competition wins, coach credentials, before/after results',
+    imageMood: 'high-contrast dark — weight room at dusk, athlete silhouettes, equipment close-ups, sweat and motion blur',
+  },
+  beauty_salon: {
+    visualStyle: 'soft luxury — sensory, transformation, confidence. Spa-level elevated language.',
+    ctaStrategy: 'appointment-first: "Book your appointment", "Reserve your slot", "Treat yourself"',
+    trustMechanism: 'certified professionals, premium products used, client satisfaction rate, years of expertise',
+    imageMood: 'light pastel luxury — product flat-lays, glowing skin close-ups, spa ambiance, soft bokeh',
+  },
+  restaurant: {
+    visualStyle: 'warm editorial — evocative, sensory, slightly poetic. Make the reader taste it.',
+    ctaStrategy: 'reservation-first: "Reserve your table", "Order now", "View the menu"',
+    trustMechanism: 'chef credentials, sourcing story, years since opening, awards, signature dishes',
+    imageMood: 'warm candlelit editorial — food close-ups with steam, table settings, kitchen atmosphere, plating details',
+  },
+  restaurant_mongolian: {
+    visualStyle: 'cultural storytelling — proud, cinematic, nomadic heritage. Evoke the steppe.',
+    ctaStrategy: 'experience-first: "Experience the taste", "Discover our heritage", "Reserve your table"',
+    trustMechanism: 'generations of tradition, authentic recipes, local sourcing, cultural authenticity',
+    imageMood: 'cinematic Mongolian — traditional dishware, felt yurt interior, fire and hearth, landscape and sky',
+  },
+  crafts: {
+    visualStyle: 'maker storytelling — hands-on, process-forward, artisan pride. Describe the work.',
+    ctaStrategy: 'discovery-first: "Explore the collection", "Visit the studio", "Commission a piece"',
+    trustMechanism: 'years practising, exhibitions shown, materials sourced, process transparency',
+    imageMood: 'tactile close-ups — hands at work, raw materials, workshop tools, finished pieces in natural light',
+  },
+  photography: {
+    visualStyle: 'minimal first-person — let work do the talking. Short sentences. Practitioner voice.',
+    ctaStrategy: 'portfolio-first: "See the work", "Book a shoot", "Inquire about availability"',
+    trustMechanism: 'portfolio breadth, clients worked with, publications featured in, years shooting',
+    imageMood: 'editorial photography-forward — subject-led, minimal backdrop, compelling light, authentic emotion',
+  },
+  travel: {
+    visualStyle: 'adventurous vivid — paint the destination. Make the reader feel they are already there.',
+    ctaStrategy: 'discovery-first: "Explore packages", "Plan your adventure", "Book your journey"',
+    trustMechanism: 'destinations covered, traveler reviews, years operating, safety record, local guides',
+    imageMood: 'landscape cinematic — sweeping vistas, golden hour, local culture, adventure moments, sky and horizon',
+  },
+  clinic: {
+    visualStyle: 'calm reassuring — clinical precision with human warmth. Patient wellbeing first.',
+    ctaStrategy: 'care-first: "Book an appointment", "Consult a specialist", "Get checked"',
+    trustMechanism: 'specialist credentials, patients served, accreditations, years of practice, technology used',
+    imageMood: 'clean clinical warmth — modern medical equipment, caring staff, patient comfort, natural light in clinic',
+  },
+  music_school: {
+    visualStyle: 'expressive passionate — music as transformation. Joy, growth, and creative freedom.',
+    ctaStrategy: 'enrollment-warm: "Start your musical journey", "Book a free trial lesson", "Enroll today"',
+    trustMechanism: 'students graduated, performances staged, teacher credentials, instruments offered, years teaching',
+    imageMood: 'musical atmosphere — instruments in warm light, student recitals, hands on keys, sheet music details',
+  },
+  auto_repair: {
+    visualStyle: 'industrial dark authority — gritty, direct, no-nonsense. Built for people who work with their hands.',
+    ctaStrategy: 'action-direct: "Book a service", "Get a quote", "Drop off your vehicle", "Call us now"',
+    trustMechanism: 'vehicles repaired, years in business, brands served, certified mechanics, warranty offered',
+    imageMood: 'industrial workshop — chrome details, engine close-ups, tools on pegboard, mechanics at work, dark garage lighting',
+  },
+  fashion_store: {
+    visualStyle: 'editorial minimal — stark, high-contrast, fashion-week energy. Less is more.',
+    ctaStrategy: 'discovery-first: "Shop the collection", "Explore new arrivals", "View lookbook"',
+    trustMechanism: 'pieces in collection, years designing, stockists, press features, sustainability credentials',
+    imageMood: 'editorial fashion — flat-lay product shots, model campaigns, texture details, high-contrast studio light',
+  },
+  home_service: {
+    visualStyle: 'dependable professional — clean, bright, neighbourly confidence. Shows up and gets it done.',
+    ctaStrategy: 'booking-easy: "Book a service", "Get a free estimate", "Call today", "Schedule online"',
+    trustMechanism: 'jobs completed, happy clients, years in business, response time, service guarantee',
+    imageMood: 'clean professional — technician at work, finished home results, before/after, bright interiors, tools in context',
+  },
+  sales_rep: {
+    visualStyle: 'confident results-driven — value-forward, modern B2B. Think partnership, not pitch.',
+    ctaStrategy: 'value-first: "View our catalog", "Request a partnership", "Start selling", "Contact our team"',
+    trustMechanism: 'products sold, partner brands, distribution reach, years in trade, client testimonials',
+    imageMood: 'commerce in motion — product displays, handshakes, warehouse logistics, brand partnerships, team portraits',
+  },
+  furniture: {
+    visualStyle: 'refined tactile minimalism — Scandinavian warmth meets Mongolian craft. Materials speak louder than words.',
+    ctaStrategy: 'browse-first: "Explore the collection", "Visit our showroom", "Custom order", "View catalog"',
+    trustMechanism: 'pieces crafted, years in woodworking, materials sourced, satisfied homes, custom commissions',
+    imageMood: 'tactile material warmth — wood grain close-ups, natural light on surfaces, crafted joinery, styled living spaces',
+  },
+  pet_shop: {
+    visualStyle: 'warm playful care — joyful, never corporate. Speak as passionate animal lovers who know their craft.',
+    ctaStrategy: 'care-first: "Book grooming", "Shop for your pet", "Visit us today", "Get advice"',
+    trustMechanism: 'animals served, breeds supported, years caring, certified groomers, vet-recommended products',
+    imageMood: 'joyful animal warmth — happy pets, grooming sessions, product close-ups, soft natural light, owner-pet moments',
+  },
+  gifts: {
+    visualStyle: 'celebratory and joyful — thoughtful, warm, occasion-aware. Make the reader feel the unwrapping.',
+    ctaStrategy: 'occasion-first: "Find the perfect gift", "Shop by occasion", "Customize your gift", "Order now"',
+    trustMechanism: 'gifts sent, happy recipients, occasions served, partner brands, personalisation options',
+    imageMood: 'gift unwrapping warmth — ribbon and box details, soft bokeh, celebration moments, curated flat-lays, warm lighting',
+  },
+  phone_repair: {
+    visualStyle: 'dark technical precision — honest, fast, reassuring. Every repair done right the first time.',
+    ctaStrategy: 'urgency-honest: "Get a free diagnosis", "Book a repair", "Walk in now", "See repair prices"',
+    trustMechanism: 'devices repaired, brands supported, repair warranty, years operating, turnaround time',
+    imageMood: 'technical precision — device close-ups, circuit board detail, repair bench, before/after screens, clean studio',
+  },
+  organic_food: {
+    visualStyle: 'honest farm-to-table — grounded, wholesome, nature-forward. Real food, real stories.',
+    ctaStrategy: 'discovery-honest: "Shop fresh produce", "Meet the farmers", "Order your box", "Visit the store"',
+    trustMechanism: 'partner farms, km from farm to shelf, kg delivered, certifications held, years operating',
+    imageMood: 'farm-to-table natural — sunrise over fields, hands in soil, harvest baskets, produce close-ups, farmer portraits',
+  },
+};
+
 const TEMPLATE_HINTS = {
   minimal: {
     personality:
@@ -288,12 +420,21 @@ export function buildContentPrompt({ business, tone, locale, templateId }) {
     : "Write all visible copy in natural, native English. (`galleryPrompts` is an image-generation prompt list and must stay in English regardless of locale.) `icon` values must come from the allowed list only.";
 
   const hints = TEMPLATE_HINTS[templateId] ?? TEMPLATE_HINTS.minimal;
+  const dna = DESIGN_DNA[templateId] ?? null;
   const servicesHasPrice = SERVICES_WITH_PRICE.has(templateId);
+
+  const dnaSection = dna ? `
+Загварын дизайн ДНХ / Template design DNA (match your copy to this visual identity):
+- Visual style: ${dna.visualStyle}
+- CTA strategy: ${dna.ctaStrategy}
+- Trust mechanisms: ${dna.trustMechanism}
+- Gallery/image mood: ${dna.imageMood}
+` : '';
 
   return `Чи бол "${templateId}" загварт суурилсан бизнесийн вэбсайтын контентын зохиогч. / You are writing website copy for a "${templateId}" layout.
 
 Загварын өнгө аяс / Template personality: ${hints.personality}
-
+${dnaSection}
 ${languageInstruction}
 
 Өнгө аяс / Voice: ${toneHint}
@@ -310,6 +451,7 @@ ${languageInstruction}
 ${sectionSpec(hints, servicesHasPrice)}
 
 ЧУХАЛ / IMPORTANT:
+- Контент нь premium template дээр шууд тавигдахад бэлэн байх ёстой: богино, хүчтэй headline, тодорхой proof, luxury/startup-level polish. AI-generated гэж битгий дурд.
 - Бичлэг чинь СПЕЦИФИК байх ёстой — ерөнхий, generic үг битгий ашигла ("хамгийн шилдэг", "дэлхийн түвшний", "революцлэг" гэх мэтийг хэрэглэхгүй).
 - Placeholder, Lorem Ipsum, "jishee1", "TBD" зэрэг дүүргэгч текст ХЭРЭГЛЭХГҮЙ — бүгд бодит, итгэл төрүүлэхүйц агуулгатай байх.
 - Testimonials нь жинхэнэ хүний ам аяс, конкрет дэлгэрэнгүйтэй (тоо, хугацаа, үр дүн, эсвэл жижиг дэлгэрэнгүй) байх ёстой.
@@ -350,22 +492,22 @@ export function buildImagePrompt({
   const base =
     `${business?.businessName || ""} ${business?.industry ? `(${business.industry})` : ""}`.trim();
   const negative =
-    "no text, no logos, no watermarks, no people faces close-up, no hands typing, no UI mockups, no clutter";
+    "no text, no logos, no watermarks, no people faces close-up, no hands typing, no UI mockups, no clutter, no flat stock photo look";
 
   // galleryPrompts-аас ирсэн custom prompt
   if (customPrompt && typeof customPrompt === "string") {
-    return `${customPrompt}, ${style} commercial photography, soft natural daylight, shallow depth of field, ultra detailed, photorealistic, 8k. ${negative}. Business context: ${base}`;
+    return `${customPrompt}, ${style} commercial photography, premium landing page hero aesthetic, cinematic composition, soft natural daylight, shallow depth of field, refined color grading, ultra detailed, photorealistic, 8k. ${negative}. Business context: ${base}`;
   }
 
   // hero болон бусад section-ууд
   const sectionLooks = {
-    hero: "wide 16:9 hero banner, spacious negative space for text overlay on left, environmental wide shot of workspace or storefront",
-    gallery: "atmospheric editorial detail, 1:1 square crop",
+    hero: "wide 16:9 premium hero banner, spacious negative space for text overlay on left, environmental wide shot of workspace or storefront, layered depth and cinematic foreground",
+    gallery: "atmospheric editorial detail, 1:1 square crop, modern brand photography with layered depth",
   };
 
   const look = sectionLooks[section] || "clean product/environment shot";
 
-  return `Professional ${look} for ${base} website, ${style} aesthetic, editorial lighting, premium commercial photography, high resolution. ${negative}`;
+  return `Professional ${look} for ${base} website, ${style} aesthetic, editorial lighting, premium commercial photography, refined color grading, high resolution. ${negative}`;
 }
 
 export { ALLOWED_ICONS };

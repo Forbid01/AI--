@@ -11,9 +11,12 @@ export async function POST(request, { params }) {
     if (!ALLOWED.has(provider)) {
       return NextResponse.json({ error: 'Unknown provider' }, { status: 400 });
     }
-    const { amount, description, plan } = await request.json();
+    const { amount, description, plan, billingInterval = 'monthly', packageId = null } = await request.json();
     if (!amount || amount < 100) {
       return NextResponse.json({ error: 'Дүн хэтэрхий бага' }, { status: 400 });
+    }
+    if (!['monthly', 'yearly'].includes(billingInterval)) {
+      return NextResponse.json({ error: 'Төлбөрийн хугацаа буруу байна' }, { status: 400 });
     }
 
     const user = await requireUser();
@@ -24,6 +27,11 @@ export async function POST(request, { params }) {
         amount,
         description: description || plan || 'AiWeb subscription',
         status: 'pending',
+        meta: {
+          plan: plan || 'pro',
+          billingInterval,
+          packageId,
+        },
       },
     });
 

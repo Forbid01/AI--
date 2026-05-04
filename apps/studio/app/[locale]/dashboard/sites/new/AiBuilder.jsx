@@ -5,6 +5,12 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getDictionary } from '@aiweb/i18n';
 import TonePicker from '@/components/TonePicker.jsx';
+import { formatSiteValidationError } from '@/lib/siteValidation.js';
+import {
+  PremiumMockup,
+  TEMPLATE_SHOWCASE_CATEGORIES,
+  TEMPLATE_SHOWCASE_TEMPLATES,
+} from '@/components/TemplateShowcase.jsx';
 
 const PHASE_CHAT       = 'chat';
 const PHASE_TEMPLATE   = 'template';
@@ -20,6 +26,17 @@ const STEPS = [
   { key: PHASE_REVIEW,   icon: '4' },
 ];
 const PHASE_ORDER = [PHASE_CHAT, PHASE_TEMPLATE, PHASE_TONE, PHASE_REVIEW, PHASE_GENERATING, PHASE_SUCCESS];
+const TEMPLATE_PREVIEW_BY_ID = new Map(TEMPLATE_SHOWCASE_TEMPLATES.map((t) => [t.id, t]));
+
+// Module-level constant — does not change, no need to define inside component
+const GEN_STEPS = [
+  { mn: 'Бизнесийн мэдээлэл боловсруулж байна...', en: 'Processing your business info...' },
+  { mn: 'AI контент бичиж байна...',               en: 'AI is writing your content...' },
+  { mn: 'Hero зураг үүсгэж байна...',              en: 'Generating hero image...' },
+  { mn: 'Gallery зургуудыг бүтээж байна...',       en: 'Creating gallery images...' },
+  { mn: 'Загвар тохируулж байна...',               en: 'Applying your template...' },
+  { mn: 'Сайтыг бэлдэж байна...',                  en: 'Finalising your site...' },
+];
 
 // ─── Streaming text hook ──────────────────────────────────────────────────────
 
@@ -42,8 +59,7 @@ function useStreamingText(text, active, speedMs = 16) {
     return () => { cancelRef.current = true; };
   }, [text, active, speedMs]);
 
-  const done = shown.length >= text.length;
-  return { shown, done };
+  return { shown, done: shown.length >= text.length };
 }
 
 // ─── Confetti ─────────────────────────────────────────────────────────────────
@@ -87,27 +103,28 @@ function Confetti() {
 
 // ─── Generating overlay ───────────────────────────────────────────────────────
 
-function GeneratingOverlay({ locale }) {
+function GeneratingOverlay({ locale, complete }) {
   const L = (mn, en) => (locale === 'mn' ? mn : en);
   const [stepIdx, setStepIdx] = useState(0);
   const [progress, setProgress] = useState(0);
 
-  const GEN_STEPS = [
-    { mn: 'Бизнесийн мэдээлэл боловсруулж байна...', en: 'Processing your business info...' },
-    { mn: 'AI контент бичиж байна...', en: 'AI is writing your content...' },
-    { mn: 'Hero зураг үүсгэж байна...', en: 'Generating hero image...' },
-    { mn: 'Gallery зургуудыг бүтээж байна...', en: 'Creating gallery images...' },
-    { mn: 'Загвар тохируулж байна...', en: 'Applying your template...' },
-    { mn: 'Сайтыг бэлдэж байна...', en: 'Finalizing your site...' },
-  ];
-
+  // Step cycling — stops when complete
   useEffect(() => {
-    const stepInterval = setInterval(() => {
+    if (complete) return;
+    const id = setInterval(() => {
       setStepIdx((i) => Math.min(i + 1, GEN_STEPS.length - 1));
     }, 3200);
+    return () => clearInterval(id);
+  }, [complete]);
 
+  // Progress animation — caps at 90%, jumps to 100% on complete
+  useEffect(() => {
+    if (complete) {
+      setProgress(1);
+      return;
+    }
     const start = performance.now();
-    const DURATION = 19000; // ~19s to reach 90%, leaving room for actual completion
+    const DURATION = 19000;
     let rafId;
     const tick = (now) => {
       const p = Math.min(((now - start) / DURATION) * 0.9, 0.9);
@@ -115,12 +132,11 @@ function GeneratingOverlay({ locale }) {
       if (p < 0.9) rafId = requestAnimationFrame(tick);
     };
     rafId = requestAnimationFrame(tick);
-
-    return () => { clearInterval(stepInterval); cancelAnimationFrame(rafId); };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => cancelAnimationFrame(rafId);
+  }, [complete]);
 
   const R = 64;
-  const CIRC = 2 * Math.PI * R; // ≈ 402
+  const CIRC = 2 * Math.PI * R;
   const dashOffset = CIRC * (1 - progress);
   const pct = Math.round(progress * 100);
 
@@ -142,7 +158,6 @@ function GeneratingOverlay({ locale }) {
       <div className="relative z-10 flex flex-col items-center px-8 text-center">
         {/* SVG progress ring */}
         <div className="relative mb-7">
-          {/* Outer decorative spinning ring */}
           <div
             className="absolute inset-[-10px] rounded-full border border-dashed border-[var(--surface-border-strong)]"
             style={{ animation: 'ring-spin 18s linear infinite' }}
@@ -153,7 +168,6 @@ function GeneratingOverlay({ locale }) {
           />
 
           <svg width="160" height="160" viewBox="0 0 160 160">
-            {/* Glow filter */}
             <defs>
               <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="var(--gradient-start)" />
@@ -166,10 +180,7 @@ function GeneratingOverlay({ locale }) {
               </filter>
             </defs>
 
-            {/* Track ring */}
             <circle cx="80" cy="80" r={R} fill="none" stroke="rgba(124,92,255,0.1)" strokeWidth="7" />
-
-            {/* Progress ring */}
             <circle
               cx="80" cy="80" r={R}
               fill="none"
@@ -182,12 +193,9 @@ function GeneratingOverlay({ locale }) {
               filter="url(#ringGlow)"
               style={{ transition: 'stroke-dashoffset 0.6s cubic-bezier(0.2,0.8,0.2,1)' }}
             />
-
-            {/* Center dot */}
             <circle cx="80" cy="80" r="3" fill="var(--accent-light)" />
           </svg>
 
-          {/* Center text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center select-none">
             <motion.span
               key={pct}
@@ -202,7 +210,6 @@ function GeneratingOverlay({ locale }) {
           </div>
         </div>
 
-        {/* Step label */}
         <AnimatePresence mode="wait">
           <motion.p
             key={stepIdx}
@@ -216,7 +223,6 @@ function GeneratingOverlay({ locale }) {
           </motion.p>
         </AnimatePresence>
 
-        {/* Step progress pills */}
         <div className="flex gap-1.5 mt-5">
           {GEN_STEPS.map((_, i) => (
             <motion.div
@@ -307,9 +313,19 @@ function SuccessOverlay({ locale, siteName }) {
 // ─── Chat message bubble ──────────────────────────────────────────────────────
 
 function ChatBubble({ msg, isLatest, locale }) {
-  const L = (mn, en) => (locale === 'mn' ? mn : en);
-  const isAi = msg.role === 'ai';
+  const isAi   = msg.role === 'ai';
+  const isSkip = msg.isSkip === true;
   const { shown, done } = useStreamingText(msg.text, isAi && isLatest && !msg.noStream, 14);
+
+  if (isSkip) {
+    return (
+      <div className="flex justify-end">
+        <span className="text-[11px] italic text-[var(--text-muted)] px-3 py-1.5 rounded-full border border-white/[0.06] bg-white/[0.02]">
+          {msg.text}
+        </span>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -318,7 +334,6 @@ function ChatBubble({ msg, isLatest, locale }) {
       animate={{ opacity: 1, x: 0, y: 0 }}
       transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }}
     >
-      {/* AI avatar */}
       {isAi && (
         <div className="shrink-0 h-7 w-7 rounded-lg bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-mid)] grid place-items-center mr-2.5 mt-0.5 shadow-md shadow-[var(--accent-soft)]">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -351,7 +366,6 @@ function ChatBubble({ msg, isLatest, locale }) {
           )}
         </div>
 
-        {/* Suggestion chips */}
         {isAi && isLatest && Array.isArray(msg.suggestions) && msg.suggestions.length > 0 && done && (
           <motion.div
             initial={{ opacity: 0, y: 6 }}
@@ -425,13 +439,13 @@ function SidebarProgress({ phase, locale }) {
 
         return (
           <div key={s.key} className="relative flex items-center gap-3 py-1">
-            {/* Connector line */}
             {si < STEP_LABELS.length - 1 && (
-              <div className="absolute left-[13px] top-8 w-px h-6 transition-colors duration-500"
-                style={{ background: done ? 'var(--accent)' : 'var(--surface-border)' }} />
+              <div
+                className="absolute left-[13px] top-8 w-px h-6 transition-colors duration-500"
+                style={{ background: done ? 'var(--accent)' : 'var(--surface-border)' }}
+              />
             )}
 
-            {/* Step icon */}
             <motion.div
               className="relative h-7 w-7 rounded-lg text-xs font-bold grid place-items-center shrink-0 z-10"
               animate={{
@@ -441,12 +455,13 @@ function SidebarProgress({ phase, locale }) {
               }}
               transition={{ duration: 0.3 }}
             >
-              {/* Pulse ring on active */}
               {active && !done && (
                 <span className="absolute inset-0 rounded-lg bg-[var(--accent)] opacity-30 animate-ping" />
               )}
               {done ? (
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
               ) : (
                 String(si + 1)
               )}
@@ -459,7 +474,6 @@ function SidebarProgress({ phase, locale }) {
         );
       })}
 
-      {/* Generating / Success state */}
       {(phase === PHASE_GENERATING || phase === PHASE_SUCCESS) && (
         <motion.div
           initial={{ opacity: 0, y: 6 }}
@@ -467,7 +481,9 @@ function SidebarProgress({ phase, locale }) {
           className="mt-3 px-3 py-2.5 rounded-xl bg-[var(--accent-soft)] border border-[var(--accent)]/30 text-xs text-[var(--accent-light)] flex items-center gap-2"
         >
           {phase === PHASE_SUCCESS ? (
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
           ) : (
             <span className="typing-dot h-1.5 w-1.5 rounded-full bg-[var(--accent-light)]" />
           )}
@@ -478,10 +494,53 @@ function SidebarProgress({ phase, locale }) {
   );
 }
 
+// ─── Back button ──────────────────────────────────────────────────────────────
+
+function BackButton({ onClick, locale }) {
+  const L = (mn, en) => (locale === 'mn' ? mn : en);
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
+    >
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M19 12H5" /><path d="m12 5-7 7 7 7" />
+      </svg>
+      {L('Буцах', 'Back')}
+    </button>
+  );
+}
+
 // ─── Template grid ────────────────────────────────────────────────────────────
 
-function TemplateGrid({ templates, templateId, locale, onSelect }) {
+function TemplateGrid({ templates, templateId, locale, onSelect, onBack }) {
   const L = (mn, en) => (locale === 'mn' ? mn : en);
+
+  const availableCategories = useMemo(() => {
+    const used = new Set(
+      templates.map((t) => TEMPLATE_PREVIEW_BY_ID.get(t.id)?.category).filter(Boolean),
+    );
+    return TEMPLATE_SHOWCASE_CATEGORIES.filter((cat) => cat.key === 'all' || used.has(cat.key));
+  }, [templates]);
+
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [hoveredId, setHoveredId] = useState(templateId || templates[0]?.id || null);
+
+  const filteredTemplates = useMemo(() => {
+    if (activeCategory === 'all') return templates;
+    return templates.filter((t) => TEMPLATE_PREVIEW_BY_ID.get(t.id)?.category === activeCategory);
+  }, [activeCategory, templates]);
+
+  useEffect(() => {
+    if (!filteredTemplates.some((t) => t.id === hoveredId)) {
+      setHoveredId(templateId || filteredTemplates[0]?.id || templates[0]?.id || null);
+    }
+  }, [filteredTemplates, hoveredId, templateId, templates]);
+
+  const previewId       = hoveredId || templateId || filteredTemplates[0]?.id || templates[0]?.id || null;
+  const previewTemplate = previewId ? TEMPLATE_PREVIEW_BY_ID.get(previewId) : null;
+  const selectedTemplate = templates.find((t) => t.id === previewId);
 
   return (
     <motion.div
@@ -490,91 +549,259 @@ function TemplateGrid({ templates, templateId, locale, onSelect }) {
       transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
       className="mt-6"
     >
-      <h3 className="font-display text-lg font-semibold tracking-tight mb-4">
-        {L('Загвар сонгоорой', 'Choose a template')}
-      </h3>
-      <div className="grid sm:grid-cols-2 gap-4">
-        {templates.map((t, i) => {
-          const active = templateId === t.id;
-          const theme = t.defaultTheme ?? {};
+      {/* Phase header */}
+      <div className="flex items-center justify-between gap-4 mb-4">
+        <BackButton onClick={onBack} locale={locale} />
+        <h3 className="font-display text-lg font-semibold tracking-tight">
+          {L('Загвар сонгоорой', 'Choose a template')}
+        </h3>
+        <span /> {/* spacer */}
+      </div>
+      <p className="text-sm text-[var(--text-secondary)] mb-5">
+        {L(
+          'Сонгоход амар болгохын тулд төрөл, боломж, урьдчилсан харагдацыг нэг дор харууллаа.',
+          'Browse by category, compare features, and preview each layout before choosing.',
+        )}
+      </p>
+
+      {/* Category filter */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {availableCategories.map((cat) => {
+          const active = activeCategory === cat.key;
           return (
-            <motion.button
-              key={t.id}
+            <button
+              key={cat.key}
               type="button"
-              onClick={() => onSelect(t.id)}
-              aria-pressed={active}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.07, duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
-              whileHover={{ y: -3, transition: { duration: 0.2 } }}
-              whileTap={{ scale: 0.98 }}
-              className="relative text-left rounded-xl overflow-hidden border transition-colors duration-200"
-              style={{
-                borderColor: active ? 'var(--accent)' : 'var(--surface-border)',
-                boxShadow: active ? '0 0 0 2px rgba(124,92,255,0.25), 0 8px 30px rgba(124,92,255,0.2)' : '0 2px 12px rgba(0,0,0,0.2)',
-              }}
+              onClick={() => setActiveCategory(cat.key)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                active
+                  ? 'bg-[var(--accent)] text-white shadow-[0_0_20px_rgba(124,92,255,0.28)]'
+                  : 'bg-[var(--surface)] text-[var(--text-secondary)] border border-[var(--surface-border)] hover:text-[var(--text-primary)]'
+              }`}
             >
-              {/* Cover gradient */}
-              <div
-                className="aspect-[5/3] relative overflow-hidden"
-                style={{ background: `linear-gradient(135deg, ${theme.primary ?? '#6c5ce7'} 0%, ${theme.background ?? '#0a0a0f'} 100%)` }}
-              >
-                {/* Decorative grid overlay */}
-                <div className="absolute inset-0 grid-pattern opacity-30" />
-
-                {/* Floating card mockup inside */}
-                <div className="absolute inset-4 flex flex-col justify-between">
-                  <div className="flex gap-1.5">
-                    <div className="h-1.5 w-12 rounded-full bg-white/30" />
-                    <div className="h-1.5 w-8 rounded-full bg-white/20" />
-                  </div>
-                  <div>
-                    <div className="h-2.5 w-32 rounded bg-white/70 mb-1.5" />
-                    <div className="h-1.5 w-24 rounded bg-white/40" />
-                  </div>
-                </div>
-
-                {/* Template ID label */}
-                <span className="absolute top-3 left-3 font-mono text-[9px] tracking-widest text-white/40 bg-black/20 px-2 py-0.5 rounded-full">
-                  {t.id}
-                </span>
-
-                {/* Active checkmark */}
-                <AnimatePresence>
-                  {active && (
-                    <motion.span
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      transition={{ type: 'spring', stiffness: 360, damping: 20 }}
-                      className="absolute top-3 right-3 h-7 w-7 grid place-items-center rounded-full bg-[var(--accent)] shadow-lg shadow-[var(--accent-soft)]"
-                    >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className="p-4 bg-[var(--surface)]">
-                <div className="font-semibold text-sm mb-1">{t.name[locale] ?? t.name.mn}</div>
-                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-                  {t.description[locale] ?? t.description.mn}
-                </p>
-              </div>
-            </motion.button>
+              {cat[locale] ?? cat.mn}
+            </button>
           );
         })}
       </div>
+
+      <div className="grid xl:grid-cols-[minmax(0,1.15fr)_340px] gap-6 items-start">
+        <div className="grid sm:grid-cols-2 gap-4">
+          {filteredTemplates.map((t, i) => {
+            const active          = templateId === t.id;
+            const tplPreview      = TEMPLATE_PREVIEW_BY_ID.get(t.id);
+            const theme           = t.defaultTheme ?? {};
+            const features        = tplPreview?.features?.[locale] ?? tplPreview?.features?.mn ?? [];
+            const categoryLabel   = TEMPLATE_SHOWCASE_CATEGORIES.find((c) => c.key === tplPreview?.category)?.[locale]
+              ?? TEMPLATE_SHOWCASE_CATEGORIES.find((c) => c.key === tplPreview?.category)?.mn
+              ?? tplPreview?.category;
+
+            return (
+              <motion.button
+                key={t.id}
+                type="button"
+                onClick={() => onSelect(t.id)}
+                onMouseEnter={() => setHoveredId(t.id)}
+                onFocus={() => setHoveredId(t.id)}
+                aria-pressed={active}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.07, duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
+                whileHover={{ y: -3, transition: { duration: 0.2 } }}
+                whileTap={{ scale: 0.98 }}
+                className="relative text-left rounded-xl overflow-hidden border transition-colors duration-200"
+                style={{
+                  borderColor: active ? 'var(--accent)' : 'var(--surface-border)',
+                  boxShadow: active
+                    ? '0 0 0 2px rgba(124,92,255,0.25), 0 8px 30px rgba(124,92,255,0.2)'
+                    : '0 2px 12px rgba(0,0,0,0.2)',
+                }}
+              >
+                <div
+                  className="aspect-[5/3] relative overflow-hidden"
+                  style={{ background: `linear-gradient(135deg, ${theme.primary ?? '#6c5ce7'} 0%, ${theme.background ?? '#0a0a0f'} 100%)` }}
+                >
+                  {tplPreview ? (
+                    <PremiumMockup template={tplPreview} locale={locale} compact />
+                  ) : (
+                    <>
+                      <div className="absolute inset-0 grid-pattern opacity-30" />
+                      <div className="absolute inset-4 flex flex-col justify-between">
+                        <div className="flex gap-1.5">
+                          <div className="h-1.5 w-12 rounded-full bg-white/30" />
+                          <div className="h-1.5 w-8 rounded-full bg-white/20" />
+                        </div>
+                        <div>
+                          <div className="h-2.5 w-32 rounded bg-white/70 mb-1.5" />
+                          <div className="h-1.5 w-24 rounded bg-white/40" />
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  <span className="absolute top-3 left-3 font-mono text-[9px] tracking-widest text-white/40 bg-black/20 px-2 py-0.5 rounded-full">
+                    {t.id}
+                  </span>
+
+                  <AnimatePresence>
+                    {active && (
+                      <motion.span
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        transition={{ type: 'spring', stiffness: 360, damping: 20 }}
+                        className="absolute top-3 right-3 h-7 w-7 grid place-items-center rounded-full bg-[var(--accent)] shadow-lg shadow-[var(--accent-soft)]"
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <div className="p-4 bg-[var(--surface)]">
+                  <div className="flex items-start justify-between gap-3 mb-1.5">
+                    <div className="font-semibold text-sm">{t.name[locale] ?? t.name.mn}</div>
+                    {categoryLabel && (
+                      <span className="shrink-0 text-[10px] uppercase tracking-wider text-[var(--text-muted)]">
+                        {categoryLabel}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                    {t.description[locale] ?? t.description.mn}
+                  </p>
+                  {features.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {features.slice(0, 3).map((f) => (
+                        <span
+                          key={f}
+                          className="px-2 py-1 rounded-full text-[10px] border border-[var(--surface-border)] bg-[var(--bg-secondary)] text-[var(--text-secondary)]"
+                        >
+                          {f}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </motion.button>
+            );
+          })}
+        </div>
+
+        <AnimatePresence mode="wait">
+          <TemplatePreviewDrawer
+            key={previewId ?? 'none'}
+            locale={locale}
+            template={previewTemplate}
+            fallbackTemplate={selectedTemplate}
+            onSelect={onSelect}
+          />
+        </AnimatePresence>
+      </div>
     </motion.div>
+  );
+}
+
+function TemplatePreviewDrawer({ template, fallbackTemplate, locale, onSelect }) {
+  const L = (mn, en) => (locale === 'mn' ? mn : en);
+  const displayName        = template?.name?.[locale] ?? template?.name?.mn ?? fallbackTemplate?.name?.[locale] ?? fallbackTemplate?.name?.mn;
+  const displayDescription = template?.description?.[locale] ?? template?.description?.mn ?? fallbackTemplate?.description?.[locale] ?? fallbackTemplate?.description?.mn;
+  const displayFeatures    = template?.features?.[locale] ?? template?.features?.mn ?? [];
+
+  return (
+    <motion.aside
+      initial={{ opacity: 0, x: 18 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 18 }}
+      transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }}
+      className="xl:sticky xl:top-24 rounded-2xl overflow-hidden border border-[var(--surface-border-strong)] bg-[var(--surface)] shadow-2xl shadow-black/35"
+    >
+      {template ? (
+        <>
+          <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[var(--surface-border)] bg-[linear-gradient(180deg,#111_0%,#0a0a10_100%)]">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="11" width="18" height="10" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" />
+            </svg>
+            <span className="flex-1 truncate text-[11px] font-mono text-white/55 tracking-tight">{template.domain}</span>
+            <span className="text-[9px] font-medium text-[var(--success)]">{L('Preview', 'Preview')}</span>
+          </div>
+          <div className="relative overflow-hidden h-[250px]">
+            <PremiumMockup template={template} locale={locale} />
+          </div>
+        </>
+      ) : (
+        <div className="h-[250px] bg-[var(--bg-secondary)] grid place-items-center text-sm text-[var(--text-muted)]">
+          {L('Урьдчилан харагдац бэлдэж байна', 'Preview is loading')}
+        </div>
+      )}
+
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div>
+            <h4 className="font-display text-lg font-bold tracking-tight">{displayName}</h4>
+            <p className="mt-1 text-sm text-[var(--text-secondary)] leading-relaxed">{displayDescription}</p>
+          </div>
+          {template?.badge && (
+            <span className="shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-white/10 bg-white/5 text-white/70">
+              {template.badge}
+            </span>
+          )}
+        </div>
+
+        {displayFeatures.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {displayFeatures.map((f) => (
+              <span
+                key={f}
+                className="px-2.5 py-1 rounded-full text-xs border border-[var(--surface-border-strong)] bg-[var(--bg-secondary)] text-[var(--text-secondary)]"
+              >
+                {f}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {fallbackTemplate && (
+          <button
+            type="button"
+            onClick={() => onSelect(fallbackTemplate.id)}
+            className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-mid)] text-white font-semibold text-sm hover:brightness-110 transition-all shadow-lg shadow-[var(--accent-soft)] shine"
+          >
+            {L('Энэ загвараар эхлэх', 'Use this template')}
+            <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+            </svg>
+          </button>
+        )}
+      </div>
+    </motion.aside>
   );
 }
 
 // ─── Review panel ─────────────────────────────────────────────────────────────
 
 function ReviewPanel({ business, subdomain, tone, templateId, templates, locale, root, loading, error, onBack, onSubmit, onSubdomainChange }) {
-  const L = (mn, en) => (locale === 'mn' ? mn : en);
+  const L    = (mn, en) => (locale === 'mn' ? mn : en);
   const dict = getDictionary(locale);
   const selectedTemplate = templates.find((t) => t.id === templateId);
+
+  // Subdomain availability check
+  const [subStatus, setSubStatus] = useState(null); // null | 'checking' | 'available' | 'taken'
+  useEffect(() => {
+    if (!subdomain || subdomain.length < 2) { setSubStatus(null); return; }
+    setSubStatus('checking');
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/sites/available?subdomain=${encodeURIComponent(subdomain)}`);
+        if (!res.ok) { setSubStatus(null); return; }
+        const data = await res.json();
+        setSubStatus(data.available ? 'available' : 'taken');
+      } catch { setSubStatus(null); }
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [subdomain]);
 
   return (
     <motion.div
@@ -615,6 +842,34 @@ function ReviewPanel({ business, subdomain, tone, templateId, templates, locale,
               .{root}
             </div>
           </div>
+
+          {/* Availability indicator */}
+          {subStatus && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-2 flex items-center gap-1.5 text-xs"
+            >
+              {subStatus === 'checking' && (
+                <>
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--text-muted)] animate-pulse" />
+                  <span className="text-[var(--text-muted)]">{L('Шалгаж байна...', 'Checking...')}</span>
+                </>
+              )}
+              {subStatus === 'available' && (
+                <>
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  <span className="text-emerald-400">{L('Боломжтой', 'Available')}</span>
+                </>
+              )}
+              {subStatus === 'taken' && (
+                <>
+                  <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
+                  <span className="text-red-400">{L('Аль хэдийн ашиглагдсан', 'Already taken')}</span>
+                </>
+              )}
+            </motion.div>
+          )}
         </div>
 
         {error && (
@@ -630,15 +885,18 @@ function ReviewPanel({ business, subdomain, tone, templateId, templates, locale,
 
       <div className="mt-6 flex items-center justify-between">
         <button type="button" onClick={onBack} className="btn btn-ghost btn-md">
-          <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg> {L('Буцах', 'Back')}
+          <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5" /><path d="m12 5-7 7 7 7" />
+          </svg>
+          {L('Буцах', 'Back')}
         </button>
 
         <motion.button
           type="button"
           onClick={onSubmit}
-          disabled={loading || !subdomain}
-          whileHover={!loading && subdomain ? { scale: 1.02 } : {}}
-          whileTap={!loading && subdomain ? { scale: 0.98 } : {}}
+          disabled={loading || !subdomain || subStatus === 'taken'}
+          whileHover={!loading && subdomain && subStatus !== 'taken' ? { scale: 1.02 } : {}}
+          whileTap={!loading && subdomain && subStatus !== 'taken' ? { scale: 0.98 } : {}}
           className="btn btn-accent btn-lg relative overflow-hidden shine"
         >
           {loading ? (
@@ -651,10 +909,12 @@ function ReviewPanel({ business, subdomain, tone, templateId, templates, locale,
           ) : (
             <>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+                <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
               </svg>
               {L('Сайт үүсгэх', 'Generate site')}
-              <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+              </svg>
             </>
           )}
         </motion.button>
@@ -666,31 +926,33 @@ function ReviewPanel({ business, subdomain, tone, templateId, templates, locale,
 // ─── Main AiBuilder ───────────────────────────────────────────────────────────
 
 export default function AiBuilder({ locale, templates, initialPrompt, initialTemplate }) {
-  const dict = getDictionary(locale);
+  const dict   = getDictionary(locale);
   const router = useRouter();
-  const L = useCallback((mn, en) => (locale === 'mn' ? mn : en), [locale]);
+  const L      = useCallback((mn, en) => (locale === 'mn' ? mn : en), [locale]);
 
-  const [phase, setPhase] = useState(PHASE_CHAT);
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-  const [business, setBusiness] = useState({
+  const [phase,             setPhase]             = useState(PHASE_CHAT);
+  const [messages,          setMessages]          = useState([]);
+  const [input,             setInput]             = useState('');
+  const [business,          setBusiness]          = useState({
     businessName: '', industry: '', description: '',
     services: '', contactEmail: '', contactPhone: '', address: '',
   });
-  const [templateId, setTemplateId] = useState(
-    templates.some((t) => t.id === initialTemplate) ? initialTemplate : templates[0]?.id ?? 'minimal'
+  const [templateId,        setTemplateId]        = useState(
+    templates.some((t) => t.id === initialTemplate) ? initialTemplate : templates[0]?.id ?? 'minimal',
   );
-  const [tone, setTone] = useState('friendly');
-  const [subdomain, setSubdomain] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [chatStep, setChatStep] = useState(0);
-  const [typing, setTyping] = useState(false);
-  const [latestMsgId, setLatestMsgId] = useState(null);
+  const [tone,              setTone]              = useState('friendly');
+  const [subdomain,         setSubdomain]         = useState('');
+  const [loading,           setLoading]           = useState(false);
+  const [error,             setError]             = useState(null);
+  const [chatStep,          setChatStep]          = useState(0);
+  const [typing,            setTyping]            = useState(false);
+  const [latestMsgId,       setLatestMsgId]       = useState(null);
+  const [generatingComplete, setGeneratingComplete] = useState(false);
 
-  const chatRef  = useRef(null);
-  const inputRef = useRef(null);
-  const hasInit  = useRef(false);
+  const chatRef            = useRef(null);
+  const inputRef           = useRef(null);
+  const hasInit            = useRef(false);
+  const submitAnswerRef    = useRef(null); // always-fresh ref for suggestion delegation
   const root = process.env.NEXT_PUBLIC_PLATFORM_ROOT_DOMAIN || 'platform.mn';
 
   const INDUSTRY_SUGGESTIONS = locale === 'mn'
@@ -698,13 +960,13 @@ export default function AiBuilder({ locale, templates, initialPrompt, initialTem
     : ['Cafe, Restaurant', 'Consulting', 'Design studio', 'Retail', 'Beauty & wellness', 'Education'];
 
   const questions = useMemo(() => [
-    { ask: L('Бизнесийнхээ нэрийг хэлнэ үү?', 'What\'s the name of your business?'),             field: 'businessName', hint: L('Жишээ: "Nomad Coffee"', 'e.g. "Nomad Coffee"') },
-    { ask: L('Ямар салбарт ажилладаг вэ?', 'What industry are you in?'),                         field: 'industry',     hint: L('Жишээ: "Кафе, Ресторан"', 'e.g. "Cafe, Restaurant"'), suggestions: INDUSTRY_SUGGESTIONS },
-    { ask: L('Бизнесийнхээ тухай товчхон тайлбарлана уу?', 'Give a short description of your business.'), field: 'description', hint: L('2-3 өгүүлбэр', '2-3 sentences') },
-    { ask: L('Ямар үйлчилгээ / бүтээгдэхүүн санал болгодог вэ?', 'What services or products do you offer?'), field: 'services', hint: L('Таслалаар тусгаарлана уу', 'Separate with commas') },
-    { ask: L('Холбоо барих и-мэйл хаяг?', 'Contact email address?'),   field: 'contactEmail', hint: L('Заавал биш', 'Optional'), optional: true },
-    { ask: L('Утасны дугаар?', 'Phone number?'),                        field: 'contactPhone', hint: L('Заавал биш', 'Optional'), optional: true },
-    { ask: L('Хаяг / байршил?', 'Address / location?'),                 field: 'address',      hint: L('Заавал биш', 'Optional'), optional: true },
+    { ask: L('Бизнесийнхээ нэрийг хэлнэ үү?',               'What\'s the name of your business?'),             field: 'businessName', hint: L('Жишээ: "Nomad Coffee"',        'e.g. "Nomad Coffee"') },
+    { ask: L('Ямар салбарт ажилладаг вэ?',                   'What industry are you in?'),                       field: 'industry',     hint: L('Жишээ: "Кафе, Ресторан"',    'e.g. "Cafe, Restaurant"'), suggestions: INDUSTRY_SUGGESTIONS },
+    { ask: L('Бизнесийнхээ тухай товчхон тайлбарлана уу?',   'Give a short description of your business.'),     field: 'description',  hint: L('2-3 өгүүлбэр',                '2-3 sentences') },
+    { ask: L('Ямар үйлчилгээ / бүтээгдэхүүн санал болгодог вэ?', 'What services or products do you offer?'),   field: 'services',     hint: L('Таслалаар тусгаарлана уу',    'Separate with commas') },
+    { ask: L('Холбоо барих и-мэйл хаяг?',                    'Contact email address?'),                         field: 'contactEmail', hint: L('Заавал биш', 'Optional'), optional: true },
+    { ask: L('Утасны дугаар?',                               'Phone number?'),                                   field: 'contactPhone', hint: L('Заавал биш', 'Optional'), optional: true },
+    { ask: L('Хаяг / байршил?',                              'Address / location?'),                             field: 'address',      hint: L('Заавал биш', 'Optional'), optional: true },
   ], [locale]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function addAiMsg(msg, delay = 420) {
@@ -735,28 +997,48 @@ export default function AiBuilder({ locale, templates, initialPrompt, initialTem
     addAiMsg({ role: 'ai', text: questions[0].ask, hint: questions[0].hint, suggestions: questions[0].suggestions }, 700);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-scroll
+  // ResizeObserver — auto-scroll on streaming text growth
+  useEffect(() => {
+    const inner = chatRef.current?.firstElementChild;
+    if (!inner) return;
+    const obs = new ResizeObserver(() => {
+      if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
+    });
+    obs.observe(inner);
+    return () => obs.disconnect();
+  }, []);
+
+  // Also scroll when messages list changes (new message added / typing indicator)
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
     if (phase === PHASE_CHAT && !typing && inputRef.current) inputRef.current.focus();
   }, [messages, typing, phase]);
 
-  // Handle suggestion chip clicks (event delegation)
+  // Suggestion chip clicks — stale-closure-safe via ref
+  submitAnswerRef.current = (rawText) => submitAnswer(rawText);
+
   useEffect(() => {
     const handler = (e) => {
       const btn = e.target.closest('[data-suggestion]');
-      if (btn) submitAnswer(btn.dataset.suggestion);
+      if (btn) submitAnswerRef.current(btn.dataset.suggestion);
     };
     document.addEventListener('click', handler);
     return () => document.removeEventListener('click', handler);
-  }, [chatStep]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // no chatStep dependency — ref is always current
 
   function submitAnswer(rawText) {
-    const text = (rawText ?? '').trim();
+    const text   = (rawText ?? '').trim();
+    const isSkip = !text && questions[chatStep]?.optional;
+
     if (!text && !questions[chatStep]?.optional) return;
 
     const uid = Date.now();
-    setMessages((prev) => [...prev, { role: 'user', text: text || L('(хоосон)', '(skip)'), id: uid, noStream: true }]);
+    if (isSkip) {
+      // Render a muted "Алгасав" badge instead of "(хоосон)"
+      setMessages((prev) => [...prev, { role: 'user', text: L('Алгасав', 'Skipped'), id: uid, noStream: true, isSkip: true }]);
+    } else {
+      setMessages((prev) => [...prev, { role: 'user', text, id: uid, noStream: true }]);
+    }
     setLatestMsgId(uid);
     setInput('');
 
@@ -807,6 +1089,7 @@ export default function AiBuilder({ locale, templates, initialPrompt, initialTem
   async function submit() {
     setLoading(true);
     setError(null);
+    setGeneratingComplete(false);
     setPhase(PHASE_GENERATING);
 
     try {
@@ -821,20 +1104,23 @@ export default function AiBuilder({ locale, templates, initialPrompt, initialTem
           },
         }),
       });
-      if (!res.ok) throw new Error((await res.json()).error || L('Алдаа гарлаа', 'Something went wrong'));
       const data = await res.json();
+      if (!res.ok) throw new Error(formatSiteValidationError(data, locale));
 
-      // Show success for 2s, then navigate
+      // Complete the ring to 100% before showing success screen
+      setGeneratingComplete(true);
+      await new Promise((r) => setTimeout(r, 350));
+
       setPhase(PHASE_SUCCESS);
       setTimeout(() => router.push(`/${locale}/dashboard/sites/${data.site.id}`), 2200);
     } catch (e) {
       setError(e.message);
       setLoading(false);
+      setGeneratingComplete(false);
       setPhase(PHASE_REVIEW);
     }
   }
 
-  const isGenerating = phase === PHASE_GENERATING || phase === PHASE_SUCCESS;
   const chatMaxH = phase === PHASE_CHAT ? '55vh' : '32vh';
 
   return (
@@ -843,11 +1129,10 @@ export default function AiBuilder({ locale, templates, initialPrompt, initialTem
       {/* ── Sidebar ── */}
       <aside className="lg:col-span-4 xl:col-span-3">
         <div className="sticky top-24">
-          {/* Header */}
           <div className="flex items-center gap-3 mb-7">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[var(--gradient-start)] to-[var(--gradient-mid)] grid place-items-center shadow-lg shadow-[var(--accent-soft)] shine">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+                <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
               </svg>
             </div>
             <div>
@@ -858,7 +1143,6 @@ export default function AiBuilder({ locale, templates, initialPrompt, initialTem
 
           <SidebarProgress phase={phase} locale={locale} />
 
-          {/* Summary card */}
           {business.businessName && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
@@ -868,8 +1152,8 @@ export default function AiBuilder({ locale, templates, initialPrompt, initialTem
               <div className="eyebrow text-[var(--text-muted)] mb-3">{L('Хураангуй', 'Summary')}</div>
               <dl className="space-y-2">
                 {[
-                  [L('Нэр', 'Name'), business.businessName, false],
-                  [L('Салбар', 'Industry'), business.industry, false],
+                  [L('Нэр', 'Name'),     business.businessName, false],
+                  [L('Салбар', 'Industry'), business.industry,  false],
                   subdomain ? [L('Домэйн', 'Domain'), `${subdomain}.${root}`, true] : null,
                 ].filter(Boolean).map(([label, value, mono]) => (
                   <div key={label} className="flex justify-between gap-3">
@@ -932,7 +1216,12 @@ export default function AiBuilder({ locale, templates, initialPrompt, initialTem
                 />
               </div>
               {questions[chatStep]?.optional && (
-                <button type="button" onClick={() => submitAnswer('')} disabled={typing} className="btn btn-ghost btn-md text-xs disabled:opacity-40">
+                <button
+                  type="button"
+                  onClick={() => submitAnswer('')}
+                  disabled={typing}
+                  className="btn btn-ghost btn-md text-xs disabled:opacity-40"
+                >
                   {L('Алгасах', 'Skip')}
                 </button>
               )}
@@ -944,7 +1233,7 @@ export default function AiBuilder({ locale, templates, initialPrompt, initialTem
                 className="btn btn-primary btn-md disabled:opacity-40"
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                  <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
                 </svg>
               </motion.button>
             </motion.form>
@@ -960,6 +1249,7 @@ export default function AiBuilder({ locale, templates, initialPrompt, initialTem
               templateId={templateId}
               locale={locale}
               onSelect={selectTemplate}
+              onBack={() => setPhase(PHASE_CHAT)}
             />
           )}
         </AnimatePresence>
@@ -975,9 +1265,13 @@ export default function AiBuilder({ locale, templates, initialPrompt, initialTem
               transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
               className="mt-6"
             >
-              <h3 className="font-display text-lg font-semibold tracking-tight mb-4">
-                {L('Өнгө аяс сонгоорой', 'Choose a style')}
-              </h3>
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <BackButton onClick={() => setPhase(PHASE_TEMPLATE)} locale={locale} />
+                <h3 className="font-display text-lg font-semibold tracking-tight">
+                  {L('Өнгө аяс сонгоорой', 'Choose a style')}
+                </h3>
+                <span />
+              </div>
               <TonePicker value={tone} onChange={selectTone} locale={locale} />
             </motion.div>
           )}
@@ -1007,7 +1301,7 @@ export default function AiBuilder({ locale, templates, initialPrompt, initialTem
         {/* Generating / Success overlays */}
         <AnimatePresence>
           {phase === PHASE_GENERATING && (
-            <GeneratingOverlay key="generating" locale={locale} />
+            <GeneratingOverlay key="generating" locale={locale} complete={generatingComplete} />
           )}
           {phase === PHASE_SUCCESS && (
             <SuccessOverlay key="success" locale={locale} siteName={business.businessName} />

@@ -35,8 +35,8 @@ export default function HowItWorks({ locale }) {
       icon: STEP_ICONS[1],
       title: L('Санал авах', 'Get a draft'),
       desc: L(
-        'Gemini агуулга, Flux hero зураг, template + палитр санал болгоно.',
-        'Gemini writes the copy, Flux renders a hero, and a curated template locks it in.',
+        'AI агуулга, hero зураг, template + палитр санал болгоно.',
+        'AI writes the copy, renders a hero image, and a curated template locks it in.',
       ),
       detail: L('Секундэд бэлэн болно', 'Ready in seconds'),
     },

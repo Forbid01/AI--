@@ -1,21 +1,10 @@
 import { themeToCssVars, L } from '../_primitives/SectionShell.jsx';
+import { GalleryVisualTile } from '../_primitives/VisualPlaceholders.jsx';
 
 export default function Grid4({ theme, assets, locale = 'mn' }) {
   const style = themeToCssVars(theme);
   const images = Array.isArray(assets?.gallery) ? assets.gallery : [];
-
-  if (images.length === 0) {
-    return (
-      <section id="gallery" style={style} className="bg-[var(--background)] text-[var(--foreground)]">
-        <div className="max-w-6xl mx-auto px-6 py-20">
-          <div
-            className="aspect-[3/1] rounded-[var(--radius)]"
-            style={{ background: `linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 30%, var(--background)))` }}
-          />
-        </div>
-      </section>
-    );
-  }
+  const tiles = Array.from({ length: 4 }).map((_, i) => images[i] ?? null);
 
   return (
     <section
@@ -39,16 +28,11 @@ export default function Grid4({ theme, assets, locale = 'mn' }) {
           <span className="text-xs text-[var(--muted)]">{images.length} {L(locale, 'зураг', 'photos')}</span>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {images.slice(0, 4).map((img, i) => (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
-              key={i}
-              src={img.url}
-              alt={img.prompt ?? ''}
-              className="aspect-square rounded-[var(--radius)] object-cover w-full hover:scale-[1.02] transition-transform cursor-pointer"
-            />
-          ))}
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-12 md:auto-rows-[118px] md:gap-4">
+          <GalleryVisualTile image={tiles[0]} index={0} className="aspect-[4/3] md:col-span-7 md:row-span-3 md:aspect-auto" />
+          <GalleryVisualTile image={tiles[1]} index={1} className="aspect-[4/3] md:col-span-5 md:row-span-2 md:aspect-auto" />
+          <GalleryVisualTile image={tiles[2]} index={2} className="aspect-[4/3] md:col-span-5 md:row-span-2 md:aspect-auto" />
+          <GalleryVisualTile image={tiles[3]} index={3} className="aspect-[4/3] md:col-span-7 md:row-span-2 md:aspect-auto" />
         </div>
       </div>
     </section>

@@ -1,6 +1,17 @@
 import { z } from 'zod';
 
 const subdomainRe = /^[a-z][a-z0-9-]{1,28}[a-z0-9]$/;
+const emptyStringToUndefined = (value) => {
+  if (typeof value !== 'string') return value;
+  const trimmed = value.trim();
+  return trimmed === '' ? undefined : trimmed;
+};
+
+const optionalTrimmedString = (max) =>
+  z.preprocess(emptyStringToUndefined, z.string().max(max).optional());
+
+const optionalTrimmedEmail = (max) =>
+  z.preprocess(emptyStringToUndefined, z.string().email().max(max).optional());
 
 export const Locale = z.enum(['mn', 'en']);
 export const Tone = z.enum(['formal', 'friendly', 'premium', 'sales']);
@@ -9,11 +20,11 @@ export const SiteMode = z.enum(['template', 'ai_composed']);
 
 export const BusinessSchema = z.object({
   businessName: z.string().min(1).max(120),
-  industry: z.string().max(80).optional(),
-  description: z.string().max(2000).optional(),
-  address: z.string().max(300).optional(),
-  contactPhone: z.string().max(40).optional(),
-  contactEmail: z.string().email().max(120).optional(),
+  industry: optionalTrimmedString(1000),
+  description: optionalTrimmedString(2000),
+  address: optionalTrimmedString(300),
+  contactPhone: optionalTrimmedString(40),
+  contactEmail: optionalTrimmedEmail(120),
   services: z.array(z.string().max(200)).max(20).optional(),
   highlights: z.array(z.string().max(200)).max(10).optional(),
 }).passthrough();

@@ -26,9 +26,18 @@ export default function ArtisanSite({ content, theme, assets, business, locale =
 
   const gallery = Array.isArray(assets?.gallery) ? assets.gallery : [];
 
+  /** Deterministic avatar hue from author name — earthy amber range */
+  function avatarHue(name = '') {
+    let h = 0;
+    for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
+    return (h % 50) + 20; // warm amber range: hue 20–70
+  }
+
   return (
     <div style={{ ...style, '--font-display': displayFamily }}
-      className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased">
+      className="relative min-h-screen overflow-hidden bg-[var(--background)] text-[var(--foreground)] antialiased">
+      <div aria-hidden className="premium-orb -top-24 -right-24 h-80 w-80" />
+      <div aria-hidden className="premium-orb left-[-12%] top-[36rem] h-96 w-96 opacity-10" />
 
       {/* Nav */}
       <nav className="sticky top-0 z-40 bg-[var(--background)]/95 backdrop-blur-md border-b border-[var(--hairline)]">
@@ -47,7 +56,7 @@ export default function ArtisanSite({ content, theme, assets, business, locale =
             {(business?.contactPhone || business?.contactEmail) && (
               <a
                 href={business?.contactPhone ? `tel:${business.contactPhone}` : `mailto:${business.contactEmail}`}
-                className="px-5 py-2 rounded-full border border-[var(--primary)] text-[var(--primary)] text-sm font-medium hover:bg-[var(--primary)] hover:text-[var(--background)] transition-all">
+                className="shine px-5 py-2 rounded-full border border-[var(--primary)] text-[var(--primary)] text-sm font-medium hover:bg-[var(--primary)] hover:text-[var(--background)] transition-all">
                 {L('Холбогдох', 'Get in touch')}
               </a>
             )}
@@ -74,7 +83,7 @@ export default function ArtisanSite({ content, theme, assets, business, locale =
               <div className="reveal reveal-delay-3 mt-10 flex flex-wrap gap-3">
                 {content.hero.ctaPrimary && (
                   <a href="#products"
-                    className="group px-7 py-3.5 rounded-full bg-[var(--primary)] text-white font-medium hover:opacity-90 transition-all inline-flex items-center gap-2">
+                    className="group shine px-7 py-3.5 rounded-full bg-[var(--primary)] text-white font-medium shadow-lg shadow-[var(--primary)]/20 hover:opacity-90 transition-all inline-flex items-center gap-2">
                     {content.hero.ctaPrimary}
                     <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-0.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                   </a>
@@ -89,7 +98,7 @@ export default function ArtisanSite({ content, theme, assets, business, locale =
             </div>
 
             <div className="md:col-span-6 reveal reveal-delay-2">
-              <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-[var(--hairline)] shadow-2xl shadow-[var(--primary)]/10">
+              <div className="premium-frame relative aspect-[4/5] rounded-[1.75rem] overflow-hidden border border-white/40 shadow-2xl shadow-[var(--primary)]/10 float-tilt">
                 {assets?.hero?.url ? (
                   <img src={assets.hero.url} alt="" className="w-full h-full object-cover ken-burns" />
                 ) : (
@@ -171,7 +180,7 @@ export default function ArtisanSite({ content, theme, assets, business, locale =
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {content.services.map((s, i) => (
                 <div key={i}
-                  className={`group rounded-2xl border border-[var(--hairline)] bg-white/60 p-8 hover:bg-white hover:shadow-xl hover:shadow-[var(--primary)]/8 hover:border-[var(--primary)]/20 transition-all reveal reveal-delay-${Math.min((i % 4) + 1, 4)}`}>
+                  className={`premium-card group rounded-3xl border border-[var(--hairline)] bg-white/70 p-8 hover:bg-white hover:border-[var(--primary)]/20 transition-all reveal reveal-delay-${Math.min((i % 4) + 1, 4)}`}>
                   <div className="h-8 w-8 rounded-full bg-[var(--primary)]/10 border border-[var(--primary)]/20 grid place-items-center mb-5">
                     <span className="h-2.5 w-2.5 rounded-full bg-[var(--primary)] opacity-60" />
                   </div>
@@ -290,20 +299,33 @@ export default function ArtisanSite({ content, theme, assets, business, locale =
               </div>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
-              {content.testimonials.map((t, i) => (
-                <figure key={i}
-                  className={`rounded-2xl bg-white border border-[var(--hairline)] p-8 reveal reveal-delay-${Math.min(i + 1, 4)}`}>
-                  <div style={{ fontFamily: 'var(--font-display)' }}
-                    className="text-4xl text-[var(--accent)] opacity-50 mb-3">"</div>
-                  <blockquote style={{ fontFamily: 'var(--font-display)' }}
-                    className="text-lg italic leading-relaxed text-[var(--foreground)]">
-                    {t.quote}
-                  </blockquote>
-                  <figcaption className="mt-6 text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
-                    — {t.author}{t.role ? ` · ${t.role}` : ''}
-                  </figcaption>
-                </figure>
-              ))}
+              {content.testimonials.map((t, i) => {
+                const hue = avatarHue(t.author);
+                return (
+                  <figure key={i}
+                    className={`premium-card rounded-3xl bg-white/85 border border-[var(--hairline)] p-8 reveal reveal-delay-${Math.min(i + 1, 4)}`}>
+                    <div style={{ fontFamily: 'var(--font-display)' }}
+                      className="text-4xl text-[var(--accent)] opacity-50 mb-3">"</div>
+                    <blockquote style={{ fontFamily: 'var(--font-display)' }}
+                      className="text-lg italic leading-relaxed text-[var(--foreground)]">
+                      {t.quote}
+                    </blockquote>
+                    <figcaption className="mt-6 flex items-center gap-3">
+                      <span
+                        className="shrink-0 h-9 w-9 rounded-full grid place-items-center text-white font-bold text-sm"
+                        style={{ background: `linear-gradient(135deg, hsl(${hue} 65% 45%), hsl(${hue + 25} 70% 55%))` }}
+                        aria-hidden
+                      >
+                        {(t.author ?? 'U').slice(0, 1).toUpperCase()}
+                      </span>
+                      <div>
+                        <div className="font-semibold text-sm">{t.author}</div>
+                        {t.role && <div className="text-xs text-[var(--muted)] mt-0.5 uppercase tracking-[0.15em]">{t.role}</div>}
+                      </div>
+                    </figcaption>
+                  </figure>
+                );
+              })}
             </div>
           </div>
         </section>

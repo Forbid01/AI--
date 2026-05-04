@@ -15,7 +15,7 @@ export default {
     accent: '#a855f7',
     background: '#0a0012',
     foreground: '#faf5ff',
-    fontHeading: 'Inter',
+    fontHeading: 'DM Serif Display',
     fontBody: 'Inter',
     radius: 'lg',
   },

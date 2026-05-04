@@ -88,7 +88,7 @@ async function createTemplateSite({ user, business, subdomain, templateId, tone,
   try {
     const sections = await generateSiteContent({ business, tone, locale: defaultLocale, templateId });
     await prisma.siteContent.create({ data: { siteId: site.id, locale: defaultLocale, sections } });
-    runImagePipelineInBackground({ siteId: site.id, business, sections });
+    runImagePipelineInBackground({ siteId: site.id, business, sections, style: `${templateId} premium website` });
     await prisma.aiJob.update({ where: { id: aiJob.id }, data: { status: 'done', output: sections } });
   } catch (e) {
     await prisma.aiJob.update({ where: { id: aiJob.id }, data: { status: 'failed', error: String(e.message || e) } });
@@ -157,7 +157,7 @@ async function createAiComposedSite({ user, business, subdomain, tone, vibe, def
       data: { siteId: site.id, locale: defaultLocale, sections, layout },
     });
 
-    runImagePipelineInBackground({ siteId: site.id, business, sections });
+    runImagePipelineInBackground({ siteId: site.id, business, sections, style: `${vibe} cinematic premium website` });
     await prisma.aiJob.update({ where: { id: contentJob.id }, data: { status: 'done', output: sections } });
   } catch (e) {
     await prisma.aiJob.update({ where: { id: contentJob.id }, data: { status: 'failed', error: String(e.message || e) } });
@@ -168,29 +168,35 @@ async function createAiComposedSite({ user, business, subdomain, tone, vibe, def
 }
 
 /** Fire-and-forget: hero + gallery images after site creation */
-async function runImagePipelineInBackground({ siteId, business, sections }) {
-  // Hero image
-  try {
-    const { url, prompt, meta } = await generateHeroImage({ business });
-    await prisma.siteAsset.create({ data: { siteId, kind: 'hero', url, prompt, meta } });
-  } catch (e) {
-    console.error('[image:hero] error:', e.message);
+async function runImagePipelineInBackground({ siteId, business, sections, style }) {
+  const galleryPrompts = sections?.galleryPrompts;
+  const tasks = [
+    (async () => {
+      try {
+        const { url, prompt, meta } = await generateHeroImage({ business, style });
+        await prisma.siteAsset.create({ data: { siteId, kind: 'hero', url, prompt, meta } });
+      } catch (e) {
+        console.error('[image:hero] error:', e.message);
+      }
+    })(),
+  ];
+
+  if (Array.isArray(galleryPrompts) && galleryPrompts.length > 0) {
+    tasks.push((async () => {
+      try {
+        const images = await generateGalleryImages({ business, prompts: galleryPrompts, style });
+        await Promise.all(images.map((img) =>
+          prisma.siteAsset.create({
+            data: { siteId, kind: 'gallery', url: img.url, prompt: img.prompt, meta: img.meta },
+          })
+        ));
+      } catch (e) {
+        console.error('[image:gallery] error:', e.message);
+      }
+    })());
   }
 
-  // Gallery images — normalizeContent нь galleryPrompts гэдэг top-level array буцаана
-  const galleryPrompts = sections?.galleryPrompts;
-  if (Array.isArray(galleryPrompts) && galleryPrompts.length > 0) {
-    try {
-      const images = await generateGalleryImages({ business, prompts: galleryPrompts });
-      for (const img of images) {
-        await prisma.siteAsset.create({
-          data: { siteId, kind: 'gallery', url: img.url, prompt: img.prompt, meta: img.meta },
-        });
-      }
-    } catch (e) {
-      console.error('[image:gallery] error:', e.message);
-    }
-  }
+  await Promise.allSettled(tasks);
 }
 
 export async function GET() {

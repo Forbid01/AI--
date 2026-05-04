@@ -1,4 +1,5 @@
 import { themeToCssVars } from '../_primitives/SectionShell.jsx';
+import { HeroVisualPlaceholder } from '../_primitives/VisualPlaceholders.jsx';
 
 export default function Centered({ content = {}, theme, assets, business }) {
   const style = themeToCssVars(theme);
@@ -49,15 +50,21 @@ export default function Centered({ content = {}, theme, assets, business }) {
           )}
         </div>
 
-        {heroUrl && (
-          <div
-            className="mt-16 aspect-[16/9] rounded-[var(--radius)] overflow-hidden border border-[var(--hairline)] shadow-2xl"
-            style={{ boxShadow: '0 30px 80px -20px color-mix(in srgb, var(--accent) 30%, transparent)' }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+        <div
+          className="mt-16 aspect-[16/9] rounded-[var(--radius)] overflow-hidden border border-[var(--hairline)] shadow-2xl"
+          style={{ boxShadow: '0 30px 80px -20px color-mix(in srgb, var(--accent) 30%, transparent)' }}
+        >
+          {heroUrl ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
             <img src={heroUrl} alt={business?.businessName ?? ''} className="w-full h-full object-cover" />
-          </div>
-        )}
+          ) : (
+            <HeroVisualPlaceholder
+              businessName={business?.businessName}
+              industry={business?.industry}
+              className="h-full"
+            />
+          )}
+        </div>
       </div>
     </section>
   );

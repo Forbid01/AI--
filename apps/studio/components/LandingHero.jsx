@@ -6,6 +6,7 @@ import {
   motion, AnimatePresence,
   useSpring, useMotionValue, useTransform,
 } from 'framer-motion';
+import AiCustomerAvatar from './AiCustomerAvatar.jsx';
 
 // ─── Demo content ─────────────────────────────────────────────────────────────
 
@@ -38,16 +39,13 @@ const DUR = { IDLE: 1800, EXPLODE: 380, SWARM: 1500, ASSEMBLE: 1700, DONE: 4800 
 
 // ─── Palette + terminal logs ───────────────────────────────────────────────────
 
-const PALETTE = ['#7c5cff', '#c084fc', '#22d3ee', '#1d4ed8', '#0f172a', '#f0f0f5'];
-
 const LOGS = [
   { t: 0,    text: '> Analyzing business context...',       cls: 'text-[#22d3ee]' },
   { t: 300,  text: '> Selecting optimal template...',       cls: 'text-white/55'  },
-  { t: 600,  text: '> Gemini 2.5 generating copy...',       cls: 'text-[#a699ff]' },
-  { t: 880,  text: '> Flux rendering hero image...',        cls: 'text-[#c084fc]' },
+  { t: 600,  text: '> AI copy engine writing sections...',  cls: 'text-[#a699ff]' },
+  { t: 880,  text: '> AI image engine rendering hero...',   cls: 'text-[#c084fc]' },
   { t: 1140, text: '> Building color palette...',           cls: 'text-white/55'  },
   { t: 1390, text: '> Assembling site structure...',        cls: 'text-[#22d3ee]' },
-  { t: 1620, text: '✓ Published → nomad-coffee.aiweb.mn',  cls: 'text-[#10b981] font-semibold' },
 ];
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -209,6 +207,7 @@ const SITES = [
     accent: '#fde68a',
     accent2: '#d4af37',
     dark: '#0c0a09',
+    palette: ['#fde68a', '#d4af37', '#92400e', '#0c0a09', '#f8fafc', '#78716c'],
     nav: ['Home', 'About', 'Suites', 'Contact'],
     eyebrow: '— Boutique Hotel · Ulaanbaatar',
     title: 'The Heritage Hotel of Ulaanbaatar',
@@ -231,6 +230,7 @@ const SITES = [
     accent: '#22d3ee',
     accent2: '#7c3aed',
     dark: '#020617',
+    palette: ['#22d3ee', '#7c3aed', '#1d4ed8', '#020617', '#e0f2fe', '#64748b'],
     nav: ['Home', 'Models', 'Tech', 'Contact'],
     eyebrow: '— Electric · Performance',
     title: 'Дараагийн үеийн цахим машин',
@@ -253,6 +253,7 @@ const SITES = [
     accent: '#ec4899',
     accent2: '#8b5cf6',
     dark: '#0f0a1a',
+    palette: ['#ec4899', '#8b5cf6', '#4c1d95', '#0f0a1a', '#fdf2f8', '#a78bfa'],
     nav: ['Home', 'Charts', 'Live', 'Pricing'],
     eyebrow: '— Streaming · Discover',
     title: 'Дуу чинь дуртай хүмүүст хүрнэ',
@@ -297,15 +298,7 @@ function HeroTypewriter({ assembled, text, accent }) {
 
 // ─── Card A: Hero Preview (auto-rotating through 3 sites) ───────────────────
 
-function CardHeroPreview({ assembled }) {
-  const [index, setIndex] = useState(0);
-  useEffect(() => {
-    if (!assembled) return;
-    const id = setInterval(() => setIndex((i) => (i + 1) % SITES.length), 5200);
-    return () => clearInterval(id);
-  }, [assembled]);
-
-  const site = SITES[index];
+function CardHeroPreview({ assembled, site }) {
   const isGold = site.tier === 'gold';
   const coinGrad = isGold
     ? 'conic-gradient(from 45deg, #fde68a, #d4af37, #92400e, #fde68a)'
@@ -510,7 +503,8 @@ function CardHeroPreview({ assembled }) {
 
 // ─── Card B: Color Palette ────────────────────────────────────────────────────
 
-function CardPalette({ assembled }) {
+function CardPalette({ assembled, site }) {
+  const palette = site?.palette ?? [];
   return (
     <div
       className="rounded-2xl border border-white/[0.08] p-4"
@@ -522,27 +516,36 @@ function CardPalette({ assembled }) {
           {Array.from({ length: 6 }).map((_, i) => <Skel key={i} className="flex-1 rounded-xl" style={{ height: 44 }} />)}
         </div>
       ) : (
-        <div className="flex gap-2">
-          {PALETTE.map((color, i) => (
-            <motion.div
-              key={color}
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: i * 0.072, duration: 0.34, ease: [0.2, 0.8, 0.2, 1] }}
-              className="flex-1 rounded-xl relative overflow-hidden flex flex-col justify-end pb-1"
-              style={{ height: 44, background: color, boxShadow: `0 4px 18px ${color}4a` }}
-            >
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: i * 0.072 + 0.22 }}
-                className="text-center font-mono text-[6.5px] text-white/55"
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={site.domain}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }}
+            className="flex gap-2"
+          >
+            {palette.map((color, i) => (
+              <motion.div
+                key={color}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: i * 0.072, duration: 0.34, ease: [0.2, 0.8, 0.2, 1] }}
+                className="flex-1 rounded-xl relative overflow-hidden flex flex-col justify-end pb-1"
+                style={{ height: 44, background: color, boxShadow: `0 4px 18px ${color}4a` }}
               >
-                {color}
-              </motion.span>
-            </motion.div>
-          ))}
-        </div>
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: i * 0.072 + 0.22 }}
+                  className="text-center font-mono text-[6.5px] text-white/55"
+                >
+                  {color}
+                </motion.span>
+              </motion.div>
+            ))}
+          </motion.div>
+        </AnimatePresence>
       )}
     </div>
   );
@@ -599,16 +602,19 @@ function CardTypography({ assembled }) {
 
 // ─── Card D: Terminal ─────────────────────────────────────────────────────────
 
-function CardTerminal({ assembled }) {
+function CardTerminal({ assembled, site }) {
   const [lines, setLines] = useState([]);
 
   useEffect(() => {
     if (!assembled) { setLines([]); return; }
-    const timers = LOGS.map((log) =>
-      setTimeout(() => setLines((prev) => [...prev, log]), log.t)
-    );
+    setLines([]);
+    const logs = [
+      ...LOGS,
+      { t: 1620, text: `✓ Published → ${site.domain}`, cls: 'text-[#10b981] font-semibold' },
+    ];
+    const timers = logs.map((log) => setTimeout(() => setLines((prev) => [...prev, log]), log.t));
     return () => timers.forEach(clearTimeout);
-  }, [assembled]);
+  }, [assembled, site.domain]);
 
   return (
     <div
@@ -657,6 +663,8 @@ function AIBentoOrchestrator() {
   const wrapRef = useRef(null);
   const [phase, setPhase] = useState(PH.IDLE);
   const [dim, setDim] = useState({ w: 600, h: 420 });
+  const [siteIndex, setSiteIndex] = useState(0);
+  const site = SITES[siteIndex];
 
   // Measure container for particle destinations
   useEffect(() => {
@@ -685,6 +693,8 @@ function AIBentoOrchestrator() {
         setPhase(PH.ASSEMBLE); await wait(DUR.ASSEMBLE);
         if (!alive) break;
         setPhase(PH.DONE);     await wait(DUR.DONE);
+        if (!alive) break;
+        setSiteIndex((current) => (current + 1) % SITES.length);
       }
     }
     loop();
@@ -760,10 +770,10 @@ function AIBentoOrchestrator() {
       >
         {/* Bento grid */}
         <div className="grid gap-3" style={{ gridTemplateColumns: '1.65fr 1fr' }}>
-          <CardHeroPreview assembled={assembled} />
-          <CardPalette assembled={assembled} />
+          <CardHeroPreview assembled={assembled} site={site} />
+          <CardPalette assembled={assembled} site={site} />
           <CardTypography assembled={assembled} />
-          <CardTerminal assembled={assembled} />
+          <CardTerminal assembled={assembled} site={site} />
         </div>
 
         {/* AI Orb overlay at col/row intersection */}
@@ -845,14 +855,6 @@ function SocialProof({ locale }) {
   const [sites, sitesRef] = useCounter(500, 1400, 0);
   const [tpl, tplRef]   = useCounter(23,  900,  150);
 
-  const AVATARS = [
-    ['#7c5cff', '#c084fc', 'Б'],
-    ['#10b981', '#06b6d4', 'Т'],
-    ['#f59e0b', '#ef4444', 'Э'],
-    ['#ec4899', '#8b5cf6', 'Н'],
-    ['#3b82f6', '#6366f1', 'М'],
-  ];
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -862,14 +864,13 @@ function SocialProof({ locale }) {
     >
       <div className="flex items-center gap-3">
         <div className="flex -space-x-2">
-          {AVATARS.map(([a, b, letter], i) => (
-            <div
+          {Array.from({ length: 5 }).map((_, i) => (
+            <AiCustomerAvatar
               key={i}
-              className="h-8 w-8 rounded-full border-2 border-[var(--bg-primary)] grid place-items-center text-xs font-bold text-white"
-              style={{ background: `linear-gradient(135deg, ${a}, ${b})` }}
-            >
-              {letter}
-            </div>
+              index={i}
+              className="border-2 border-[var(--bg-primary)] shadow-lg shadow-black/20 ring-1 ring-white/10"
+              label={L('AI-аар үүсгэсэн хэрэглэгчийн зураг', 'AI-generated customer portrait')}
+            />
           ))}
         </div>
         <div>
@@ -999,7 +1000,7 @@ export default function LandingHero({ locale }) {
                 <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--success)] opacity-70 animate-ping" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--success)]" />
               </span>
-              <span className="font-mono">Gemini 2.5 · Flux schnell</span>
+              <span className="font-mono">AI copy · AI image</span>
               <span className="text-[var(--text-muted)]">·</span>
               <span className="text-[var(--accent-light)] font-medium">{L('Шинэ хувилбар', 'New release')}</span>
             </motion.div>
@@ -1025,8 +1026,8 @@ export default function LandingHero({ locale }) {
               className="mt-5 text-base md:text-lg text-[var(--text-secondary)] leading-relaxed max-w-lg"
             >
               {L(
-                'Хэдхэн өгүүлбэрээр бичнэ үү — Gemini контент бичиж, Flux зураг үүсгэж, бэлэн загвар сонгоод хэдхэн минутад publish хийнэ.',
-                "Say a few sentences — Gemini writes the copy, Flux generates imagery, picks a template, and you're live in minutes.",
+                'Хэдхэн өгүүлбэрээр бичнэ үү — AI контент бичиж, зураг үүсгэж, бэлэн загвар сонгоод хэдхэн минутад publish хийнэ.',
+                "Say a few sentences — AI writes the copy, generates imagery, picks a template, and you're live in minutes.",
               )}
             </motion.p>
 

@@ -5,13 +5,13 @@ import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import Link from 'next/link';
 
 /* ─── Floating badge pill ─── */
-function FloatingBadge({ children, icon, style, delay = 0, yAmp = 10 }) {
+function FloatingBadge({ children, icon, style, delay = 0, yAmp = 10, duration = 5 }) {
   return (
     <motion.div
       className="absolute select-none pointer-events-none z-10"
       style={style}
       animate={{ y: [0, -yAmp, 0], rotate: [0, style?.rotate ?? 0, 0] }}
-      transition={{ duration: 4 + Math.random() * 2, repeat: Infinity, repeatType: 'loop', ease: 'easeInOut', delay }}
+      transition={{ duration, repeat: Infinity, repeatType: 'loop', ease: 'easeInOut', delay }}
     >
       <div className="flex items-center gap-2 px-3.5 py-2 rounded-full border border-white/[0.12] bg-white/[0.06] backdrop-blur-md shadow-lg shadow-black/20 text-xs font-medium text-[var(--text-secondary)] whitespace-nowrap">
         <span className="text-base leading-none">{icon}</span>
@@ -22,7 +22,7 @@ function FloatingBadge({ children, icon, style, delay = 0, yAmp = 10 }) {
 }
 
 /* ─── Particle dot ─── */
-function Particle({ x, y, size, opacity, delay }) {
+function Particle({ x, y, size, opacity, delay, duration }) {
   return (
     <motion.div
       className="absolute rounded-full pointer-events-none"
@@ -35,21 +35,21 @@ function Particle({ x, y, size, opacity, delay }) {
         opacity,
       }}
       animate={{ opacity: [opacity, opacity * 0.2, opacity], scale: [1, 1.6, 1] }}
-      transition={{ duration: 3 + Math.random() * 3, repeat: Infinity, ease: 'easeInOut', delay }}
+      transition={{ duration, repeat: Infinity, ease: 'easeInOut', delay }}
     />
   );
 }
 
 const PARTICLES = [
-  { x: 8,  y: 20, size: 3, opacity: 0.5, delay: 0 },
-  { x: 18, y: 70, size: 2, opacity: 0.35, delay: 0.7 },
-  { x: 30, y: 15, size: 4, opacity: 0.4, delay: 1.4 },
-  { x: 55, y: 85, size: 2, opacity: 0.3, delay: 0.3 },
-  { x: 70, y: 12, size: 3, opacity: 0.45, delay: 1.8 },
-  { x: 82, y: 60, size: 2, opacity: 0.4, delay: 0.9 },
-  { x: 92, y: 30, size: 4, opacity: 0.35, delay: 2.2 },
-  { x: 44, y: 92, size: 2, opacity: 0.3, delay: 1.1 },
-  { x: 60, y: 45, size: 1.5, opacity: 0.25, delay: 3.0 },
+  { x: 8,  y: 20, size: 3, opacity: 0.5, delay: 0, duration: 4.2 },
+  { x: 18, y: 70, size: 2, opacity: 0.35, delay: 0.7, duration: 5.1 },
+  { x: 30, y: 15, size: 4, opacity: 0.4, delay: 1.4, duration: 3.8 },
+  { x: 55, y: 85, size: 2, opacity: 0.3, delay: 0.3, duration: 5.7 },
+  { x: 70, y: 12, size: 3, opacity: 0.45, delay: 1.8, duration: 4.6 },
+  { x: 82, y: 60, size: 2, opacity: 0.4, delay: 0.9, duration: 5.4 },
+  { x: 92, y: 30, size: 4, opacity: 0.35, delay: 2.2, duration: 4.0 },
+  { x: 44, y: 92, size: 2, opacity: 0.3, delay: 1.1, duration: 5.9 },
+  { x: 60, y: 45, size: 1.5, opacity: 0.25, delay: 3.0, duration: 4.8 },
 ];
 
 export default function CtaSection({ locale }) {
@@ -103,19 +103,19 @@ export default function CtaSection({ locale }) {
       {PARTICLES.map((p, i) => <Particle key={i} {...p} />)}
 
       {/* Floating feature badges */}
-      <FloatingBadge icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>} delay={0} yAmp={8} style={{ top: '12%', left: '6%', rotate: -4 }}>
+      <FloatingBadge icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>} delay={0} yAmp={8} duration={4.8} style={{ top: '12%', left: '6%', rotate: -4 }}>
         {L('30 хв дотор', '30 min setup')}
       </FloatingBadge>
-      <FloatingBadge icon={<span className="font-mono text-[9px] font-bold leading-none">MN</span>} delay={1.2} yAmp={12} style={{ top: '18%', right: '7%', rotate: 3 }}>
+      <FloatingBadge icon={<span className="font-mono text-[9px] font-bold leading-none">MN</span>} delay={1.2} yAmp={12} duration={5.5} style={{ top: '18%', right: '7%', rotate: 3 }}>
         {L('Монголоор дэмжинэ', 'Mongolian supported')}
       </FloatingBadge>
-      <FloatingBadge icon={<span className="font-mono text-[9px] font-bold leading-none">AI</span>} delay={0.6} yAmp={9} style={{ bottom: '20%', left: '5%', rotate: 2 }}>
-        {L('GPT-4o powered', 'GPT-4o powered')}
+      <FloatingBadge icon={<span className="font-mono text-[9px] font-bold leading-none">AI</span>} delay={0.6} yAmp={9} duration={5.1} style={{ bottom: '20%', left: '5%', rotate: 2 }}>
+        {L('AI текст + зураг', 'AI copy + image')}
       </FloatingBadge>
-      <FloatingBadge icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg>} delay={1.8} yAmp={11} style={{ bottom: '15%', right: '6%', rotate: -3 }}>
+      <FloatingBadge icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg>} delay={1.8} yAmp={11} duration={5.8} style={{ bottom: '15%', right: '6%', rotate: -3 }}>
         {L('Publish in 1-click', 'Publish in 1-click')}
       </FloatingBadge>
-      <FloatingBadge icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>} delay={2.4} yAmp={7} style={{ top: '45%', left: '3%', rotate: -6 }}>
+      <FloatingBadge icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>} delay={2.4} yAmp={7} duration={4.6} style={{ top: '45%', left: '3%', rotate: -6 }}>
         QPay · SocialPay
       </FloatingBadge>
 

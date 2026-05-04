@@ -4,6 +4,13 @@ import { getProvider } from '@aiweb/payments';
 
 const ALLOWED = new Set(['qpay', 'socialpay', 'khanbank', 'golomt']);
 
+function addInterval(baseDate, interval) {
+  const next = new Date(baseDate);
+  if (interval === 'yearly') next.setFullYear(next.getFullYear() + 1);
+  else next.setMonth(next.getMonth() + 1);
+  return next;
+}
+
 async function resolve(request, params) {
   const { provider } = params;
   if (!ALLOWED.has(provider)) return NextResponse.json({ error: 'Unknown provider' }, { status: 400 });
@@ -46,10 +53,20 @@ async function resolve(request, params) {
       });
 
       if (mapped === 'paid') {
+        const billingInterval = existing?.meta?.billingInterval === 'yearly' ? 'yearly' : 'monthly';
+        const currentSub = await prisma.subscription.findUnique({
+          where: { userId: existing.userId },
+          select: { expiresAt: true },
+        });
+        const start = currentSub?.expiresAt && new Date(currentSub.expiresAt) > new Date()
+          ? new Date(currentSub.expiresAt)
+          : new Date();
+        const expiresAt = addInterval(start, billingInterval);
+
         await prisma.subscription.upsert({
           where: { userId: existing.userId },
-          update: { plan: 'pro', autoRenew: false },
-          create: { userId: existing.userId, plan: 'pro' },
+          update: { plan: 'pro', autoRenew: false, expiresAt },
+          create: { userId: existing.userId, plan: 'pro', expiresAt },
         });
       }
     }

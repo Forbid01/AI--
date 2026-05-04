@@ -504,48 +504,291 @@ function PublishCard({ locale }) {
 
 // ─── Mongolia showcase ────────────────────────────────────────────────────────
 
+const SHOWCASE_STEPS = [
+  { key: 'copy',   mn: 'AI текст',    en: 'AI copy'    },
+  { key: 'domain', mn: '.mn домэйн',  en: '.mn domain' },
+  { key: 'pay',    mn: 'QPay ready',  en: 'QPay ready' },
+  { key: 'live',   mn: 'Live',        en: 'Live'       },
+];
+
 function MongoliaShowcase({ locale }) {
   const L = (mn, en) => (locale === 'mn' ? mn : en);
+  // Track hover/touch with state so we can drive every layer independently
+  // and avoid the whileInView="dawn" bug that permanently locks the card in dawn.
+  const [isDawn, setIsDawn] = useState(false);
+
+  const T = (duration, delay = 0, ease = 'easeInOut') => ({ duration, delay, ease });
+
   return (
-    <div className="relative h-64 md:h-80 overflow-hidden rounded-2xl group">
-      <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, #02040e 0%, #0a1232 30%, #180840 65%, #1a0c18 100%)' }} />
+    <div
+      className="relative h-64 md:h-80 overflow-hidden rounded-2xl group cursor-default select-none"
+      onMouseEnter={() => setIsDawn(true)}
+      onMouseLeave={() => setIsDawn(false)}
+      onTouchStart={() => setIsDawn(true)}
+      onTouchEnd={() => setIsDawn(false)}
+    >
+      {/* ── Sky gradient ── */}
       <motion.div
         className="absolute inset-0"
-        animate={{ opacity: [0.35, 0.55, 0.35] }}
-        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ background: 'radial-gradient(ellipse 90% 35% at 25% 18%, rgba(16,185,129,0.28) 0%, transparent 70%), radial-gradient(ellipse 70% 25% at 72% 12%, rgba(124,92,255,0.22) 0%, transparent 65%)' }}
+        animate={{
+          background: isDawn
+            ? 'linear-gradient(180deg, #3b1b5f 0%, #9b3f72 32%, #f59e5c 68%, #2b1630 100%)'
+            : 'linear-gradient(180deg, #02040e 0%, #0a1232 30%, #180840 65%, #1a0c18 100%)',
+        }}
+        transition={T(1.2)}
       />
-      <div className="absolute inset-0 opacity-50" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.85) 1px, transparent 1px), radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px)', backgroundSize: '80px 80px, 44px 44px', backgroundPosition: '0 0, 22px 22px' }} />
+
+      {/* ── Aurora / northern lights — pulses at night, fades at dawn ── */}
+      <motion.div
+        className="absolute inset-0"
+        animate={
+          isDawn
+            ? { opacity: 0 }
+            : { opacity: [0.35, 0.55, 0.35] }
+        }
+        transition={
+          isDawn
+            ? T(1.0)
+            : { duration: 6, repeat: Infinity, ease: 'easeInOut' }
+        }
+        style={{
+          background:
+            'radial-gradient(ellipse 90% 35% at 25% 18%, rgba(16,185,129,0.28) 0%, transparent 70%), ' +
+            'radial-gradient(ellipse 70% 25% at 72% 12%, rgba(124,92,255,0.22) 0%, transparent 65%)',
+        }}
+      />
+
+      {/* ── Horizon warmth (dawn only) ── */}
+      <motion.div
+        className="absolute inset-0"
+        animate={{ opacity: isDawn ? 1 : 0 }}
+        transition={T(1.1)}
+        style={{
+          background:
+            'radial-gradient(ellipse 70% 35% at 50% 70%, rgba(251,191,36,0.42) 0%, rgba(249,115,22,0.18) 38%, transparent 72%)',
+        }}
+      />
+
+      {/* ── Stars — dim dramatically at dawn ── */}
+      <motion.div
+        className="absolute inset-0"
+        animate={{ opacity: isDawn ? 0.06 : 0.5 }}
+        transition={T(1.0)}
+        style={{
+          backgroundImage:
+            'radial-gradient(circle, rgba(255,255,255,0.85) 1px, transparent 1px), ' +
+            'radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px)',
+          backgroundSize: '80px 80px, 44px 44px',
+          backgroundPosition: '0 0, 22px 22px',
+        }}
+      />
+
+      {/* ── Sun rising ── */}
+      <motion.div
+        className="absolute left-1/2 bottom-[56px] h-24 w-24 -translate-x-1/2 rounded-full"
+        animate={isDawn
+          ? { y: 0, scale: 1, opacity: 1 }
+          : { y: 68, scale: 0.74, opacity: 0 }
+        }
+        transition={T(1.15, 0, [0.22, 1, 0.36, 1])}
+        style={{
+          background: 'radial-gradient(circle, #fff7ad 0%, #fbbf24 45%, #fb923c 72%, rgba(251,146,60,0) 74%)',
+          boxShadow: '0 0 54px rgba(251,191,36,0.62), 0 0 120px rgba(249,115,22,0.36)',
+        }}
+      />
+
+      {/* ── Floating UI card — left ── */}
+      <motion.div
+        className="absolute left-[12%] top-[22%] hidden sm:block"
+        animate={isDawn
+          ? { opacity: 0.82, y: 0, rotate: -3 }
+          : { opacity: 0, y: 24, rotate: -8 }
+        }
+        transition={T(0.8, 0.15, 'easeOut')}
+      >
+        <motion.div
+          className="w-28 rounded-lg border border-white/20 bg-white/10 p-2 shadow-2xl backdrop-blur-md"
+          animate={{ y: [0, -8, 0] }}
+          transition={{ duration: 4.2, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          <div className="mb-2 flex gap-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-rose-300" />
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-300" />
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
+          </div>
+          <div className="space-y-1">
+            <span className="block h-1 rounded-full bg-white/55" />
+            <span className="block h-1 w-2/3 rounded-full bg-emerald-300/70" />
+            <span className="block h-1 w-5/6 rounded-full bg-white/35" />
+          </div>
+        </motion.div>
+      </motion.div>
+
+      {/* ── Floating code tag — right ── */}
+      <motion.div
+        className="absolute right-[10%] top-[18%] hidden sm:block"
+        animate={isDawn
+          ? { opacity: 0.76, y: 0, rotate: 4 }
+          : { opacity: 0, y: 26, rotate: 8 }
+        }
+        transition={T(0.85, 0.24, 'easeOut')}
+      >
+        <motion.div
+          className="rounded-lg border border-cyan-200/20 bg-slate-950/35 px-3 py-2 font-mono text-[10px] leading-relaxed text-cyan-100/85 shadow-2xl backdrop-blur-md"
+          animate={{ y: [0, 7, 0] }}
+          transition={{ duration: 4.8, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          <span className="text-emerald-300">&lt;ai</span> web=<span className="text-amber-200">&quot;mn&quot;</span> /<span className="text-emerald-300">&gt;</span>
+        </motion.div>
+      </motion.div>
+
+      {/* ── Floating grid widget — center-right ── */}
+      <motion.div
+        className="absolute left-[54%] top-[30%] hidden md:block"
+        animate={isDawn
+          ? { opacity: 0.68, y: 0, scale: 1 }
+          : { opacity: 0, y: 18, scale: 0.85 }
+        }
+        transition={T(0.75, 0.32, 'easeOut')}
+      >
+        <motion.div
+          className="grid h-14 w-16 grid-cols-2 gap-1 rounded-lg border border-white/20 bg-white/10 p-2 backdrop-blur-md"
+          animate={{ y: [0, -6, 0] }}
+          transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          <span className="rounded bg-white/45" />
+          <span className="rounded bg-emerald-300/55" />
+          <span className="rounded bg-amber-200/55" />
+          <span className="rounded bg-white/30" />
+        </motion.div>
+      </motion.div>
+
+      {/* ── URL badge — bottom right (dawn only) ── */}
+      <motion.div
+        className="absolute right-[8%] bottom-[54px] z-[7] hidden rounded-xl border border-amber-200/25 bg-amber-200/10 px-3 py-2 text-[10px] font-mono text-amber-100 shadow-2xl backdrop-blur-md sm:block"
+        animate={isDawn
+          ? { opacity: 0.9, x: 0, scale: 1 }
+          : { opacity: 0, x: 18, scale: 0.9 }
+        }
+        transition={T(0.55, 0.86, 'easeOut')}
+      >
+        <span className="text-emerald-200">https://</span>business.mn
+      </motion.div>
+
+      {/* ── Mountain landscape ── */}
       <div className="absolute bottom-0 left-0 right-0">
         <svg viewBox="0 0 1440 160" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full" preserveAspectRatio="none">
           <path d="M0,105 L70,58 L130,82 L210,32 L290,68 L370,22 L450,60 L530,40 L615,78 L700,30 L785,65 L865,44 L950,80 L1030,40 L1115,72 L1200,28 L1285,62 L1380,46 L1440,58 L1440,160 L0,160 Z" fill="#1a1a38" opacity="0.92"/>
           <path d="M0,128 L90,80 L190,108 L310,60 L430,96 L555,50 L670,90 L790,58 L910,100 L1040,65 L1155,108 L1280,75 L1440,92 L1440,160 L0,160 Z" fill="#0f0f28"/>
           <path d="M0,150 Q360,142 720,148 Q1080,154 1440,144 L1440,160 L0,160 Z" fill="#09091e"/>
         </svg>
+        {/* Warm dawn tint over mountains */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          animate={{ opacity: isDawn ? 1 : 0 }}
+          transition={T(1.2)}
+          style={{
+            background: 'linear-gradient(to top, rgba(160,72,28,0.52) 0%, rgba(200,95,40,0.22) 45%, transparent 72%)',
+          }}
+        />
       </div>
-      <div className="absolute bottom-[26px] left-[8%]">
-        <svg width="44" height="26" viewBox="0 0 44 26" fill="#09091e">
-          <path d="M2,26 L6,14 Q22,2 38,14 L42,26 Z"/><rect x="15" y="17" width="14" height="9"/><rect x="20" y="14" width="4" height="5"/><circle cx="22" cy="3" r="1.5" fill="#27c93f" opacity="0.7"/>
+
+      {/* ── Ger (yurt) silhouettes — white at dawn, dark at night ── */}
+      <motion.div
+        className="absolute bottom-[26px] left-[8%]"
+        animate={{ color: isDawn ? 'rgba(255,255,255,0.82)' : '#09091e' }}
+        transition={T(1.2)}
+      >
+        {/* fillRule=evenodd makes the door opening a transparent cutout */}
+        <svg width="44" height="26" viewBox="0 0 44 26">
+          <path
+            fill="currentColor"
+            fillRule="evenodd"
+            d="M2,26 L6,14 Q22,2 38,14 L42,26 Z M19,26 L19,18 L25,18 L25,26 Z"
+          />
+          <motion.circle
+            cx="22" cy="3" r="1.5"
+            animate={{ fill: isDawn ? 'rgba(255,255,255,0.5)' : '#27c93f' }}
+            transition={T(1.2)}
+            opacity="0.75"
+          />
         </svg>
-      </div>
-      <div className="absolute bottom-[22px] right-[12%]">
-        <svg width="28" height="17" viewBox="0 0 28 17" fill="#09091e" opacity="0.7">
-          <path d="M1,17 L4,9 Q14,1 24,9 L27,17 Z"/><rect x="9" y="11" width="10" height="6"/>
+      </motion.div>
+      <motion.div
+        className="absolute bottom-[22px] right-[12%]"
+        animate={{ color: isDawn ? 'rgba(255,255,255,0.55)' : 'rgba(9,9,30,0.7)' }}
+        transition={T(1.2)}
+      >
+        <svg width="28" height="17" viewBox="0 0 28 17">
+          <path
+            fill="currentColor"
+            fillRule="evenodd"
+            d="M1,17 L4,9 Q14,1 24,9 L27,17 Z M11,17 L11,12 L17,12 L17,17 Z"
+          />
         </svg>
-      </div>
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-10 pb-8">
-        <motion.span className="eyebrow mb-3" style={{ color: 'rgba(52,211,153,0.85)' }} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
+      </motion.div>
+
+      {/* ── Center text ── */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-10 pb-10">
+        <motion.span
+          className="eyebrow mb-3"
+          style={{ color: 'rgba(52,211,153,0.85)' }}
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={T(0.6)}
+        >
           {L('Монголд зориулсан', 'Built for Mongolia')}
         </motion.span>
-        <motion.h3 className="font-display text-2xl md:text-4xl font-black tracking-tighter text-white leading-[1.05]" initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.65, delay: 0.1 }}>
+        <motion.h3
+          className="font-display text-2xl md:text-4xl font-black tracking-tighter text-white leading-[1.05]"
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={T(0.65, 0.1)}
+        >
           {L('Монгол бизнесийн ', 'Mongolian business ')}
           <span style={{ color: '#34d399' }}>{L('цифрлэл', 'going digital')}</span>
         </motion.h3>
-        <motion.p className="mt-3 text-sm max-w-sm" style={{ color: 'rgba(255,255,255,0.45)' }} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.65, delay: 0.2 }}>
-          {L('Тал нутгийн өргөн уудамтай адил — таны бизнес дэлхийд харагддаг болог.', 'As vast as the steppes — let your business be seen by the world.')}
+        <motion.p
+          className="mt-3 text-sm max-w-sm"
+          style={{ color: 'rgba(255,255,255,0.45)' }}
+          initial={{ opacity: 0, y: 14 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={T(0.65, 0.2)}
+        >
+          {L(
+            'Тал нутгийн өргөн уудамтай адил — таны бизнес дэлхийд харагддаг болог.',
+            'As vast as the steppes — let your business be seen by the world.',
+          )}
         </motion.p>
+
+        {/* Steps — subtle ambient metadata, not feature callouts */}
+        <motion.div
+          className="mt-4 flex items-center gap-1.5 flex-wrap justify-center"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={T(0.5, 0.35)}
+        >
+          {SHOWCASE_STEPS.map((step, i) => (
+            <span
+              key={step.key}
+              className="px-2 py-0.5 rounded-full font-mono text-[9px] border border-white/[0.09] bg-black/20 text-white/35 backdrop-blur-sm"
+            >
+              {i > 0 && <span className="mr-1.5 text-white/15">·</span>}
+              {step[locale] ?? step.en}
+            </span>
+          ))}
+        </motion.div>
       </div>
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, rgba(52,211,153,0.07) 0%, transparent 65%)' }} />
+
+      {/* ── Hover glow overlay ── */}
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at center, rgba(52,211,153,0.07) 0%, transparent 65%)' }}
+      />
     </div>
   );
 }
@@ -606,6 +849,33 @@ export default function BentoCapabilities({ locale }) {
           </p>
         </motion.div>
 
+        <motion.div
+          className="mt-10 hidden items-center gap-3 md:flex"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.55, delay: 0.12, ease: [0.2, 0.8, 0.2, 1] }}
+        >
+          {[
+            L('Prompt', 'Prompt'),
+            L('AI сайт угсарна', 'AI assembles'),
+            L('Domain + төлбөр', 'Domain + payments'),
+            L('Live', 'Live'),
+          ].map((label, i, arr) => (
+            <div key={label} className="flex flex-1 items-center gap-3">
+              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-[var(--surface-border)] bg-white/[0.025] px-3 py-2">
+                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[var(--accent-soft)] text-[10px] font-bold text-[var(--accent-light)]">
+                  {i + 1}
+                </span>
+                <span className="truncate text-xs font-semibold text-[var(--text-secondary)]">{label}</span>
+              </div>
+              {i < arr.length - 1 ? (
+                <span className="h-px w-8 shrink-0 bg-gradient-to-r from-[var(--accent-light)]/55 to-transparent" />
+              ) : null}
+            </div>
+          ))}
+        </motion.div>
+
         {/* Grid with subtle parallax */}
         <motion.div
           className="mt-14 grid md:grid-cols-6 gap-4"
@@ -617,7 +887,7 @@ export default function BentoCapabilities({ locale }) {
             <div className="mt-5">
               <h3 className="font-display text-lg font-bold tracking-tight">{L('AI зохиомжтой контент', 'AI copywriting')}</h3>
               <p className="mt-2 text-sm text-[var(--text-secondary)] leading-relaxed">
-                {L('Gemini 2.5 Flash таны салбарт тохирсон hero, about, FAQ бичнэ. MN/EN хоёул.', 'Gemini 2.5 Flash writes hero, about, and FAQ copy tuned to your vertical. MN + EN.')}
+                {L('AI таны салбарт тохирсон hero, about, FAQ бичнэ. MN/EN хоёул.', 'AI writes hero, about, and FAQ copy tuned to your vertical. MN + EN.')}
               </p>
             </div>
           </BentoCard>
@@ -625,9 +895,9 @@ export default function BentoCapabilities({ locale }) {
           <BentoCard span="md:col-span-2" delay={0.14}>
             <PhotoGrid locale={locale} />
             <div className="mt-5">
-              <h3 className="font-display text-lg font-bold tracking-tight">{L('Flux зургийн генератор', 'Flux image generator')}</h3>
+              <h3 className="font-display text-lg font-bold tracking-tight">{L('AI зургийн генератор', 'AI image generator')}</h3>
               <p className="mt-2 text-sm text-[var(--text-secondary)] leading-relaxed">
-                {L('Hero + gallery зургийг Flux schnell-ээр бүтээнэ.', 'Hero imagery rendered by Flux schnell, palette-matched.')}
+                {L('Hero + gallery зургийг брэндийн өнгөтэй нийцүүлж бүтээнэ.', 'Hero imagery rendered to match your brand palette.')}
               </p>
             </div>
           </BentoCard>

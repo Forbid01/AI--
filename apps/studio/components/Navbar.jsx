@@ -85,7 +85,7 @@ export default function Navbar({ locale }) {
 
   return (
     <motion.header
-      className="sticky top-0 z-30 w-full"
+      className="sticky top-0 z-50 w-full"
       animate={{
         backgroundColor: scrolled
           ? 'rgba(10,8,20,0.82)'
